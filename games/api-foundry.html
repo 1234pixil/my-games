@@ -1,0 +1,1022 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>API Foundry</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: workbench — spec bench (describe + schema) on the left, output console on the right; stacks on phones */
+:root{
+  --bg:#f3f5f8; --panel:#ffffff; --sunk:#e9edf3; --line:#d5dbe5; --fg:#16202e; --muted:#5b6778;
+  --accent:#2f5bea; --accent-ink:#ffffff; --accent-soft:#e3eaff;
+  --get:#11804f; --post:#2f5bea; --put:#a76100; --patch:#7a4dd8; --del:#c2333b;
+  --ok:#11804f; --err:#c2333b;
+  --code-bg:#0f1724; --code-fg:#d6e2f5; --code-key:#8fb4ff; --code-str:#9be3b4; --code-num:#ffc78a;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Figtree",ui-sans-serif,system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d121a; --panel:#141b26; --sunk:#0a0f16; --line:#263142; --fg:#e6ecf5; --muted:#93a0b4;
+  --accent:#7d9bff; --accent-ink:#0b1020; --accent-soft:#1c2744;
+  --get:#4fd197; --post:#7d9bff; --put:#f0b25a; --patch:#b897ff; --del:#ff7a80;
+  --ok:#4fd197; --err:#ff7a80; --code-bg:#070b11; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d121a; --panel:#141b26; --sunk:#0a0f16; --line:#263142; --fg:#e6ecf5; --muted:#93a0b4;
+  --accent:#7d9bff; --accent-ink:#0b1020; --accent-soft:#1c2744;
+  --get:#4fd197; --post:#7d9bff; --put:#f0b25a; --patch:#b897ff; --del:#ff7a80;
+  --ok:#4fd197; --err:#ff7a80; --code-bg:#070b11; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--body);padding-inline:16px;padding-block:20px 40px}
+.wrap{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 20px}
+h1{font:800 clamp(28px,4vw,40px)/1 var(--display);letter-spacing:-.02em;margin:0}
+h1 span{color:var(--accent)}
+.tag{color:var(--muted);margin:0;max-width:60ch}
+h2{font:600 13px var(--body);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0}
+.grid{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:14px;min-width:0}
+textarea,input,select{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%}
+textarea{min-height:84px;resize:vertical}
+textarea:focus,input:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:500 13px var(--body);border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:999px;padding:4px 10px;cursor:pointer}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+button{cursor:pointer;font:inherit}
+.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:6px;padding:9px 16px;font-weight:600}
+.btn:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.6;cursor:progress}
+.btn.ai{background:var(--patch);color:var(--accent-ink)}
+.m.AI{background:var(--patch)}
+.ghost{background:transparent;border:1px solid var(--line);color:var(--fg);border-radius:6px;padding:6px 10px;font-size:13px}
+.ghost:hover{border-color:var(--accent);color:var(--accent)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.hint{font-size:13px;color:var(--muted);margin:0}
+/* schema editor */
+.res{border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.res-head{display:flex;gap:8px;align-items:center;background:var(--sunk);padding:8px 10px}
+.res-head input{font:600 15px var(--mono);background:transparent;border:1px solid transparent;padding:4px 6px}
+.res-head input:hover{border-color:var(--line)}
+.res-path{font:12px var(--mono);color:var(--muted);white-space:nowrap}
+.fields{display:flex;flex-direction:column;padding:6px 10px 10px;gap:4px}
+.f{display:grid;grid-template-columns:minmax(0,1fr) 108px 28px;gap:6px;align-items:center}
+.f input,.f select{font:13px var(--mono);padding:5px 7px}
+.f .lock{font:13px var(--mono);color:var(--muted);padding:5px 8px}
+.x{border:0;background:transparent;color:var(--muted);font-size:18px;line-height:1;padding:2px}
+.x:hover{color:var(--del)}
+.addf{align-self:flex-start;border:0;background:transparent;color:var(--accent);font:600 13px var(--body);padding:4px 0}
+/* tabs */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tab{border:0;background:transparent;color:var(--muted);padding:10px 14px;font-weight:600;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--fg);border-color:var(--accent)}
+.m{display:inline-block;min-width:58px;text-align:center;font:600 11px var(--mono);letter-spacing:.04em;border-radius:4px;padding:3px 6px;color:#fff}
+.m.GET{background:var(--get)}.m.POST{background:var(--post)}.m.PUT{background:var(--put)}.m.PATCH{background:var(--patch)}.m.DELETE{background:var(--del)}
+:root[data-theme="dark"] .m{color:#0b1020}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .m{color:#0b1020}}
+.eps{display:flex;flex-direction:column}
+.ep{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 4px;border-bottom:1px solid var(--line)}
+.ep:last-child{border-bottom:0}
+.ep code{font:13px var(--mono);overflow-wrap:anywhere}
+.ep small{display:block;color:var(--muted);font-size:13px}
+.group{font:600 12px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:14px 4px 4px}
+pre{margin:0;background:var(--code-bg);color:var(--code-fg);border-radius:8px;padding:14px;font:12.5px/1.55 var(--mono);overflow:auto;max-height:560px;tab-size:2}
+.k{color:var(--code-key)}.s{color:var(--code-str)}.n{color:var(--code-num)}
+.req{display:grid;grid-template-columns:120px minmax(0,1fr) auto;gap:8px}
+@media (max-width:520px){.req{grid-template-columns:minmax(0,1fr)}}
+.req input{font:13px var(--mono)}
+.body-in{font:13px var(--mono);min-height:120px}
+.status{font:600 13px var(--mono)}
+.status.ok{color:var(--ok)}.status.bad{color:var(--err)}
+.stats{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--muted)}
+.stats b{color:var(--fg);font-variant-numeric:tabular-nums}
+.keygen{display:grid;grid-template-columns:minmax(0,1fr) 150px auto;gap:8px}
+@media (max-width:560px){.keygen{grid-template-columns:minmax(0,1fr)}}
+.klist{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:8px}
+.key{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;padding:10px 12px;border-bottom:1px solid var(--line);align-items:center}
+.key:last-child{border-bottom:0}
+.key b{font-weight:600}
+.key code{font:12.5px var(--mono);overflow-wrap:anywhere}
+.key .meta{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.key.revoked{opacity:.55}.key.revoked code{text-decoration:line-through}
+.pill{display:inline-block;font:600 11px var(--mono);border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:1px;background:var(--accent-soft);color:var(--accent)}
+.pill.read{background:var(--sunk);color:var(--muted)}
+.newkey{border:1px solid var(--ok);background:var(--sunk);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.newkey code{font:13px var(--mono);overflow-wrap:anywhere;color:var(--fg)}
+.base{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.base code{font:13px var(--mono);background:var(--sunk);border:1px solid var(--line);border-radius:6px;padding:6px 10px;overflow-wrap:anywhere;min-width:0}
+.linkform{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:8px}
+@media (max-width:640px){.linkform{grid-template-columns:minmax(0,1fr)}}
+.detect{font-size:13px;color:var(--muted);min-height:1.5em}
+.detect b{color:var(--fg)}
+.link{display:flex;flex-direction:column;gap:6px;padding:12px;border-bottom:1px solid var(--line)}
+.link:last-child{border-bottom:0}
+.link .top{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center}
+.link code{font:12.5px var(--mono);overflow-wrap:anywhere}
+.tok{font:600 14px var(--mono);letter-spacing:.02em;background:var(--sunk);border:1px solid var(--line);border-radius:6px;padding:8px 10px;overflow-wrap:anywhere}
+.dlbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--accent-soft);border-radius:8px;padding:10px 12px}
+.dlbar .btn{padding:7px 14px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:6px;font-size:14px}
+@media (prefers-reduced-motion:no-preference){.tab,.chip,.ghost{transition:color .15s,border-color .15s}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>API <span>Foundry</span></h1>
+    <p class="tag">Describe anything. Get resources, REST endpoints, an OpenAPI spec, a runnable Node server and a live mock to test it against.</p>
+  </header>
+
+  <div class="grid">
+    <section class="panel" aria-label="Design your API">
+      <h2>1 · Describe it</h2>
+      <textarea id="desc" aria-label="Describe what the API is for">A pizza shop with pizzas, toppings, orders and customers</textarea>
+      <div class="chips" id="examples"></div>
+      <div class="row"><button class="btn" id="gen">Generate API</button><button class="btn ai" id="aigen" hidden>✦ Design with AI</button><span class="hint" id="genhint">Replaces the schema below.</span></div>
+      <label class="row hint" for="aiep" style="gap:6px;cursor:pointer"><input type="checkbox" id="aiep" style="width:auto" checked> Add AI <code>/generate</code> endpoints that create records from a plain-English prompt</label>
+
+      <h2 style="margin-top:6px">2 · Shape the schema</h2>
+      <p class="hint">Rename resources, edit fields and types. A field like <code>authorId</code> links to <code>authors</code> and adds a nested route.</p>
+      <div id="schema" style="display:flex;flex-direction:column;gap:10px"></div>
+      <div class="row">
+        <input id="newres" placeholder="new resource, e.g. coupon" aria-label="New resource name" style="flex:1;min-width:0">
+        <button class="ghost" id="addres">Add resource</button>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Generated API">
+      <div class="row" style="justify-content:space-between">
+        <h2>3 · Use it</h2>
+        <div class="stats" id="stats"></div>
+      </div>
+      <div class="dlbar" id="dlbar">
+        <button class="btn" id="dlzip">⇩ Download project (.zip)</button>
+        <button class="ghost" data-dl="openapi">openapi.json</button>
+        <button class="ghost" data-dl="readme">README.md</button>
+        <button class="ghost" data-dl="data">data.json</button>
+        <span class="hint" id="dlhint">Zip has server.js, package.json, .env, README and the spec.</span>
+      </div>
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" data-t="endpoints" aria-selected="true">Endpoints</button>
+        <button class="tab" role="tab" data-t="play" aria-selected="false">Playground</button>
+        <button class="tab" role="tab" data-t="keys" aria-selected="false">API keys</button>
+        <button class="tab" role="tab" data-t="links" aria-selected="false">Link an API</button>
+        <button class="tab" role="tab" data-t="openapi" aria-selected="false">OpenAPI</button>
+        <button class="tab" role="tab" data-t="server" aria-selected="false">Node server</button>
+        <button class="tab" role="tab" data-t="data" aria-selected="false">Sample data</button>
+      </div>
+
+      <div id="t-endpoints"><div class="eps" id="eps"></div></div>
+
+      <div id="t-play" hidden style="display:flex;flex-direction:column;gap:10px">
+        <div class="req">
+          <select id="pm" aria-label="Method"><option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option></select>
+          <input id="pp" aria-label="Path" value="/pizzas">
+          <button class="btn" id="send">Send</button>
+        </div>
+        <div class="row"><label for="pkey" class="hint" style="white-space:nowrap">API key</label><select id="pkey" style="flex:1;min-width:0;font:13px var(--mono)"></select></div>
+        <textarea id="pb" class="body-in" aria-label="JSON request body" placeholder="JSON body for POST, PUT and PATCH"></textarea>
+        <div class="row" style="justify-content:space-between">
+          <span class="status" id="pstat">Ready. Pick an endpoint or type a path.</span>
+          <button class="ghost" id="reset">Reset mock data</button>
+        </div>
+        <pre id="pout" aria-live="polite"></pre>
+        <p class="hint">The mock runs in this page with seeded records. <code>/generate</code> routes ask Claude to write a new record. Try <code>?limit=2</code> or filters like <code>?status=delivered</code>.</p>
+      </div>
+
+      <div id="t-keys" hidden style="display:flex;flex-direction:column;gap:14px">
+        <div class="keygen">
+          <input id="kname" placeholder="Key name, e.g. Mobile app" aria-label="Key name">
+          <select id="kscope" aria-label="Key access"><option value="full">Read and write</option><option value="read">Read only</option></select>
+          <button class="btn" id="kgen">Generate key</button>
+        </div>
+        <label class="row hint" for="kreq" style="gap:6px;cursor:pointer"><input type="checkbox" id="kreq" style="width:auto"> Require an API key on every request (401 without one, 403 for writes with a read-only key)</label>
+        <div class="newkey" id="newkey" hidden>
+          <span class="hint" style="color:var(--fg)"><b>New key ready.</b> Copy it now and keep it somewhere safe.</span>
+          <code id="newkeyval"></code>
+          <div class="row"><button class="ghost" id="newkeycopy">Copy key</button><button class="ghost" id="newkeydone">Done</button></div>
+        </div>
+        <div class="klist" id="klist"></div>
+        <h2>Base URL</h2>
+        <div class="base"><code id="kbase">http://localhost:3000</code><button class="ghost" data-copy="base">Copy</button></div>
+        <p class="hint" style="margin-top:-6px">This is where the Node server runs. Once you host it (Render, Railway, Fly.io…), swap in your own domain.</p>
+        <h2>Call it</h2>
+        <div class="row"><button class="ghost" data-copy="snip">Copy examples</button><span class="hint">curl, JavaScript and Python, using your first active key.</span></div>
+        <pre id="ksnip"></pre>
+        <h2>Start the server with your keys</h2>
+        <div class="row"><button class="ghost" data-copy="env">Copy command</button></div>
+        <pre id="kenv"></pre>
+      </div>
+
+      <div id="t-links" hidden style="display:flex;flex-direction:column;gap:12px">
+        <p class="hint" style="color:var(--fg)">Paste a link to any API (an AI API like Claude or OpenAI, or your own), or paste an API key. You get back your own custom token, made of letters and numbers only, that unlocks it through your server.</p>
+        <div class="linkform">
+          <input id="lsrc" placeholder="Paste a link or an API key" aria-label="Link or API key" autocomplete="off" spellcheck="false">
+          <input id="lsec" placeholder="Its API key (optional)" aria-label="Upstream API key" type="password" autocomplete="off" spellcheck="false">
+          <button class="btn" id="lgen">Generate token</button>
+        </div>
+        <div class="row" style="gap:8px">
+          <label class="hint" for="llen">Token length</label>
+          <select id="llen" style="width:auto"><option>24</option><option selected>40</option><option>64</option></select>
+          <label class="hint" for="lcase" style="margin-left:6px">Letters</label>
+          <select id="lcase" style="width:auto"><option value="mixed">Upper + lower</option><option value="upper">Uppercase only</option><option value="lower">Lowercase only</option></select>
+        </div>
+        <div class="detect" id="ldetect" aria-live="polite"></div>
+        <div class="chips" id="lexamples"></div>
+        <div class="klist" id="llist"></div>
+        <p class="hint">Your pasted API keys stay in this page only until you reload, and are never put in the server code. Pass them to the server with the start command shown on each card.</p>
+      </div>
+
+      <div id="t-openapi" hidden style="display:flex;flex-direction:column;gap:10px">
+        <div class="row"><button class="ghost" data-copy="openapi">Copy spec</button><span class="hint">OpenAPI 3.1 JSON. Paste into Swagger Editor or Postman.</span></div>
+        <pre id="openapi"></pre>
+      </div>
+
+      <div id="t-server" hidden style="display:flex;flex-direction:column;gap:10px">
+        <div class="row"><button class="ghost" data-copy="server">Copy code</button><span class="hint">Save as <code>server.js</code>, then run <code>npm i express</code> and <code>node server.js</code>.</span></div>
+        <pre id="server"></pre>
+      </div>
+
+      <div id="t-data" hidden style="display:flex;flex-direction:column;gap:10px">
+        <div class="row"><button class="ghost" data-copy="data">Copy JSON</button><span class="hint">Current state of the mock database.</span></div>
+        <pre id="data"></pre>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+(function(){
+// ---------- knowledge base ----------
+const T = s => s.split(',').map(p=>{const [n,t]=p.trim().split(':');return {name:n,type:t||'string'}});
+const ENT = {
+  book:'title,authorId:integer,isbn,publishedYear:integer,genre,available:boolean',
+  author:'name,bio:text,country', member:'name,email:email,joinedAt:date',
+  loan:'bookId:integer,memberId:integer,loanedAt:date,dueAt:date,returned:boolean',
+  user:'name,email:email,role', product:'name,price:number,stock:integer,category,sku',
+  order:'customerId:integer,total:number,status,placedAt:date', customer:'name,email:email,phone,address',
+  pizza:'name,size,price:number,vegetarian:boolean', topping:'name,price:number,vegan:boolean',
+  menuItem:'name,category,price:number,available:boolean', reservation:'name,partySize:integer,time:date,notes:text',
+  movie:'title,director,year:integer,rating:number,genre', review:'rating:integer,comment:text,authorName',
+  screening:'movieId:integer,startsAt:date,hall,seatsLeft:integer', ticket:'holderName,price:number,seat',
+  post:'title,body:text,authorId:integer,published:boolean,publishedAt:date', comment:'postId:integer,author,body:text',
+  task:'title,done:boolean,dueDate:date,priority,projectId:integer', todo:'title,done:boolean,dueDate:date',
+  project:'name,description:text,deadline:date', student:'name,email:email,grade:integer',
+  course:'title,code,credits:integer,teacherId:integer', teacher:'name,email:email,subject',
+  workout:'name,durationMin:integer,calories:integer,date:date', exercise:'name,muscleGroup,sets:integer,reps:integer',
+  trainer:'name,specialty,email:email', recipe:'title,cuisine,prepMinutes:integer,servings:integer,instructions:text',
+  ingredient:'name,unit,quantity:number', event:'title,venue,startsAt:date,capacity:integer',
+  song:'title,artistId:integer,durationSec:integer,album', artist:'name,genre,country',
+  playlist:'name,description:text,public:boolean', pet:'name,species,breed,age:integer,ownerId:integer,adopted:boolean',
+  owner:'name,email:email,phone', appointment:'petId:integer,startsAt:date,reason,notes:text',
+  car:'make,model,year:integer,price:number,mileage:integer', hotel:'name,city,stars:integer',
+  room:'hotelId:integer,number,type,pricePerNight:number,available:boolean',
+  booking:'roomId:integer,guestName,checkIn:date,checkOut:date', employee:'name,email:email,departmentId:integer,salary:number,hiredAt:date',
+  department:'name,budget:number', invoice:'customerId:integer,amount:number,dueDate:date,paid:boolean',
+  team:'name,city,founded:integer', player:'name,position,number:integer,teamId:integer',
+  match:'homeTeamId:integer,awayTeamId:integer,playedAt:date,score', game:'title,platform,releaseYear:integer,price:number',
+  note:'title,body:text,pinned:boolean', plant:'name,species,wateringDays:integer,lastWatered:date',
+  account:'owner,type,balance:number,currency', transaction:'accountId:integer,amount:number,type,at:date',
+  flight:'number,origin,destination,departsAt:date,seats:integer', passenger:'name,email:email,passport',
+  doctor:'name,specialty,email:email', patient:'name,dateOfBirth:date,phone', category:'name,description:text',
+  photo:'title,url:url,takenAt:date,albumId:integer', album:'title,description:text', city:'name,country,population:integer',
+  conversation:'title,userId:integer,modelId:integer,createdAt:date',
+  message:'conversationId:integer,role,content:text,tokens:integer,createdAt:date',
+  model:'name,provider,contextWindow:integer,pricePerMTok:number',
+  prompt:'title,template:text,tags', generation:'prompt:text,modelId:integer,imageUrl:url,width:integer,height:integer,status',
+  agent:'name,instructions:text,modelId:integer,active:boolean', tool:'name,description:text,agentId:integer,enabled:boolean',
+  document:'title,content:text,source', embedding:'documentId:integer,vector:text,dimensions:integer',
+  dataset:'name,description:text,rows:integer', evaluation:'modelId:integer,datasetId:integer,score:number,runAt:date',
+  vehicle:'make,model,plate,year:integer', driver:'name,licence,phone', trip:'driverId:integer,origin,destination,fare:number,startedAt:date'
+};
+const DOMAINS = [
+  [/image ?gen|art ?gen|text.to.image|picture gen|ai art/,['generation','model','prompt']],
+  [/\bagents?\b/,['agent','tool','conversation','message','model']],
+  [/\brag\b|knowledge ?base|embedding|semantic search/,['document','embedding','model']],
+  [/chat ?bot|chat ?gpt|assistant|\bllms?\b|\bai chat|chat app/,['conversation','message','model','prompt']],
+  [/\bais?\b|machine learning|\bml\b|artificial intel/,['model','dataset','evaluation','prompt']],
+  [/pizz/,['pizza','topping','order','customer']],[/restaurant|cafe|café|diner|bistro/,['menuItem','order','reservation','customer']],
+  [/library/,['book','author','member','loan']],[/bookstore|bookshop/,['book','author','order','customer']],
+  [/shop|store|e-?commerce|marketplace/,['product','category','order','customer','review']],[/blog|news|magazine/,['post','comment','author']],
+  [/cinema|theat/,['movie','screening','ticket','customer']],[/movie|film/,['movie','review']],
+  [/gym|fitness/,['member','workout','exercise','trainer']],[/school|universit|college|class/,['student','course','teacher']],
+  [/music|spotify|band/,['song','artist','playlist']],[/todo|to-do|task/,['task','project']],
+  [/hotel|hostel|airbnb/,['hotel','room','booking']],[/vet|pet|animal|shelter/,['pet','owner','appointment']],
+  [/car|dealer|garage/,['car','customer','order']],[/hr|company|staff|employee/,['employee','department']],
+  [/football|soccer|sport|league|basketball/,['team','player','match']],[/recipe|cook|kitchen/,['recipe','ingredient']],
+  [/event|concert|festival/,['event','ticket']],[/video ?game|gaming/,['game','review']],[/note/,['note']],
+  [/plant|garden/,['plant']],[/bank|finance|budget|wallet/,['account','transaction']],[/airline|flight/,['flight','passenger','booking']],
+  [/hospital|clinic|doctor/,['doctor','patient','appointment']],[/photo|gallery/,['album','photo']],
+  [/taxi|ride|uber/,['driver','vehicle','trip']]
+];
+const ALIAS = {people:'person',children:'child',menu:'menuItem',items:'menuItem','menu items':'menuItem',todos:'todo',bookings:'booking',houseplants:'plant',houseplant:'plant'};
+const STOP = new Set('a an the and with for of to in on my our app api that has have where people can which who is are some lots stuff things data system manage managing tracking track watering keep keeping simple service'.split(' '));
+
+// ---------- naming ----------
+const singular = w => { w=w.toLowerCase(); if(ALIAS[w]) return ALIAS[w];
+  if(/ies$/.test(w)) return w.slice(0,-3)+'y'; if(/(ches|shes|xes|sses|zes)$/.test(w)) return w.slice(0,-2);
+  if(/s$/.test(w)&&!/ss$/.test(w)&&w.length>3) return w.slice(0,-1); return w; };
+const plural = w => { if(w==='person') return 'people'; if(w==='child') return 'children';
+  if(/[^aeiou]y$/.test(w)) return w.slice(0,-1)+'ies'; if(/(s|x|z|ch|sh)$/.test(w)) return w+'es'; return w+'s'; };
+const camel = s => s.trim().replace(/[^a-zA-Z0-9]+(.)/g,(_,c)=>c.toUpperCase()).replace(/^./,c=>c.toLowerCase()).replace(/[^a-zA-Z0-9]/g,'');
+const kebab = s => s.replace(/([a-z0-9])([A-Z])/g,'$1-$2').toLowerCase();
+const pascal = s => s.charAt(0).toUpperCase()+s.slice(1);
+const pathOf = r => '/'+kebab(plural(r.name));
+
+// ---------- describe -> schema ----------
+function fieldsFor(name){ return ENT[name] ? T(ENT[name]) : T('name,description:text,status'); }
+function generate(text){
+  const t = text.toLowerCase(); const found = [];
+  const add = n => { n=camel(n); if(n && !found.includes(n)) found.push(n); };
+  const listMatch = t.match(/\b(?:with|has|have|for|tracks?|manag\w*|including)\s+(.+)$/);
+  if(listMatch){
+    listMatch[1].split(/,|\band\b|\bplus\b|&|\//).map(s=>s.trim()).filter(Boolean).forEach(chunk=>{
+      const words = chunk.split(/\s+/).filter(w=>!STOP.has(w)); if(!words.length) return;
+      const phrase = words.slice(-2).join(' ');
+      if(ALIAS[phrase]) return add(ALIAS[phrase]);
+      add(singular(words[words.length-1]));
+    });
+  }
+  if(!found.length){
+    for(const [re,list] of DOMAINS){ if(re.test(t)){ list.forEach(add); break; } }
+  }
+  if(!found.length){
+    t.split(/[^a-z]+/).forEach(w=>{ const s=singular(w); if(ENT[s]) add(s); });
+  }
+  if(!found.length){
+    const words = t.split(/[^a-z]+/).filter(w=>w&&!STOP.has(w));
+    add(singular(words[words.length-1]||'item'));
+  }
+  return found.map(n=>({name:n,fields:fieldsFor(n)}));
+}
+
+// ---------- relations ----------
+function relations(schema){
+  const byName = Object.fromEntries(schema.map(r=>[r.name,r])); const rels=[];
+  schema.forEach(r=>r.fields.forEach(f=>{
+    const m=f.name.match(/^(?:.*?)([a-z][a-zA-Z]*)Id$/); if(!m) return;
+    let target=f.name.replace(/Id$/,''); target = byName[target] ? target : (byName[m[1]]?m[1]:null);
+    if(!target){ const low=f.name.replace(/Id$/,'').toLowerCase(); target=schema.find(x=>low.endsWith(x.name.toLowerCase()))?.name; }
+    if(target && target!==r.name) rels.push({child:r.name,parent:target,field:f.name});
+  }));
+  return rels;
+}
+
+// ---------- fake data ----------
+const POOL = {
+  name:['Margherita','Ada Lovelace','Northwind','Orion','Juniper','Kestrel','Maple','Atlas','Nova','Willow'],
+  person:['Ada Lovelace','Grace Hopper','Alan Turing','Katherine Johnson','Linus Pauling','Mae Jemison'],
+  title:['The Quiet Harbour','Field Notes','Midnight Run','Signals','A Year Outdoors','Blue Hour'],
+  city:['Gloucester','Bristol','Leeds','Edinburgh','Cardiff','York'], country:['UK','Ireland','France','Japan','Canada','Kenya'],
+  status:['pending','preparing','delivered','cancelled'], genre:['fiction','sci-fi','mystery','drama','history'],
+  size:['small','medium','large'], category:['mains','sides','drinks','desserts'], role:['admin','editor','viewer'],
+  priority:['low','medium','high'], type:['standard','premium','basic'], species:['dog','cat','rabbit','parrot'],
+};
+const pick=(a,i)=>a[i%a.length];
+function fake(f,i,res,rels){
+  const n=f.name, ln=n.toLowerCase(), t=f.type;
+  const rel = rels.find(r=>r.child===res&&r.field===n); if(rel) return (i%3)+1;
+  if(t==='boolean') return i%3!==1;
+  if(res==='message'&&ln==='role') return pick(['user','assistant'],i);
+  if(res==='message'&&ln==='content') return pick(['Can you plan a 3-day trip to Bath?','Sure. Day 1: the Roman Baths and the Abbey...','What should I pack for October?'],i);
+  if(ln==='provider') return pick(['Anthropic','Mistral','Google'],i);
+  if(res==='model'&&ln==='name') return pick(['claude-sonnet-5-5','claude-haiku-4-5','claude-opus-5-5'],i);
+  if(/prompt|template|instructions/.test(ln)) return pick(['A watercolour lighthouse at dawn','Summarise {{text}} in three bullet points','You are a friendly travel planner.'],i);
+  if(ln==='contextwindow') return [200000,200000,1000000][i%3];
+  if(t==='date') return new Date(Date.UTC(2026,8,1+i*4,9+i,i*15)).toISOString();
+  if(t==='email') return pick(POOL.person,i).toLowerCase().split(' ')[0]+'@example.com';
+  if(t==='url') return 'https://example.com/'+kebab(res)+'/'+(i+1);
+  if(t==='integer'){ if(/year/.test(ln)) return 2018+i*2; if(/rating|stars/.test(ln)) return 3+(i%3); if(/age/.test(ln)) return 2+i*3; return [12,30,45,8,60,24][i%6]; }
+  if(t==='number'){ if(/rating/.test(ln)) return [4.5,3.8,4.9][i%3]; return [9.5,14.99,24,7.25,32.5][i%5]; }
+  if(t==='text') return ['Short and sweet.','A longer description with a bit more detail.','Customer favourite since launch.'][i%3];
+  for(const k of ['status','genre','size','category','role','priority','type','species','city','country']) if(ln.includes(k)) return pick(POOL[k],i);
+  if(/title/.test(ln)) return pick(POOL.title,i);
+  if(/phone/.test(ln)) return '+44 7700 900'+(100+i*37);
+  if(/address/.test(ln)) return (12+i*7)+' High Street, '+pick(POOL.city,i);
+  if(/sku|code|number|plate|isbn|passport|licence/.test(ln)) return n.slice(0,3).toUpperCase()+'-'+(1000+i*111);
+  if(/name|author|owner|holder/.test(ln)) return /holder|guest|author|owner/.test(ln)||/customer|member|user|student|teacher|employee|person|owner|trainer|doctor|patient|passenger|driver|artist|author/.test(res) ? pick(POOL.person,i) : pick(POOL.name,i);
+  return pick(POOL.name,i).toLowerCase();
+}
+function seed(schema){
+  const rels=relations(schema), db={};
+  schema.forEach(r=>{ db[r.name]=[1,2,3].map((id,i)=>{ const o={id}; r.fields.forEach(f=>o[f.name]=fake(f,i,r.name,rels)); return o; }); });
+  return db;
+}
+
+// ---------- state ----------
+let schema, db, aiOn=true, sample=null, requireKey=true, keys=[], links=[];
+const secrets={};
+try{ const s=JSON.parse(localStorage.getItem('apifoundry.v1')||'null'); if(s&&s.schema){ schema=s.schema; aiOn=s.aiOn!==false; requireKey=s.requireKey!==false; document.getElementById('desc').value=s.desc||''; } }catch(e){}
+if(!schema) schema=generate(document.getElementById('desc').value);
+db=seed(schema);
+const B62='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+function newKeyString(scope){ const a=new Uint8Array(32); crypto.getRandomValues(a); return (scope==='read'?'af_read_':'af_live_')+[...a].map(b=>B62[b%62]).join(''); }
+try{ keys=JSON.parse(localStorage.getItem('apifoundry.keys')||'[]')||[]; }catch(e){ keys=[]; }
+if(!keys.length) keys=[{id:1,name:'Default key',scope:'full',key:newKeyString('full'),created:Date.now(),calls:0,lastUsed:null,revoked:false}];
+try{ links=JSON.parse(localStorage.getItem('apifoundry.links')||'[]')||[]; }catch(e){ links=[]; }
+const saveLinks=()=>{ try{ localStorage.setItem('apifoundry.links',JSON.stringify(links)); }catch(e){} };
+const saveKeys=()=>{ try{ localStorage.setItem('apifoundry.keys',JSON.stringify(keys)); }catch(e){} };
+saveKeys();
+const save=()=>{ try{ localStorage.setItem('apifoundry.v1',JSON.stringify({schema,aiOn,requireKey,desc:document.getElementById('desc').value})); }catch(e){} };
+
+// ---------- endpoints ----------
+function endpoints(){
+  const rels=relations(schema), out=[];
+  links.forEach(L=>out.push({g:'_link',gl:'Linked APIs',m:'POST',p:`/link/${L.slug}/…`,d:`Forwards to ${L.url} (unlock with its custom token)`,link:L}));
+  if(aiOn) out.push({g:'_ai',gl:'AI',m:'POST',p:'/chat',d:'AI chat: send messages, get a reply from Claude',ai:true,chat:true});
+  schema.forEach(r=>{
+    const p=pathOf(r), one=pascal(r.name), many=plural(r.name);
+    out.push({g:r.name,m:'GET',p,d:`List ${kebab(many).replace(/-/g,' ')}`});
+    out.push({g:r.name,m:'POST',p,d:`Create a ${kebab(r.name).replace(/-/g,' ')}`});
+    if(aiOn) out.push({g:r.name,m:'POST',p:p+'/generate',d:`AI: create a ${kebab(r.name).replace(/-/g,' ')} from a prompt`,ai:true});
+    out.push({g:r.name,m:'GET',p:p+'/{id}',d:`Get one ${kebab(r.name).replace(/-/g,' ')}`});
+    out.push({g:r.name,m:'PUT',p:p+'/{id}',d:`Replace a ${kebab(r.name).replace(/-/g,' ')}`});
+    out.push({g:r.name,m:'PATCH',p:p+'/{id}',d:`Update some fields`});
+    out.push({g:r.name,m:'DELETE',p:p+'/{id}',d:`Delete a ${kebab(r.name).replace(/-/g,' ')}`});
+    rels.filter(x=>x.parent===r.name).forEach(x=>{
+      const c=schema.find(s=>s.name===x.child);
+      out.push({g:r.name,m:'GET',p:p+'/{id}'+pathOf(c),d:`${pascal(kebab(plural(c.name)).replace(/-/g,' '))} for this ${kebab(r.name).replace(/-/g,' ')}`,rel:x});
+    });
+  });
+  return out;
+}
+
+// ---------- mock server ----------
+async function mock(method,raw,bodyText,key){
+  const [path,qs]=raw.split('?'); const q=new URLSearchParams(qs||'');
+  const parts=path.split('/').filter(Boolean);
+  if(parts[0]==='link'){
+    const L=links.find(x=>x.slug===parts[1]);
+    if(!L) return [404,{error:`No linked API called "${parts[1]||''}". Add one in the Link an API tab.`}];
+    if(!key) return [401,{error:'Missing token. Send your custom token as Authorization: Bearer <token>.'}];
+    if(key!==L.token) return [401,{error:'This token does not unlock '+L.name+'.'}];
+    L.calls++; saveLinks(); renderLinks();
+    return [501,{error:'Token accepted. This page can not reach other websites, so the request stops here. Run the Node server and it forwards the call to '+L.url+'/'+parts.slice(2).join('/')}];
+  }
+  if(requireKey){
+    if(!key) return [401,{error:'Missing API key. Send it as Authorization: Bearer <key>.'}];
+    const k=keys.find(x=>x.key===key);
+    if(!k||k.revoked) return [401,{error:k?'This API key was revoked. Generate a new one in the API keys tab.':'Invalid API key.'}];
+    if(k.scope==='read'&&method!=='GET') return [403,{error:'This key is read-only. Use a read-and-write key for '+method+' requests.'}];
+    k.calls++; k.lastUsed=Date.now(); saveKeys(); renderKeys();
+  }
+  if(parts[0]==='chat'&&parts.length===1){
+    if(!aiOn) return [404,{error:'AI endpoints are switched off. Tick the AI option to turn them on.'}];
+    if(method!=='POST') return [405,{error:'Use POST with {"messages":[{"role":"user","content":"Hi"}]}'}];
+    let b; try{ b=bodyText.trim()?JSON.parse(bodyText):{}; }catch(e){ return [400,{error:'Body is not valid JSON: '+e.message}]; }
+    let turns=Array.isArray(b.messages)?b.messages:(b.message?[{role:'user',content:String(b.message)}]:[]);
+    turns=turns.filter(t=>t&&(t.role==='user'||t.role==='assistant')&&String(t.content||'').trim()).map(t=>({role:t.role,content:String(t.content).slice(0,8000)})).slice(-20);
+    while(turns.length&&turns[0].role!=='user') turns.shift();
+    if(!turns.length||turns[turns.length-1].role!=='user') return [422,{error:'Validation failed',details:['messages must end with a user message']}];
+    if(!sample) return [503,{error:'AI chat needs Claude, which this viewer can not reach. Open the page in claude.ai.'}];
+    const sys=typeof b.system==='string'&&b.system.trim()?b.system.slice(0,4000):`You are the assistant behind an API for "${$('desc').value}". Answer briefly.`;
+    try{
+      const {text,modelTierApplied}=await sample([{role:'user',content:'Instructions: '+sys},...turns],{cache:false,modelTier:'quick'});
+      return [200,{id:'chat_'+Date.now().toString(36),model:'claude ('+modelTierApplied+')',reply:text,messages:[...turns,{role:'assistant',content:text}]}];
+    }catch(e){ return [e.code==='rate_limited'?429:502,{error:aiErr(e.code)}]; }
+  }
+  const findRes = seg => schema.find(r=>pathOf(r)==='/'+seg);
+  const r=findRes(parts[0]||'');
+  if(!r) return [404,{error:`No resource at /${parts[0]||''}. Available: ${schema.map(pathOf).join(', ')}`}];
+  const rows=db[r.name];
+  let body=null;
+  if(['POST','PUT','PATCH'].includes(method)){
+    try{ body=bodyText.trim()?JSON.parse(bodyText):{}; }catch(e){ return [400,{error:'Body is not valid JSON: '+e.message}]; }
+    if(typeof body!=='object'||Array.isArray(body)) return [400,{error:'Body must be a JSON object.'}];
+  }
+  const check=(b,partial)=>{
+    const errs=[];
+    r.fields.forEach(f=>{
+      const v=b[f.name];
+      if(v===undefined){ if(!partial) errs.push(`${f.name} is required`); return; }
+      const ok={integer:Number.isInteger(v),number:typeof v==='number',boolean:typeof v==='boolean'}[f.type];
+      if(ok===false) errs.push(`${f.name} must be ${f.type==='integer'?'an integer':'a '+f.type}`);
+    });
+    return errs;
+  };
+  const clean=b=>{ const o={}; r.fields.forEach(f=>{ if(b[f.name]!==undefined) o[f.name]=b[f.name]; }); return o; };
+  if(parts.length===1){
+    if(method==='GET'){
+      let list=rows.filter(o=>[...q].every(([k,v])=>k==='limit'||k==='offset'||String(o[k])===v));
+      const off=+q.get('offset')||0, lim=q.has('limit')?+q.get('limit'):list.length;
+      return [200,{data:list.slice(off,off+lim),total:list.length}];
+    }
+    if(method==='POST'){
+      const errs=check(body,false); if(errs.length) return [422,{error:'Validation failed',details:errs}];
+      const o={id:rows.reduce((m,x)=>Math.max(m,x.id),0)+1,...clean(body)}; rows.push(o); return [201,o];
+    }
+    return [405,{error:`${method} is not allowed on a collection. Use GET or POST.`}];
+  }
+  if(parts[1]==='generate'&&parts.length===2){
+    if(!aiOn) return [404,{error:'AI endpoints are switched off. Tick the AI option to turn them on.'}];
+    if(method!=='POST') return [405,{error:'Use POST with a body like {"prompt": "..."}'}];
+    if(!body.prompt) return [422,{error:'Validation failed',details:['prompt is required']}];
+    if(!sample) return [503,{error:'AI generation needs Claude, which this viewer can not reach. Open the page in claude.ai.'}];
+    const fieldList=r.fields.map(f=>`${f.name} (${f.type}${f.type==='date'?', ISO 8601':''})`).join(', ');
+    let rec;
+    try{
+      rec=await sample.json(`You are the backend of an API for "${$('desc').value}". Create ONE realistic "${r.name}" record for this request: ${String(body.prompt).slice(0,2000)}\nFields: ${fieldList}.\nFields ending in Id are integer ids from 1 to 3.\nReply with only a JSON object with exactly these fields and no id.`,{modelTier:'quick',cache:false});
+    }catch(e){ return [e.code==='rate_limited'?429:502,{error:aiErr(e.code)}]; }
+    if(!rec||typeof rec!=='object'||Array.isArray(rec)) return [502,{error:'The AI reply was not a record. Try again.'}];
+    r.fields.forEach(f=>{ const v=rec[f.name];
+      if(f.type==='integer'&&v!==undefined) rec[f.name]=Math.round(Number(v))||0;
+      if(f.type==='number'&&v!==undefined) rec[f.name]=Number(v)||0;
+      if(f.type==='boolean'&&v!==undefined) rec[f.name]=v===true||v==='true'; });
+    const o={id:rows.reduce((m,x)=>Math.max(m,x.id),0)+1,...clean(rec)}; rows.push(o); return [201,o];
+  }
+  const id=+parts[1]; const idx=rows.findIndex(o=>o.id===id);
+  if(idx<0) return [404,{error:`${pascal(r.name)} ${parts[1]} not found`}];
+  if(parts.length===3){
+    const c=findRes(parts[2]); const rel=c&&relations(schema).find(x=>x.parent===r.name&&x.child===c.name);
+    if(!rel||method!=='GET') return [404,{error:'No such nested route'}];
+    const list=db[c.name].filter(o=>o[rel.field]===id); return [200,{data:list,total:list.length}];
+  }
+  if(method==='GET') return [200,rows[idx]];
+  if(method==='DELETE'){ rows.splice(idx,1); return [204,null]; }
+  if(method==='PUT'||method==='PATCH'){
+    const errs=check(body,method==='PATCH'); if(errs.length) return [422,{error:'Validation failed',details:errs}];
+    rows[idx]= method==='PUT'?{id,...clean(body)}:{...rows[idx],...clean(body)}; return [200,rows[idx]];
+  }
+  return [405,{error:'Method not allowed'}];
+}
+
+// ---------- OpenAPI ----------
+const oaType=t=>({integer:{type:'integer'},number:{type:'number'},boolean:{type:'boolean'},date:{type:'string',format:'date-time'},email:{type:'string',format:'email'},url:{type:'string',format:'uri'}})[t]||{type:'string'};
+function openapi(){
+  const title=(document.getElementById('desc').value.trim()||'Generated API').replace(/^(a|an|the)\s+/i,'');
+  const spec={openapi:'3.1.0',info:{title:pascal(title).slice(0,80),version:'1.0.0',description:'Generated with API Foundry'},servers:[{url:'http://localhost:3000'}],paths:{},components:{schemas:{}}};
+  schema.forEach(r=>{
+    const N=pascal(r.name), props={}; r.fields.forEach(f=>props[f.name]=oaType(f.type));
+    spec.components.schemas[N+'Input']={type:'object',properties:props,required:r.fields.map(f=>f.name)};
+    spec.components.schemas[N]={allOf:[{type:'object',properties:{id:{type:'integer'}},required:['id']},{$ref:`#/components/schemas/${N}Input`}]};
+  });
+  const ref=n=>({$ref:`#/components/schemas/${n}`});
+  const json=s=>({content:{'application/json':{schema:s}}});
+  const idParam={name:'id',in:'path',required:true,schema:{type:'integer'}};
+  endpoints().forEach(e=>{
+    const N=pascal(e.g), p=spec.paths[e.p]||(spec.paths[e.p]={}); const op={tags:[e.gl||plural(e.g)],summary:e.d,responses:{}};
+    if(requireKey){ op.responses['401']={description:'Missing or invalid API key'}; if(e.m!=='GET') op.responses['403']={description:'Read-only key'}; }
+    if(e.p.includes('{id}')) op.parameters=[idParam];
+    if(e.link) return;
+    if(e.chat){ const msg={type:'object',properties:{role:{type:'string',enum:['user','assistant']},content:{type:'string'}},required:['role','content']};
+      op.requestBody={required:true,...json({type:'object',properties:{system:{type:'string'},messages:{type:'array',items:msg}},required:['messages']})};
+      op.responses['200']={description:'Reply',...json({type:'object',properties:{id:{type:'string'},model:{type:'string'},reply:{type:'string'},messages:{type:'array',items:msg}}})}; }
+    else if(e.ai){ op.requestBody={required:true,...json({type:'object',properties:{prompt:{type:'string'}},required:['prompt']})}; op.responses['201']={description:'Created by AI',...json(ref(N))}; op.responses['502']={description:'AI service error'}; }
+    else if(e.rel){ op.responses['200']={description:'OK',...json({type:'object',properties:{data:{type:'array',items:ref(pascal(e.rel.child))},total:{type:'integer'}}})}; }
+    else if(e.m==='GET'&&!e.p.includes('{id}')){ op.parameters=[{name:'limit',in:'query',schema:{type:'integer'}},{name:'offset',in:'query',schema:{type:'integer'}}]; op.responses['200']={description:'OK',...json({type:'object',properties:{data:{type:'array',items:ref(N)},total:{type:'integer'}}})}; }
+    else if(e.m==='POST'){ op.requestBody={required:true,...json(ref(N+'Input'))}; op.responses['201']={description:'Created',...json(ref(N))}; op.responses['422']={description:'Validation failed'}; }
+    else if(e.m==='DELETE'){ op.responses['204']={description:'Deleted'}; op.responses['404']={description:'Not found'}; }
+    else { if(e.m!=='GET') op.requestBody={required:true,...json(e.m==='PATCH'?{type:'object',properties:spec.components.schemas[N+'Input'].properties}:ref(N+'Input'))}; op.responses['200']={description:'OK',...json(ref(N))}; op.responses['404']={description:'Not found'}; }
+    p[e.m.toLowerCase()]=op;
+  });
+  if(requireKey){ spec.components.securitySchemes={bearerAuth:{type:'http',scheme:'bearer',description:'Your API key from API Foundry'}}; spec.security=[{bearerAuth:[]}]; }
+  return spec;
+}
+
+// ---------- Node server ----------
+function serverCode(){
+  const rels=relations(schema); const L=[];
+  L.push(`// server.js — generated by API Foundry`,`// Run: npm i express && node server.js`,`const express = require('express');`,`const app = express();`,`app.use(express.json());`,``);
+  if(requireKey) L.push(`// API keys (linked APIs under /link use their own tokens). Start with: API_KEYS=key1,key2 READ_KEYS=key3 node server.js`,
+`const FULL_KEYS = (process.env.API_KEYS || '').split(',').filter(Boolean);
+const READ_KEYS = (process.env.READ_KEYS || '').split(',').filter(Boolean);
+if (!FULL_KEYS.length && !READ_KEYS.length) console.warn('No API keys set: every request will get 401.');
+app.use((req, res, next) => {
+  if (req.path.startsWith('/link/')) return next();
+  const key = (req.get('authorization') || '').replace(/^Bearer\\s+/i, '') || req.get('x-api-key');
+  if (!key) return res.status(401).json({ error: 'Missing API key. Send it as Authorization: Bearer <key>.' });
+  const full = FULL_KEYS.includes(key);
+  if (!full && !READ_KEYS.includes(key)) return res.status(401).json({ error: 'Invalid API key.' });
+  if (!full && req.method !== 'GET') return res.status(403).json({ error: 'This key is read-only.' });
+  next();
+});`,``);
+  L.push(`// In-memory database with sample records. Swap for a real DB later.`,`const db = ${JSON.stringify(seed(schema),null,2)};`,``);
+  L.push(`const schemas = ${JSON.stringify(Object.fromEntries(schema.map(r=>[r.name,Object.fromEntries(r.fields.map(f=>[f.name,f.type]))])),null,2)};`,``);
+  L.push(
+`function validate(name, body, partial) {
+  const errors = [];
+  for (const [field, type] of Object.entries(schemas[name])) {
+    const v = body[field];
+    if (v === undefined) { if (!partial) errors.push(field + ' is required'); continue; }
+    if (type === 'integer' && !Number.isInteger(v)) errors.push(field + ' must be an integer');
+    if (type === 'number' && typeof v !== 'number') errors.push(field + ' must be a number');
+    if (type === 'boolean' && typeof v !== 'boolean') errors.push(field + ' must be a boolean');
+  }
+  return errors;
+}
+const pickFields = (name, body) =>
+  Object.fromEntries(Object.keys(schemas[name]).filter(k => body[k] !== undefined).map(k => [k, body[k]]));
+
+function crud(name, path) {
+  const rows = () => db[name];
+  app.get(path, (req, res) => {
+    const { limit, offset = 0, ...filters } = req.query;
+    let list = rows().filter(o => Object.entries(filters).every(([k, v]) => String(o[k]) === v));
+    const total = list.length;
+    list = list.slice(+offset, limit ? +offset + +limit : undefined);
+    res.json({ data: list, total });
+  });
+  app.get(path + '/:id', (req, res) => {
+    const item = rows().find(o => o.id === +req.params.id);
+    item ? res.json(item) : res.status(404).json({ error: 'Not found' });
+  });
+  app.post(path, (req, res) => {
+    const errors = validate(name, req.body, false);
+    if (errors.length) return res.status(422).json({ error: 'Validation failed', details: errors });
+    const item = { id: rows().reduce((m, o) => Math.max(m, o.id), 0) + 1, ...pickFields(name, req.body) };
+    rows().push(item);
+    res.status(201).json(item);
+  });
+  for (const method of ['put', 'patch']) {
+    app[method](path + '/:id', (req, res) => {
+      const i = rows().findIndex(o => o.id === +req.params.id);
+      if (i < 0) return res.status(404).json({ error: 'Not found' });
+      const errors = validate(name, req.body, method === 'patch');
+      if (errors.length) return res.status(422).json({ error: 'Validation failed', details: errors });
+      const id = rows()[i].id;
+      rows()[i] = method === 'put' ? { id, ...pickFields(name, req.body) } : { ...rows()[i], ...pickFields(name, req.body) };
+      res.json(rows()[i]);
+    });
+  }
+  app.delete(path + '/:id', (req, res) => {
+    const i = rows().findIndex(o => o.id === +req.params.id);
+    if (i < 0) return res.status(404).json({ error: 'Not found' });
+    rows().splice(i, 1);
+    res.status(204).end();
+  });
+}
+`);
+  schema.forEach(r=>L.push(`crud('${r.name}', '${pathOf(r)}');`));
+  if(aiOn){ const ctx=JSON.stringify($('desc').value);
+    L.push(``,`// AI endpoints: POST /<resource>/generate with {"prompt": "..."}`,`// Needs an Anthropic API key: ANTHROPIC_API_KEY=sk-... node server.js`,
+`async function aiRecord(name, prompt) {
+  const fields = Object.entries(schemas[name]).map(([k, t]) => k + ' (' + t + ')').join(', ');
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-5-5',
+      max_tokens: 1024,
+      messages: [{ role: 'user', content:
+        'You are the backend of an API for ' + ${ctx} + '. Create ONE realistic "' + name + '" record for: ' + prompt +
+        '\\nFields: ' + fields + '.\\nReply with only a JSON object with exactly these fields and no id.' }],
+    }),
+  });
+  if (!r.ok) throw new Error('Anthropic API error ' + r.status);
+  const text = (await r.json()).content?.[0]?.text || '';
+  return JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
+}
+function aiRoute(name, path) {
+  app.post(path + '/generate', async (req, res) => {
+    if (!req.body?.prompt) return res.status(422).json({ error: 'Validation failed', details: ['prompt is required'] });
+    try {
+      const item = { id: db[name].reduce((m, o) => Math.max(m, o.id), 0) + 1, ...pickFields(name, await aiRecord(name, req.body.prompt)) };
+      db[name].push(item);
+      res.status(201).json(item);
+    } catch (e) { res.status(502).json({ error: e.message }); }
+  });
+}`);
+    schema.forEach(r=>L.push(`aiRoute('${r.name}', '${pathOf(r)}');`));
+    L.push(``,`// AI chat: POST /chat with {"messages":[{"role":"user","content":"Hi"}], "system": "optional"}`,
+`app.post('/chat', async (req, res) => {
+  const messages = (req.body?.messages || []).filter(m => m && ['user', 'assistant'].includes(m.role) && m.content);
+  if (!messages.length || messages.at(-1).role !== 'user') return res.status(422).json({ error: 'messages must end with a user message' });
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-5-5', max_tokens: 1024, system: req.body.system || 'You are a helpful assistant. Answer briefly.', messages }),
+    });
+    if (!r.ok) throw new Error('Anthropic API error ' + r.status);
+    const reply = (await r.json()).content?.[0]?.text || '';
+    res.json({ id: 'chat_' + Date.now().toString(36), model: 'claude-sonnet-5-5', reply, messages: [...messages, { role: 'assistant', content: reply }] });
+  } catch (e) { res.status(502).json({ error: e.message }); }
+});`); }
+  if(rels.length){ L.push(``,`// Nested routes`);
+    rels.forEach(x=>{ const P=schema.find(s=>s.name===x.parent), C=schema.find(s=>s.name===x.child);
+      L.push(`app.get('${pathOf(P)}/:id${pathOf(C)}', (req, res) => {`,`  const data = db.${x.child}.filter(o => o.${x.field} === +req.params.id);`,`  res.json({ data, total: data.length });`,`});`); }); }
+  if(links.length){
+    L.push(``,`// Linked APIs: /link/<name>/<path> is forwarded to the real API.`,`// Each one is unlocked by its own custom token; the real API key comes from an env variable.`,
+`const LINKS = ${JSON.stringify(Object.fromEntries(links.map(l=>[l.slug,{url:l.url,auth:l.auth,env:l.env}])),null,2)};
+// Tokens are read from env too: LINK_TOKEN_<NAME>=...
+for (const [slug, cfg] of Object.entries(LINKS)) cfg.token = process.env['LINK_TOKEN_' + slug.toUpperCase().replace(/-/g, '_')];
+
+app.all('/link/:slug/*', async (req, res) => {
+  const cfg = LINKS[req.params.slug];
+  if (!cfg) return res.status(404).json({ error: 'Unknown linked API' });
+  const token = (req.get('authorization') || '').replace(/^Bearer\\s+/i, '');
+  if (!cfg.token || token !== cfg.token) return res.status(401).json({ error: 'Invalid token' });
+  const secret = process.env[cfg.env];
+  const headers = { 'content-type': 'application/json' };
+  if (secret && cfg.auth === 'anthropic') { headers['x-api-key'] = secret; headers['anthropic-version'] = '2023-06-01'; }
+  else if (secret && cfg.auth === 'google') headers['x-goog-api-key'] = secret;
+  else if (secret) headers['authorization'] = 'Bearer ' + secret;
+  const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+  try {
+    const upstream = await fetch(cfg.url.replace(/\\/$/, '') + '/' + req.params[0] + qs, {
+      method: req.method, headers,
+      body: ['GET', 'HEAD'].includes(req.method) ? undefined : JSON.stringify(req.body),
+    });
+    res.status(upstream.status).type(upstream.headers.get('content-type') || 'application/json').send(Buffer.from(await upstream.arrayBuffer()));
+  } catch (e) { res.status(502).json({ error: 'Could not reach ' + cfg.url + ': ' + e.message }); }
+});`);
+  }
+  L.push(``,`app.use((req, res) => res.status(404).json({ error: 'No route for ' + req.method + ' ' + req.path }));`,`app.listen(3000, () => console.log('API running on http://localhost:3000'));`);
+  return L.join('\n');
+}
+
+// ---------- rendering ----------
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const hlJSON=s=>esc(s).replace(/("(?:\\.|[^"\\])*")(\s*:)?|\b(-?\d+(?:\.\d+)?)\b|\b(true|false|null)\b/g,(m,str,colon,num,kw)=>str?(colon?`<span class="k">${str}</span>${colon}`:`<span class="s">${str}</span>`):`<span class="n">${num||kw}</span>`);
+const TYPES=['string','text','integer','number','boolean','date','email','url'];
+const texts={};
+
+function renderSchema(){
+  const box=$('schema'); box.innerHTML='';
+  schema.forEach((r,ri)=>{
+    const el=document.createElement('div'); el.className='res';
+    el.innerHTML=`<div class="res-head"><input id="rn-${ri}" value="${esc(r.name)}" aria-label="Resource name"><span class="res-path">${pathOf(r)}</span><button class="x" title="Remove resource" aria-label="Remove ${esc(r.name)}">×</button></div>
+      <div class="fields"><div class="f"><span class="lock">id</span><span class="lock">integer</span><span></span></div>${r.fields.map((f,fi)=>`
+        <div class="f"><input id="fn-${ri}-${fi}" value="${esc(f.name)}" aria-label="Field name"><select id="ft-${ri}-${fi}" aria-label="Field type">${TYPES.map(t=>`<option${t===f.type?' selected':''}>${t}</option>`).join('')}</select><button class="x" data-f="${fi}" aria-label="Remove field">×</button></div>`).join('')}
+        <button class="addf">+ Add field</button></div>`;
+    const nameIn=el.querySelector('.res-head input');
+    nameIn.onchange=()=>{ const n=camel(nameIn.value); if(!n) return renderSchema(); r.name=n; changed(); };
+    el.querySelector('.res-head .x').onclick=()=>{ schema.splice(ri,1); changed(); };
+    el.querySelectorAll('.f').forEach((row,k)=>{ if(k===0) return; const f=r.fields[k-1];
+      row.querySelector('input').onchange=e=>{ const n=camel(e.target.value); if(n){ f.name=n; } changed(); };
+      row.querySelector('select').onchange=e=>{ f.type=e.target.value; changed(); };
+      row.querySelector('.x').onclick=()=>{ r.fields.splice(k-1,1); changed(); };
+    });
+    el.querySelector('.addf').onclick=()=>{ let n='field',i=1; while(r.fields.some(f=>f.name===n)) n='field'+(++i); r.fields.push({name:n,type:'string'}); changed(); setTimeout(()=>{ const ins=$( `fn-${ri}-${r.fields.length-1}`); ins&&ins.select(); }); };
+    box.appendChild(el);
+  });
+}
+function renderOutputs(){
+  const eps=endpoints(); const box=$('eps'); box.innerHTML='';
+  let g=null;
+  eps.forEach(e=>{
+    if(e.g!==g){ g=e.g; const h=document.createElement('div'); h.className='group'; h.textContent=e.gl||plural(kebab(g)).replace(/-/g,' '); box.appendChild(h); }
+    const row=document.createElement('div'); row.className='ep';
+    row.innerHTML=`<span class="m ${e.ai?'AI':e.m}">${e.ai?'POST ✦':e.m}</span><div style="min-width:0"><code>${esc(e.p)}</code><small>${esc(e.d)}</small></div><button class="ghost">Try</button>`;
+    row.querySelector('button').onclick=()=>tryEp(e); box.appendChild(row);
+  });
+  const rels=relations(schema);
+  $('stats').innerHTML=`<span><b>${schema.length}</b> resources</span><span><b>${eps.length}</b> endpoints</span><span><b>${rels.length}</b> links</span>`;
+  texts.openapi=JSON.stringify(openapi(),null,2); $('openapi').innerHTML=hlJSON(texts.openapi);
+  texts.server=serverCode(); $('server').textContent=texts.server;
+  renderData();
+}
+function renderData(){ texts.data=JSON.stringify(db,null,2); $('data').innerHTML=hlJSON(texts.data); }
+function changed(){ db=seed(schema); renderSchema(); renderOutputs(); save(); }
+
+function sampleBody(r){ const rels=relations(schema); const o={}; r.fields.forEach(f=>o[f.name]=fake(f,4,r.name,rels)); return o; }
+function tryEp(e){
+  if(e.link&&!e.g){ const L=e.link; $('pm').value=L.sample.body?'POST':'GET'; $('pp').value=`/link/${L.slug}${L.sample.path||'/'}`; $('pb').value=L.sample.body?JSON.stringify(L.sample.body,null,2):''; selectTab('play'); refreshKeySelect(L.token); return send(); }
+  const r=schema.find(s=>s.name===e.g); const p=e.p.replace('{id}','1');
+  $('pm').value=e.m; $('pp').value=p;
+  if(e.link){ const L=e.link; $('pm').value=L.sample.body?'POST':'GET'; $('pp').value=`/link/${L.slug}${L.sample.path}`; $('pb').value=L.sample.body?JSON.stringify(L.sample.body,null,2):''; selectTab('play'); refreshKeySelect(L.token); return send(); }
+  if(e.chat){ $('pb').value=JSON.stringify({system:'You are a friendly pizza expert.',messages:[{role:'user',content:'Give my API a catchy name in five words or fewer.'}]},null,2); selectTab('play'); return send(); }
+  $('pb').value=e.ai?JSON.stringify({prompt:aiPrompt(r)},null,2):['POST','PUT'].includes(e.m)?JSON.stringify(sampleBody(r),null,2):e.m==='PATCH'?JSON.stringify({[r.fields[0]?.name||'name']:sampleBody(r)[r.fields[0]?.name]},null,2):'';
+  selectTab('play'); send();
+}
+let busy=false;
+async function send(){
+  if(busy) return; busy=true; $('send').disabled=true;
+  const m=$('pm').value, p=$('pp').value.trim()||'/';
+  if(/\/generate$/.test(p.split('?')[0])){ $('pstat').textContent='Asking Claude to write the record…'; $('pstat').className='status'; $('pout').textContent=''; }
+  if(/^\/?chat\b/.test(p)){ $('pstat').textContent='Waiting for Claude to reply…'; $('pstat').className='status'; $('pout').textContent=''; }
+  const [code,res]=await mock(m,p.startsWith('/')?p:'/'+p,$('pb').value,$('pkey').value);
+  const st=$('pstat'); st.textContent=`${m} ${p} → ${code} ${({200:'OK',201:'Created',204:'No Content',400:'Bad Request',401:'Unauthorized',501:'Not Implemented',403:'Forbidden',404:'Not Found',405:'Method Not Allowed',422:'Unprocessable Entity',429:'Too Many Requests',502:'Bad Gateway',503:'Service Unavailable'})[code]||''}`;
+  st.className='status '+(code<300?'ok':'bad');
+  $('pout').innerHTML=res===null?'<span class="k">(empty body)</span>':hlJSON(JSON.stringify(res,null,2));
+  renderData(); busy=false; $('send').disabled=false;
+}
+function aiPrompt(r){ const m={pizza:'A spicy vegan pizza with a funny name',message:'A user asking for a vegetarian lasagne recipe',generation:'A neon fox in a rainy Tokyo alley',agent:'An agent that books dentist appointments',model:'A small fast model for classification',prompt:'A prompt that turns meeting notes into action items',book:'A cosy mystery set in the Cotswolds',customer:'A regular from Gloucester who orders every Friday'}; return m[r.name]||`A realistic example ${kebab(r.name).replace(/-/g,' ')}`; }
+function aiErr(c){ return ({not_granted:'Claude access was declined for this page. Reload to be asked again.',rate_limited:'Too many AI requests. Wait a moment and try again.',session_expired:'Your session expired. Sign in again.',invalid_json:'The AI reply was not valid JSON. Try again.',refused:'Claude declined this prompt. Try wording it differently.'})[c]||'The AI request failed. Try again.'; }
+function selectTab(t){
+  document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===t));
+  ['endpoints','play','keys','links','openapi','server','data'].forEach(k=>$('t-'+k).hidden=k!==t);
+}
+const mask=k=>k.slice(0,8)+'••••'+k.slice(-4);
+const ago=t=>{ if(!t) return 'never used'; const s=Math.round((Date.now()-t)/1000); return 'used '+(s<60?'just now':s<3600?Math.round(s/60)+' min ago':s<86400?Math.round(s/3600)+' h ago':Math.round(s/86400)+' d ago'); };
+function renderKeys(){
+  const box=$('klist'); box.innerHTML='';
+  keys.slice().reverse().forEach(k=>{
+    const el=document.createElement('div'); el.className='key'+(k.revoked?' revoked':'');
+    el.innerHTML=`<div style="min-width:0"><b></b><span class="pill ${k.scope==='read'?'read':''}">${k.scope==='read'?'read only':'read + write'}</span><br><code></code><div class="meta">Created ${new Date(k.created).toLocaleDateString('en-GB',{day:'numeric',month:'short'})} · ${k.calls} call${k.calls===1?'':'s'} · ${k.revoked?'revoked':ago(k.lastUsed)}</div></div>
+      <div class="row">${k.revoked?'<button class="ghost" data-a="del">Remove</button>':'<button class="ghost" data-a="copy">Copy</button><button class="ghost" data-a="revoke">Revoke</button>'}</div>`;
+    el.querySelector('b').textContent=k.name; el.querySelector('code').textContent=mask(k.key);
+    el.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{
+      const a=b.dataset.a;
+      if(a==='copy') copyText(k.key,null);
+      if(a==='revoke'){ if(b.dataset.sure){ k.revoked=true; saveKeys(); renderKeys(); toast('Key revoked'); } else { b.dataset.sure='1'; b.textContent='Confirm revoke'; b.style.color='var(--del)'; b.style.borderColor='var(--del)'; } }
+      if(a==='del'){ keys=keys.filter(x=>x!==k); saveKeys(); renderKeys(); }
+    });
+    box.appendChild(el);
+  });
+  if(!keys.length) box.innerHTML='<div class="key"><span class="hint">No keys yet. Generate one above.</span></div>';
+  const sel=$('pkey'), cur=sel.value; sel.innerHTML='<option value="">No key</option>'+keys.filter(k=>!k.revoked).map(k=>`<option value="${k.key}">${esc(k.name)} · ${mask(k.key)}</option>`).join('');
+  sel.value=[...sel.options].some(o=>o.value===cur)&&cur?cur:(keys.find(k=>!k.revoked)?.key||'');
+  links.forEach(L=>{ const o=document.createElement('option'); o.value=L.token; o.textContent=L.name+' token · '+L.token.slice(0,6)+'••••'; sel.appendChild(o); });
+  sel.disabled=!requireKey&&!links.length; $('kreq').checked=requireKey;
+  renderSnippets();
+}
+function renderSnippets(){
+  const base=$('kbase').textContent, k=keys.find(x=>!x.revoked&&x.scope==='full')||keys.find(x=>!x.revoked);
+  const key=k?k.key:'YOUR_API_KEY', r=schema[0], path=r?pathOf(r):'/items';
+  const auth=requireKey?` \\\n  -H "Authorization: Bearer ${key}"`:'';
+  const lines=[`# List ${r?plural(r.name):'items'}`,`curl ${base}${path}${auth}`,``];
+  if(aiOn) lines.push(`# Ask the AI`,`curl -X POST ${base}/chat${auth} \\\n  -H "Content-Type: application/json" \\\n  -d '{"messages":[{"role":"user","content":"Hello!"}]}'`,``);
+  lines.push(`// JavaScript`,`const res = await fetch("${base}${path}", {`,requireKey?`  headers: { Authorization: "Bearer ${key}" },`:`  headers: {},`,`});`,`console.log(await res.json());`,``,
+    `# Python`,`import requests`,`r = requests.get("${base}${path}"${requireKey?`, headers={"Authorization": "Bearer ${key}"}`:''})`,`print(r.json())`);
+  texts.snip=lines.join('\n'); $('ksnip').textContent=texts.snip;
+  const full=keys.filter(x=>!x.revoked&&x.scope==='full').map(x=>x.key), read=keys.filter(x=>!x.revoked&&x.scope==='read').map(x=>x.key);
+  texts.env=(requireKey?[full.length?`API_KEYS=${full.join(',')}`:'',read.length?`READ_KEYS=${read.join(',')}`:''].filter(Boolean).join(' ')+' ':'')+(aiOn?'ANTHROPIC_API_KEY=sk-ant-... ':'')+'node server.js';
+  $('kenv').textContent=texts.env; texts.base=base;
+}
+const PROVIDERS=[
+  {id:'anthropic',name:'Claude (Anthropic)',host:/anthropic\.com/,key:/^sk-ant-/,url:'https://api.anthropic.com',auth:'anthropic',sample:{path:'/v1/messages',body:{model:'claude-sonnet-5-5',max_tokens:256,messages:[{role:'user',content:'Hello!'}]}}},
+  {id:'openai',name:'OpenAI',host:/openai\.com/,key:/^sk-(proj-)?[A-Za-z0-9]/,url:'https://api.openai.com',auth:'bearer',sample:{path:'/v1/chat/completions',body:{model:'gpt-5',messages:[{role:'user',content:'Hello!'}]}}},
+  {id:'gemini',name:'Google Gemini',host:/googleapis\.com|generativelanguage/,key:/^AIza/,url:'https://generativelanguage.googleapis.com',auth:'google',sample:{path:'/v1beta/models',body:null}},
+  {id:'mistral',name:'Mistral',host:/mistral\.ai/,key:null,url:'https://api.mistral.ai',auth:'bearer',sample:{path:'/v1/models',body:null}},
+  {id:'groq',name:'Groq',host:/groq\.com/,key:/^gsk_/,url:'https://api.groq.com/openai',auth:'bearer',sample:{path:'/v1/models',body:null}},
+  {id:'xai',name:'xAI',host:/x\.ai/,key:/^xai-/,url:'https://api.x.ai',auth:'bearer',sample:{path:'/v1/models',body:null}},
+  {id:'huggingface',name:'Hugging Face',host:/huggingface\.co/,key:/^hf_/,url:'https://api-inference.huggingface.co',auth:'bearer',sample:{path:'/models',body:null}},
+  {id:'replicate',name:'Replicate',host:/replicate\.com/,key:/^r8_/,url:'https://api.replicate.com',auth:'bearer',sample:{path:'/v1/models',body:null}},
+  {id:'github',name:'GitHub',host:/github\.com/,key:/^(ghp_|github_pat_)/,url:'https://api.github.com',auth:'bearer',sample:{path:'/user',body:null}},
+  {id:'stripe',name:'Stripe',host:/stripe\.com/,key:/^(sk|rk)_(live|test)_/,url:'https://api.stripe.com',auth:'bearer',sample:{path:'/v1/balance',body:null}},
+];
+function detect(src,sec){
+  src=src.trim(); sec=(sec||'').trim();
+  if(/^https?:\/\//i.test(src)||/^[a-z0-9-]+(\.[a-z0-9-]+)+(\/|$)/i.test(src)){
+    let u; try{ u=new URL(/^https?:/i.test(src)?src:'https://'+src); }catch(e){ return {error:'That link does not look right. It should start with https://'}; }
+    if(u.protocol!=='https:'&&u.hostname!=='localhost') return {error:'Use an https:// link so the key is not sent in plain text.'};
+    const pv=PROVIDERS.find(p=>p.host.test(u.hostname));
+    const path=u.pathname.replace(/\/$/,'');
+    return {name:pv?pv.name:u.hostname.replace(/^api\./,''),id:pv?pv.id:camel(u.hostname.replace(/^(api|www)\./,'').split('.')[0]).toLowerCase()||'custom',url:u.origin+(pv?'':path),auth:pv?pv.auth:'bearer',secret:sec,sample:pv?{...pv.sample,path:pv.sample.path}:{path:path&&!pv?'':'/',body:null}};
+  }
+  if(src){
+    if(/\s/.test(src)) return {error:'Paste a single link or key with no spaces.'};
+    const pv=PROVIDERS.find(p=>p.key&&p.key.test(src));
+    if(!pv) return {error:'I could not tell which service this key is for. Paste the API link in the first box and the key in the second.'};
+    return {name:pv.name,id:pv.id,url:pv.url,auth:pv.auth,secret:src,sample:pv.sample};
+  }
+  return null;
+}
+function newToken(len,mode){
+  const set=mode==='upper'?'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789':mode==='lower'?'abcdefghijklmnopqrstuvwxyz0123456789':B62;
+  const lim=256-(256%set.length); let out='';
+  while(out.length<len){ const a=new Uint8Array(len*2); crypto.getRandomValues(a); for(const b of a){ if(b<lim&&out.length<len) out+=set[b%set.length]; } }
+  if(!/[0-9]/.test(out)||!/[A-Za-z]/.test(out)) return newToken(len,mode);
+  return out;
+}
+function showDetect(){
+  const d=detect($('lsrc').value,$('lsec').value), el=$('ldetect');
+  if(!d){ el.textContent=''; return; }
+  if(d.error){ el.innerHTML=''; el.textContent=d.error; el.style.color='var(--err)'; return; }
+  el.style.color=''; el.innerHTML=`Detected <b></b> · forwards to <code></code>${d.secret?' · key '+esc(d.secret.slice(0,6))+'••••':''}`;
+  el.querySelector('b').textContent=d.name; el.querySelector('code').textContent=d.url;
+}
+function renderLinks(){
+  const box=$('llist'); box.innerHTML='';
+  if(!links.length){ box.innerHTML='<div class="link"><span class="hint">No linked APIs yet. Paste a link or key above, or try an example.</span></div>'; return; }
+  links.slice().reverse().forEach(L=>{
+    const el=document.createElement('div'); el.className='link';
+    const envTok='LINK_TOKEN_'+L.slug.toUpperCase().replace(/-/g,'_');
+    const cmd=`${envTok}=${L.token} ${L.env}=${secrets[L.slug]||'paste-your-'+L.id+'-key'} node server.js`;
+    const call=`curl ${$('kbase').textContent}/link/${L.slug}${L.sample.path||'/'}${L.sample.body?' -X POST':''} \\\n  -H "Authorization: Bearer ${L.token}"${L.sample.body?` \\\n  -H "Content-Type: application/json" \\\n  -d '${JSON.stringify(L.sample.body)}'`:''}`;
+    el.innerHTML=`<div class="top"><div><b></b><span class="pill">${L.calls} call${L.calls===1?'':'s'}</span></div><div class="row"><button class="ghost" data-a="copy">Copy token</button><button class="ghost" data-a="new">New token</button><button class="ghost" data-a="del">Remove</button></div></div>
+      <div class="tok"></div>
+      <span class="hint">Forwards <code>/link/${esc(L.slug)}/…</code> to <code class="u"></code>${secrets[L.slug]?' using your pasted key':''}</span>
+      <details><summary class="hint" style="cursor:pointer">How to use it</summary><div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+        <span class="hint">Start your server with:</span><pre class="c1"></pre>
+        <span class="hint">Then call it with your token:</span><pre class="c2"></pre>
+        <div class="row"><button class="ghost" data-a="cmd">Copy start command</button><button class="ghost" data-a="call">Copy example call</button><button class="ghost" data-a="try">Try in playground</button></div></div></details>`;
+    el.querySelector('b').textContent=L.name; el.querySelector('.tok').textContent=L.token; el.querySelector('.u').textContent=L.url;
+    el.querySelector('.c1').textContent=cmd; el.querySelector('.c2').textContent=call;
+    el.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{
+      const a=b.dataset.a;
+      if(a==='copy') copyText(L.token,el.querySelector('.tok'));
+      if(a==='cmd') copyText(cmd,el.querySelector('.c1'));
+      if(a==='call') copyText(call,el.querySelector('.c2'));
+      if(a==='new'){ L.token=newToken(L.token.length,L.mode); saveLinks(); renderLinks(); renderOutputs(); toast('New token made. The old one stops working.'); }
+      if(a==='del'){ if(b.dataset.sure){ links=links.filter(x=>x!==L); delete secrets[L.slug]; saveLinks(); renderLinks(); renderOutputs(); } else { b.dataset.sure='1'; b.textContent='Confirm remove'; b.style.color='var(--del)'; } }
+      if(a==='try') tryEp({link:L});
+    });
+    box.appendChild(el);
+  });
+}
+function refreshKeySelect(extra){
+  const sel=$('pkey'); if(extra&&![...sel.options].some(o=>o.value===extra)){ const o=document.createElement('option'); o.value=extra; o.textContent='Linked API token · '+extra.slice(0,6)+'••••'; sel.appendChild(o); }
+  sel.disabled=false; if(extra) sel.value=extra;
+}
+function projectName(){ return kebab(camel(($('desc').value||'my api').replace(/^(a|an|the)\s+/i,'').split(/\s+/).slice(0,4).join(' ')))||'my-api'; }
+function envFile(){
+  const L=['# Keep this file private. Rename to .env and run: npm start',''];
+  if(requireKey){ L.push('# Your API keys (comma separated)','API_KEYS='+keys.filter(k=>!k.revoked&&k.scope==='full').map(k=>k.key).join(','),'READ_KEYS='+keys.filter(k=>!k.revoked&&k.scope==='read').map(k=>k.key).join(','),''); }
+  if(aiOn) L.push('# Needed for /chat and /generate. Get one at console.anthropic.com','ANTHROPIC_API_KEY=','');
+  links.forEach(l=>L.push('# '+l.name+' ('+l.url+')','LINK_TOKEN_'+l.slug.toUpperCase().replace(/-/g,'_')+'='+l.token,l.env+'=',''));
+  return L.join('\n');
+}
+function readme(){
+  const n=projectName(), eps=endpoints();
+  return [`# ${n}`,``,`${$('desc').value.trim()}`,``,`Generated with API Foundry.`,``,`## Run it`,``,'```bash','npm install',`cp .env.example .env   # then fill in the blanks`,'npm start','```',``,`The API runs at http://localhost:3000.`,``,
+    requireKey?`## Authentication\n\nSend your key on every request:\n\n\`\`\`\nAuthorization: Bearer <your key>\n\`\`\`\n`:'',
+    `## Endpoints`,``,'| Method | Path | What it does |','|---|---|---|',...eps.map(e=>`| ${e.m} | \`${e.p}\` | ${e.d} |`),``,
+    `## Files`,``,`- \`server.js\`: the API (Express, in-memory data)`,`- \`openapi.json\`: OpenAPI 3.1 spec for Swagger or Postman`,`- \`data.json\`: sample records`,`- \`.env.example\`: keys and tokens to copy into \`.env\``,``].join('\n');
+}
+function pkgJson(){ return JSON.stringify({name:projectName(),version:'1.0.0',private:true,description:$('desc').value.trim().slice(0,200),main:'server.js',scripts:{start:'node --env-file=.env server.js'},engines:{node:'>=20.6'},dependencies:{express:'^4.21.2'}},null,2); }
+let dl=null;
+async function saveFile(filename,data){
+  if(!dl) return toast('Downloads only work when this page is opened in Claude.');
+  try{ await dl.save({filename,data}); toast('Saved '+filename); }
+  catch(e){ if(e.code==='declined') return; if(['unavailable','not_granted','capability_disabled','capability_removed'].includes(e.code)){ $('dlhint').textContent='Downloads are not available in this view. Use the Copy buttons instead.'; return; } toast(e.code==='rate_limited'?'A download prompt is already open.':'Download failed. Try again.'); }
+}
+function copyText(txt,el){
+  const fallback=()=>{ if(!el) return toast('Copy failed. Select the text and copy it manually'); const r=document.createRange(); r.selectNodeContents(el); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Selected. Press Ctrl+C or ⌘C to copy'); };
+  try{ navigator.clipboard.writeText(txt).then(()=>toast('Copied'),fallback); }catch(e){ fallback(); }
+}
+function toast(msg){ const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),1600); }
+
+// ---------- wiring ----------
+const EX=['An AI chatbot','An AI image generator','An AI agent platform','A pizza shop','A library with books, authors, members and loans','A gym','A school','A music app','A hotel booking system','A vet clinic','A football league','A recipe site','An app for tracking houseplants and watering','A bakery with cakes, orders and suppliers'];
+EX.forEach(x=>{ const b=document.createElement('button'); b.className='chip'; b.textContent=x; b.onclick=()=>{ $('desc').value=x; $('gen').click(); }; $('examples').appendChild(b); });
+$('aiep').checked=aiOn;
+$('aiep').onchange=e=>{ aiOn=e.target.checked; renderOutputs(); renderSnippets(); save(); };
+$('kgen').onclick=()=>{
+  const scope=$('kscope').value, name=$('kname').value.trim()||(scope==='read'?'Read-only key':'Key '+(keys.length+1));
+  const k={id:Date.now(),name:name.slice(0,60),scope,key:newKeyString(scope),created:Date.now(),calls:0,lastUsed:null,revoked:false};
+  keys.push(k); saveKeys(); $('kname').value=''; $('newkeyval').textContent=k.key; $('newkey').hidden=false; renderKeys(); $('pkey').value=k.key; renderOutputs();
+};
+$('kname').addEventListener('keydown',e=>{ if(e.key==='Enter') $('kgen').click(); });
+$('newkeycopy').onclick=()=>copyText($('newkeyval').textContent,$('newkeyval'));
+$('newkeydone').onclick=()=>{ $('newkey').hidden=true; };
+$('lsrc').addEventListener('input',showDetect); $('lsec').addEventListener('input',showDetect);
+$('lsrc').addEventListener('keydown',e=>{ if(e.key==='Enter') $('lgen').click(); });
+$('lgen').onclick=()=>{
+  const d=detect($('lsrc').value,$('lsec').value);
+  if(!d){ $('ldetect').textContent='Paste a link or an API key first.'; $('ldetect').style.color='var(--err)'; return $('lsrc').focus(); }
+  if(d.error) return showDetect();
+  let slug=kebab(d.id).replace(/[^a-z0-9-]/g,'')||'api', n=1, base=slug; while(links.some(l=>l.slug===slug)) slug=base+'-'+(++n);
+  const mode=$('lcase').value, L={slug,name:d.name+(n>1?' '+n:''),id:d.id,url:d.url,auth:d.auth,env:slug.toUpperCase().replace(/-/g,'_')+'_API_KEY',token:newToken(+$('llen').value,mode),mode,calls:0,sample:d.sample,created:Date.now()};
+  if(d.secret) secrets[slug]=d.secret;
+  links.push(L); saveLinks(); $('lsrc').value=''; $('lsec').value=''; $('ldetect').textContent='';
+  renderLinks(); renderKeys(); renderOutputs(); toast('Token generated for '+L.name);
+};
+[['Claude API link','https://api.anthropic.com/v1/messages'],['OpenAI link','https://api.openai.com/v1'],['Gemini link','https://generativelanguage.googleapis.com'],['Any website API','https://api.example.com/v2']].forEach(([t,u])=>{ const b=document.createElement('button'); b.className='chip'; b.textContent=t; b.onclick=()=>{ $('lsrc').value=u; showDetect(); $('lsec').focus(); }; $('lexamples').appendChild(b); });
+window.claude?.use?.('downloads').then(d=>{ dl=d; if(!d) $('dlhint').textContent='Downloads work when this page is opened in Claude. Use the Copy buttons here.'; }).catch(()=>{});
+document.querySelectorAll('[data-dl]').forEach(b=>b.onclick=()=>{
+  const k=b.dataset.dl;
+  if(k==='openapi') saveFile('openapi.json',texts.openapi);
+  if(k==='readme') saveFile('README.md',readme());
+  if(k==='data') saveFile('data.json',texts.data);
+});
+$('dlzip').onclick=async()=>{
+  if(typeof JSZip==='undefined') return toast('The zip tool did not load. Reload the page and try again.');
+  const b=$('dlzip'); b.disabled=true;
+  try{
+    const z=new JSZip(), dir=z.folder(projectName());
+    dir.file('server.js',serverCode()); dir.file('package.json',pkgJson()); dir.file('openapi.json',texts.openapi);
+    dir.file('data.json',JSON.stringify(seed(schema),null,2)); dir.file('README.md',readme()); dir.file('.env.example',envFile());
+    dir.file('.gitignore','node_modules\n.env\n');
+    await saveFile(projectName()+'.zip',await z.generateAsync({type:'blob'}));
+  }finally{ b.disabled=false; }
+};
+$('kreq').onchange=e=>{ requireKey=e.target.checked; save(); renderKeys(); renderOutputs(); };
+const TYPESET=new Set(['string','text','integer','number','boolean','date','email','url']);
+$('aigen').onclick=async()=>{
+  const d=$('desc').value.trim(); if(!d) return $('desc').focus();
+  const b=$('aigen'); b.disabled=true; $('gen').disabled=true; $('genhint').textContent='Claude is designing your API…';
+  try{
+    const out=await sample.json(`Design the data model for a REST API for: "${d.slice(0,3000)}".
+Reply with only JSON in this shape:
+{"resources":[{"name":"camelCaseSingular","fields":[{"name":"camelCase","type":"string"}]}]}
+Allowed types: string, text, integer, number, boolean, date, email, url.
+Use 2 to 7 resources and 3 to 8 fields each. Do not include an id field. Link resources with integer fields named <resource>Id (e.g. authorId links to author).`,{cache:false});
+    const res=(out&&Array.isArray(out.resources)?out.resources:[]).map(r=>({name:camel(String(r.name||'')),fields:(Array.isArray(r.fields)?r.fields:[]).map(f=>({name:camel(String(f.name||'')),type:TYPESET.has(f.type)?f.type:'string'})).filter(f=>f.name&&f.name!=='id')})).filter(r=>r.name&&r.fields.length);
+    if(!res.length) throw {code:'invalid_json'};
+    schema=res; changed(); selectTab('endpoints'); $('genhint').textContent=`Claude designed ${res.length} resources.`;
+  }catch(e){ $('genhint').textContent=aiErr(e.code); if(e.code==='not_granted'||e.code==='sampling_disabled') b.hidden=true; }
+  b.disabled=false; $('gen').disabled=false;
+};
+window.claude?.use?.('sample').then(s=>{ sample=s; if(s){ $('aigen').hidden=false; $('genhint').textContent='Use AI for anything unusual.'; } }).catch(()=>{});
+$('gen').onclick=()=>{ schema=generate($('desc').value); changed(); selectTab('endpoints'); toast(`Generated ${schema.length} resource${schema.length===1?'':'s'}`); };
+$('desc').addEventListener('keydown',e=>{ if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)) $('gen').click(); });
+$('addres').onclick=()=>{ const n=camel(singular($('newres').value||'')); if(!n) return $('newres').focus(); if(schema.some(r=>r.name===n)) return toast(`${n} already exists`); schema.push({name:n,fields:fieldsFor(n)}); $('newres').value=''; changed(); };
+$('newres').addEventListener('keydown',e=>{ if(e.key==='Enter') $('addres').click(); });
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>selectTab(b.dataset.t));
+$('send').onclick=send; $('pp').addEventListener('keydown',e=>{ if(e.key==='Enter') send(); });
+$('reset').onclick=()=>{ if(busy) return; db=seed(schema); renderData(); $('pout').textContent=''; $('pstat').textContent='Mock data reset.'; $('pstat').className='status'; };
+document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>{
+  const id={snip:'ksnip',env:'kenv',base:'kbase'}[b.dataset.copy]||b.dataset.copy; return copyText(texts[b.dataset.copy],$(id));
+  const txt=texts[b.dataset.copy];
+  const fallback=()=>{ const r=document.createRange(); r.selectNodeContents($(b.dataset.copy)); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Selected. Press Ctrl+C or ⌘C to copy'); };
+  try{ navigator.clipboard.writeText(txt).then(()=>toast('Copied'),fallback); }catch(e){ fallback(); }
+});
+
+renderSchema(); renderOutputs(); renderKeys(); renderLinks();
+const first=schema[0]; if(first){ $('pp').value=pathOf(first); mock('GET',pathOf(first),'',$('pkey').value).then(([c,res])=>{ $('pout').innerHTML=hlJSON(JSON.stringify(res,null,2)); $('pstat').textContent=`GET ${pathOf(first)} → ${c} OK`; $('pstat').className='status ok'; }); }
+})();
+</script>
+
+<script src="../assets/nav.js" defer></script>
+</body></html>
