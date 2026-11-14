@@ -1,0 +1,2084 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Button Dash UK</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: classroom arcade. Account bar → country tiles → subject tabs → topic cards → full-screen tap round with chunky keys. */
+:root{
+  --bg:#EAEFF6; --surface:#FFFFFF; --ink:#14203A; --muted:#566886; --line:#D2DAE7;
+  --key:#FFFFFF; --key-edge:#B4C0D4; --hit:#12996A; --miss:#DC3F36; --gold:#B7860B;
+  --maths:#2D67E6; --english:#C73B7A; --science:#0E9A6E; --geography:#B9770A; --history:#7552DC;
+  --languages:#D04A1F; --computing:#4F5D7A; --uk:#0D7A92;
+  --england:#C8102E; --wales:#00843D; --scotland:#005EB8; --ni:#8C5A12;
+  --f-display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
+  --sc:var(--maths);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D1422; --surface:#162037; --ink:#E9EEF8; --muted:#97A6BF; --line:#283651;
+  --key:#1D2A44; --key-edge:#080D18; --hit:#1FB87F; --miss:#F05A50; --gold:#E2B33C;
+  --maths:#4C80F2; --english:#DF5893; --science:#22B184; --geography:#D6931F; --history:#8E70EC;
+  --languages:#E8693A; --computing:#7584A6; --uk:#1E95AE;
+  --england:#E23A50; --wales:#18A55A; --scotland:#2C83E0; --ni:#B67A26; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0D1422; --surface:#162037; --ink:#E9EEF8; --muted:#97A6BF; --line:#283651;
+  --key:#1D2A44; --key-edge:#080D18; --hit:#1FB87F; --miss:#F05A50; --gold:#E2B33C;
+  --maths:#4C80F2; --english:#DF5893; --science:#22B184; --geography:#D6931F; --history:#8E70EC;
+  --languages:#E8693A; --computing:#7584A6; --uk:#1E95AE;
+  --england:#E23A50; --wales:#18A55A; --scotland:#2C83E0; --ni:#B67A26; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5}
+.wrap{max-width:1080px;margin:0 auto;padding-inline:16px;padding-block:20px 48px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--sc);outline-offset:3px}
+h2.sec{font-family:var(--f-display);font-weight:800;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:26px 0 10px}
+
+/* Account */
+.account{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-bottom:18px}
+.who{display:flex;align-items:center;gap:10px;min-width:0}
+.who img{width:36px;height:36px;border-radius:50%;flex:none;background:var(--line)}
+.who b{display:block;line-height:1.2}
+.who small{color:var(--muted);font-size:.82rem}
+.mystats{display:flex;gap:16px;font-variant-numeric:tabular-nums;color:var(--muted);font-size:.85rem}
+.mystats b{color:var(--ink);font-family:var(--f-display);font-size:1.1rem;margin-right:4px}
+
+.mast{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:12px 24px}
+.brand{font-family:var(--f-display);font-weight:800;font-size:clamp(2.2rem,6vw,3.6rem);line-height:.95;letter-spacing:-.03em;margin:0;text-wrap:balance}
+.brand span{color:var(--sc);transition:color .25s}
+.tag{margin:6px 0 0;color:var(--muted);max-width:50ch}
+.seg{display:inline-flex;border:2px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;padding:8px 12px;font-weight:700;font-variant-numeric:tabular-nums}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.seglabel{display:block;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;font-weight:700}
+
+/* Countries */
+.countries{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media (max-width:720px){.countries{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.country{position:relative;text-align:left;border:0;border-radius:16px;padding:14px 14px 12px;background:var(--c);color:#fff;display:flex;flex-direction:column;gap:2px;min-height:104px;box-shadow:0 5px 0 color-mix(in srgb,var(--c) 55%,#000);transition:transform .08s}
+.country:active{transform:translateY(4px);box-shadow:0 1px 0 color-mix(in srgb,var(--c) 55%,#000)}
+.country b{font-family:var(--f-display);font-weight:800;font-size:1.35rem;line-height:1.1}
+.country i{font-style:normal;opacity:.9;font-size:.9rem}
+.country small{margin-top:auto;font-size:.75rem;opacity:.85}
+.country[aria-pressed="true"]{outline:3px solid var(--ink);outline-offset:3px}
+
+.tabs{display:flex;flex-wrap:wrap;gap:8px}
+.tab{display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:12px;border:2px solid var(--line);background:var(--surface);font-weight:700}
+.tab i{width:12px;height:12px;border-radius:4px;background:var(--c)}
+.tab[aria-selected="true"]{background:var(--c);border-color:var(--c);color:#fff}
+.tab[aria-selected="true"] i{background:#fff}
+
+.packhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px;margin:22px 0 12px}
+.packhead h3{font-family:var(--f-display);font-weight:800;font-size:1.8rem;margin:0;color:var(--sc);line-height:1.1}
+.packhead span{color:var(--muted)}
+.topics{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.topic{background:var(--surface);border:2px solid var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.topic h4{font-family:var(--f-display);font-weight:800;font-size:1.25rem;margin:0;line-height:1.15}
+.topic p{margin:0;color:var(--muted);font-size:.93rem}
+.meta{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.meta .top{color:var(--gold);font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
+.chip{min-width:44px;padding:7px 10px;border-radius:10px;border:2px solid var(--key-edge);border-bottom-width:4px;background:var(--key);font-family:var(--f-display);font-weight:800;font-variant-numeric:tabular-nums}
+.chip:hover{border-color:var(--sc)}
+.chip:active{transform:translateY(2px);border-bottom-width:2px}
+.play{margin-top:auto;align-self:flex-start;padding:9px 20px;border-radius:12px;border:0;background:var(--sc);color:#fff;font-family:var(--f-display);font-weight:800;font-size:1.05rem;box-shadow:0 4px 0 color-mix(in srgb,var(--sc) 60%,#000)}
+.play:active{transform:translateY(3px);box-shadow:0 1px 0 color-mix(in srgb,var(--sc) 60%,#000)}
+
+/* Game */
+#game{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);overflow:auto}
+.bar{display:flex;align-items:center;gap:12px;padding:12px 16px;max-width:1040px;width:100%;margin:0 auto}
+.back{border:2px solid var(--line);background:var(--surface);border-radius:10px;padding:6px 12px;font-weight:700}
+.gtitle{font-family:var(--f-display);font-weight:800;font-size:1.05rem;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat{display:flex;flex-direction:column;align-items:center;line-height:1;min-width:44px}
+.stat b{font-family:var(--f-display);font-weight:800;font-size:1.6rem;font-variant-numeric:tabular-nums}
+.stat small{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+.bump{animation:bump .25s}
+@keyframes bump{50%{transform:scale(1.25);color:var(--hit)}}
+.timer{height:10px;background:var(--line);max-width:1008px;width:calc(100% - 32px);margin:0 auto;border-radius:99px;overflow:hidden}
+.timer div{height:100%;background:var(--sc);border-radius:99px;width:100%}
+.timer.low div{background:var(--miss)}
+.stage{flex:1;display:flex;flex-direction:column;align-items:center;gap:clamp(16px,4vh,30px);padding:clamp(16px,4vh,40px) 16px 24px;max-width:860px;width:100%;margin:0 auto}
+.q{font-family:var(--f-display);font-weight:800;font-size:clamp(2rem,7vw,3.8rem);line-height:1.08;text-align:center;letter-spacing:-.02em;text-wrap:balance;margin:0;font-variant-numeric:tabular-nums}
+.q.long{font-size:clamp(1.35rem,4.2vw,2.3rem)}
+.qhint{margin:-8px 0 0;color:var(--muted);text-align:center;font-weight:700;font-size:.85rem;letter-spacing:.06em;text-transform:uppercase}
+.keys{display:grid;grid-template-columns:repeat(var(--cols,4),minmax(0,1fr));gap:10px;width:100%}
+.key{min-height:clamp(58px,10vh,84px);padding:8px 6px;border-radius:14px;border:2px solid var(--key-edge);border-bottom-width:7px;background:var(--key);font-family:var(--f-display);font-weight:800;font-size:clamp(1.25rem,3.6vw,1.9rem);font-variant-numeric:tabular-nums;line-height:1.1;overflow-wrap:anywhere;transition:transform .06s,border-color .1s}
+.keys.text .key{font-size:clamp(1rem,2.8vw,1.3rem)}
+.key:hover{border-color:var(--sc)}
+.key:active{transform:translateY(4px);border-bottom-width:3px}
+.key.hit{background:var(--hit);border-color:color-mix(in srgb,var(--hit) 65%,#000);color:#fff}
+.key.miss{background:var(--miss);border-color:color-mix(in srgb,var(--miss) 65%,#000);color:#fff;animation:shake .35s}
+.key.reveal{outline:3px dashed var(--hit);outline-offset:2px}
+@keyframes shake{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+
+.overlay{position:absolute;inset:0;display:grid;place-items:center;background:color-mix(in srgb,var(--bg) 90%,transparent);padding:16px;overflow:auto}
+.count{font-family:var(--f-display);font-weight:800;font-size:clamp(5rem,22vw,10rem);color:var(--sc);animation:pop .55s}
+@keyframes pop{from{transform:scale(.4);opacity:.2}}
+.card{background:var(--surface);border:2px solid var(--line);border-radius:22px;padding:24px 22px;width:min(440px,100%);text-align:center;display:flex;flex-direction:column;gap:12px}
+.card h2{font-family:var(--f-display);font-weight:800;font-size:2rem;margin:0}
+.big{font-family:var(--f-display);font-weight:800;font-size:5rem;line-height:1;color:var(--sc);font-variant-numeric:tabular-nums}
+.facts{display:flex;justify-content:center;gap:24px;color:var(--muted);font-variant-numeric:tabular-nums}
+.facts b{display:block;color:var(--ink);font-family:var(--f-display);font-size:1.4rem}
+.newbest{font-weight:700;color:var(--hit)}
+.board{text-align:left;border-top:2px solid var(--line);padding-top:12px}
+.board h3{margin:0 0 8px;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.board ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.board li{display:grid;grid-template-columns:22px 26px 1fr auto;align-items:center;gap:8px;font-variant-numeric:tabular-nums}
+.board li img{width:26px;height:26px;border-radius:50%}
+.board li .n{color:var(--muted);font-weight:700}
+.board li .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.board li.me .nm{font-weight:700}
+.board li b{font-family:var(--f-display)}
+.board li:first-child .n{color:var(--gold)}
+.note{font-size:.82rem;color:var(--muted);margin:0}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.ghost{padding:9px 18px;border-radius:12px;border:2px solid var(--line);background:transparent;font-weight:700}
+
+.controls{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:end}
+.levels{display:flex;gap:8px}
+.lvl{padding:8px 16px;border-radius:14px;border:2px solid var(--line);background:var(--surface);text-align:left;display:flex;flex-direction:column;line-height:1.2}
+.lvl b{font-family:var(--f-display);font-weight:800;font-size:1.15rem}
+.lvl small{color:var(--muted);font-size:.78rem}
+.lvl[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.lvl[aria-pressed="true"] small{color:inherit;opacity:.8}
+.acctright{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.authform{display:flex;flex-wrap:wrap;gap:10px;align-items:end;background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:14px;margin-bottom:16px}
+.authform label{display:flex;flex-direction:column;font-size:.78rem;font-weight:700;color:var(--muted);gap:4px;flex:1 1 200px;min-width:0}
+.authform input{font:inherit;font-size:1rem;padding:8px 10px;border-radius:10px;border:2px solid var(--line);background:var(--bg);color:var(--ink)}
+.authform input:focus-visible{outline:3px solid var(--sc);outline-offset:1px}
+.authmsg{flex-basis:100%;margin:0;font-size:.88rem;color:var(--muted)}
+.mtabs{display:flex;flex-wrap:wrap;gap:6px;flex-basis:100%}
+.mtab{padding:7px 12px;border-radius:99px;border:2px solid var(--line);background:var(--bg);font-weight:700;font-size:.9rem}
+.mtab[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.oauth{padding:12px 22px;border-radius:12px;border:2px solid var(--ink);background:var(--surface);font-family:var(--f-display);font-weight:800;font-size:1.05rem}
+.dob{border:0;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:8px;flex-basis:100%;min-width:0}
+.dob legend{font-size:.78rem;font-weight:700;color:var(--muted);padding:0;margin-bottom:4px}
+.dob label{flex:1 1 90px}
+.newp select{font:inherit;font-size:1rem;padding:8px 10px;border-radius:10px;border:2px solid var(--line);background:var(--bg);color:var(--ink);width:100%}
+.authmsg.err{color:var(--miss);font-weight:700}
+.authmsg.ok{color:var(--hit);font-weight:700}
+.panel-h{margin:0;font-family:var(--f-display);font-weight:800;font-size:1.25rem;flex-basis:100%}
+.players{display:flex;flex-wrap:wrap;gap:8px;flex-basis:100%}
+.pl{display:flex;align-items:center;gap:8px;padding:5px 14px 5px 5px;border-radius:99px;border:2px solid var(--line);background:var(--bg);font-weight:700}
+.pl img{width:30px;height:30px;border-radius:50%}
+.pl.plain{padding-left:14px}
+.pl[aria-pressed="true"]{border-color:var(--sc)}
+.newp{display:flex;flex-wrap:wrap;gap:10px;align-items:end;flex-basis:100%}
+.newp label{display:flex;flex-direction:column;font-size:.78rem;font-weight:700;color:var(--muted);gap:4px;flex:1 1 180px;min-width:0}
+.newp input{font:inherit;font-size:1rem;padding:8px 10px;border-radius:10px;border:2px solid var(--line);background:var(--bg);color:var(--ink)}
+#authBtn{margin:0;align-self:center;font-size:1.05rem;padding:11px 22px}
+#createBtn{align-self:center;font-size:1.05rem;padding:10px 18px;border-color:var(--sc);font-family:var(--f-display);font-weight:800}
+.linkbtn{border:0;background:none;padding:0;color:var(--sc);font-weight:700;text-decoration:underline;text-underline-offset:3px}
+
+/* Lessons */
+#lesson{position:fixed;inset:0;background:var(--bg);overflow:auto;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+.lessonbody{max-width:860px;width:100%;margin:0 auto;padding:8px 16px 120px;display:flex;flex-direction:column;gap:16px}
+.leyebrow{margin:0;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.ltitle{font-family:var(--f-display);font-weight:800;font-size:clamp(1.8rem,5vw,2.6rem);margin:0;color:var(--sc);line-height:1.05;text-wrap:balance}
+.lintro{background:var(--surface);border:2px solid var(--line);border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.lintro p{margin:0;max-width:65ch;font-size:1.05rem}
+.lintro h3{margin:0;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.lex{display:flex;flex-wrap:wrap;gap:8px}
+.lex span{background:var(--bg);border:2px solid var(--line);border-radius:10px;padding:6px 12px;font-family:var(--f-display);font-weight:800;font-variant-numeric:tabular-nums}
+.lfacts-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px}
+.lfacts-head h3{margin:0;font-family:var(--f-display);font-weight:800;font-size:1.25rem}
+.ltoggle{display:flex;gap:8px;align-items:center;font-weight:700;color:var(--muted);font-size:.92rem;cursor:pointer}
+.ltoggle input{width:18px;height:18px;accent-color:var(--sc)}
+.facts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.fact{background:var(--surface);border:2px solid var(--line);border-radius:12px;padding:10px 12px;text-align:left;display:flex;flex-direction:column;gap:4px;min-width:0;font:inherit;color:inherit}
+.fact .fq{color:var(--muted);font-size:.92rem;overflow-wrap:anywhere}
+.fact .fa{font-family:var(--f-display);font-weight:800;font-size:1.15rem;overflow-wrap:anywhere;border-radius:6px}
+.hideans .fact .fa{color:transparent;background:var(--line)}
+.hideans .fact.shown .fa{color:var(--ink);background:transparent}
+.lnote{color:var(--muted);margin:0}
+.lfoot{position:fixed;left:0;right:0;bottom:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:2px solid var(--line);display:flex;justify-content:center;gap:10px}
+.lfoot .play{margin:0;font-size:1.15rem;padding:12px 28px}
+.chip[aria-pressed="true"]{background:var(--sc);color:#fff;border-color:var(--sc)}
+.cardbtns{display:flex;gap:8px;align-items:center;margin-top:auto;flex-wrap:wrap}
+.cardbtns .play{margin-top:0}
+.learn{padding:8px 16px;border-radius:12px;border:2px solid var(--sc);background:transparent;font-family:var(--f-display);font-weight:800;color:var(--ink)}
+.chips + .learn{align-self:flex-start;margin-top:4px}
+
+/* Roles, schools, homework */
+.rolenav{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 18px;padding:10px;border-radius:16px;background:var(--surface);border:2px solid var(--line)}
+.rolebadge{font-size:.72rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:0 6px}
+.navbtn{padding:8px 14px;border-radius:12px;border:2px solid transparent;background:transparent;font-weight:800;font-family:var(--f-display)}
+.navbtn[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+#roleView{display:flex;flex-direction:column;gap:14px}
+#roleView[hidden]{display:none}
+.rcard{background:var(--surface);border:2px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.rtitle{margin:0;font-family:var(--f-display);font-weight:800;font-size:1.35rem;line-height:1.15}
+.rsub{margin:0;color:var(--muted);font-size:.93rem}
+.rmini{margin:6px 0 0;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.rform{display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.rform .play,.rcard>.play,.rcard>.ghost{margin:0;align-self:flex-start}
+.fld{display:flex;flex-direction:column;gap:4px;font-size:.8rem;font-weight:700;color:var(--muted);width:100%;max-width:420px}
+.fld input,.fld select,.picker select{font:inherit;font-size:1rem;padding:9px 11px;border-radius:10px;border:2px solid var(--line);background:var(--bg);color:var(--ink);font-weight:400}
+.fldlabel{font-size:.8rem;font-weight:700;color:var(--muted)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.picker{display:flex;flex-direction:column;gap:8px;width:100%}
+.topiclist{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px;max-height:260px;overflow:auto;padding:8px;border:2px solid var(--line);border-radius:12px;background:var(--bg)}
+.tick{display:flex;gap:8px;align-items:center;font-size:.93rem;cursor:pointer}
+.tick input{width:18px;height:18px;accent-color:var(--sc);flex:none}
+.chosen{display:flex;flex-wrap:wrap;gap:6px}
+.school{border:2px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px;background:var(--bg)}
+.schoolhead{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline}
+.schoolhead b{font-family:var(--f-display);font-size:1.1rem}
+.loc{color:var(--muted);font-size:.9rem}
+.maplink{font-weight:700;color:var(--sc)}
+.map{width:100%;height:200px;border:0;border-radius:10px;background:var(--line)}
+.schoollist{display:flex;flex-direction:column;gap:10px}
+.bigcode{font-family:var(--f-display);font-weight:800;font-size:2rem;letter-spacing:.18em;color:var(--sc);font-variant-numeric:tabular-nums}
+.bigcode.sm{font-size:1.3rem}
+.codeline{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;color:var(--muted);font-weight:700}
+.tablewrap{overflow-x:auto;width:100%}
+.rtable{border-collapse:collapse;width:100%;font-size:.93rem;font-variant-numeric:tabular-nums}
+.rtable th{text-align:left;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:6px 8px;border-bottom:2px solid var(--line)}
+.rtable td{padding:8px;border-bottom:1px solid var(--line)}
+.st{font-weight:700;color:var(--muted)}.st.ok{color:var(--hit)}.st.bad{color:var(--miss)}
+.ghost.danger{color:var(--miss);border-color:var(--miss)}
+.hwlist{display:flex;flex-direction:column;gap:10px}
+.hwitem{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:12px 14px;border-radius:14px;border:2px solid var(--line);background:var(--bg)}
+.hwitem>div:first-child{display:flex;flex-direction:column;min-width:0}
+.hwitem .play{margin:0}
+.hwitem.done{border-color:var(--hit)}.hwitem.late{border-color:var(--miss)}
+.hwstate{font-weight:800;font-family:var(--f-display)}
+.hwitem.done .hwstate{color:var(--hit)}.hwitem.late .hwstate{color:var(--miss)}
+@media (max-width:560px){.hwitem{grid-template-columns:1fr auto}.hwitem .play{grid-column:1/-1}}
+.statrow{display:flex;align-items:baseline;gap:10px}.statbox{font-family:var(--f-display);font-weight:800;font-size:2.4rem}.statlbl{color:var(--muted);font-weight:700}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.kpi{border:2px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;background:var(--bg)}
+.kpi b{font-family:var(--f-display);font-size:1.5rem;font-variant-numeric:tabular-nums}.kpi span{color:var(--muted);font-size:.85rem}
+.bars{display:flex;flex-direction:column;gap:6px}
+.barrow{display:grid;grid-template-columns:minmax(80px,140px) 1fr 44px;gap:10px;align-items:center;font-size:.9rem}
+.bartrack{height:12px;border-radius:99px;background:var(--line);overflow:hidden}
+.barfill{height:100%;border-radius:99px}.barfill.hi{background:var(--hit)}.barfill.mid{background:var(--gold)}.barfill.lo{background:var(--miss)}
+.barpct{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+.recent{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.recent li{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:6px}
+ul.plain{margin:0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:4px;font-weight:700}
+.dobwide{max-width:420px}
+.rolepick{display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex-basis:100%}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:12px;font-weight:700;z-index:50;max-width:calc(100% - 32px);text-align:center}
+/* bite-size quiz */
+#hw{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;overflow:auto;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.dots{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;padding:4px 16px}
+.dot{width:14px;height:14px;border-radius:50%;background:var(--line)}
+.dot.now{outline:3px solid var(--sc);outline-offset:2px}.dot.ok{background:var(--hit)}.dot.bad{background:var(--miss)}
+.hwstage{max-width:760px;width:100%;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+.hwcard{background:var(--surface);border:2px solid var(--line);border-radius:22px;padding:22px 18px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.hwsubject{margin:0;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;text-align:center}
+.hwshown{margin:0;font-family:var(--f-display);font-weight:800;font-size:1.5rem;color:var(--sc)}
+#hwAnswer{width:100%}
+.tfkeys .key{font-size:1.4rem}
+.typeans{display:flex;gap:10px;width:100%;justify-content:center;flex-wrap:wrap}
+.typeans input{font:inherit;font-family:var(--f-display);font-weight:800;font-size:1.6rem;padding:10px 14px;border-radius:14px;border:2px solid var(--key-edge);border-bottom-width:5px;background:var(--key);color:var(--ink);width:min(320px,100%);text-align:center}
+.typeans .play{margin:0}
+.keypad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-width:300px;margin:12px auto 0}
+.kp{min-height:54px;border-radius:12px;border:2px solid var(--key-edge);border-bottom-width:5px;background:var(--key);font-family:var(--f-display);font-weight:800;font-size:1.4rem}
+.kp:active{transform:translateY(3px);border-bottom-width:2px}
+.hwfeed{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:14px 16px;border-radius:16px;border:2px solid var(--line);background:var(--surface)}
+.hwfeed.good{border-color:var(--hit)}.hwfeed.bad{border-color:var(--miss)}
+.hwfeed b{font-family:var(--f-display);font-size:1.2rem}.hwfeed.good b{color:var(--hit)}.hwfeed.bad b{color:var(--miss)}
+.hwfeed span{flex:1 1 200px}
+.hwfeed .play{margin:0 0 0 auto}
+@media (max-width:480px){ .keys{gap:8px} .stat b{font-size:1.3rem} .mystats{gap:10px} }
+@media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important} }
+</style>
+
+<div class="wrap" id="home">
+  <div class="account">
+    <div class="who" id="who"><img id="avatar" alt=""><div><b id="whoName">Guest player</b><small id="whoNote">Scores are saved on this device</small></div></div>
+    <div class="acctright">
+      <div class="mystats" id="mystats" hidden><span><b id="stGames">0</b>games</span><span><b id="stCorrect">0</b>correct</span><span><b id="stBests">0</b>bests</span></div>
+      <button class="play" id="authBtn" type="button">Sign in</button>
+      <button class="ghost" id="createBtn" type="button">Create account</button>
+    </div>
+  </div>
+  <div class="authform" id="acctPanel" hidden role="region" aria-label="Account"></div>
+  <nav class="rolenav" id="roleNav" hidden aria-label="Menu"></nav>
+  <div id="roleView" hidden></div>
+  <div id="viewPlay">
+  <header class="mast">
+    <div>
+      <h1 class="brand">Button<span> Dash</span> UK</h1>
+      <p class="tag">Choose primary or secondary, pick your country or a subject, then hit the right button as many times as you can before the clock runs out.</p>
+    </div>
+    <div class="controls">
+      <div><span class="seglabel">School</span><div class="levels" id="levels"></div></div>
+      <div><span class="seglabel">Round length</span><div class="seg" id="round"></div></div>
+    </div>
+  </header>
+
+  <h2 class="sec">Choose your country</h2>
+  <div class="countries" id="countries"></div>
+
+  <h2 class="sec">Or pick a subject</h2>
+  <nav class="tabs" role="tablist" id="tabs"></nav>
+
+  <div class="packhead"><h3 id="packName"></h3><span id="packNote"></span></div>
+  <section class="topics" id="topics"></section>
+  </div>
+</div>
+
+<div id="hw" hidden>
+  <div class="bar">
+    <button class="back" id="hwQuit" type="button">✕ Stop</button>
+    <div class="gtitle" id="hwTitle"></div>
+    <div class="stat"><b id="hwStars">0</b><small>Stars</small></div>
+  </div>
+  <div class="dots" id="hwDots" aria-label="Progress"></div>
+  <main class="hwstage">
+    <div class="hwcard">
+      <p class="hwsubject" id="hwSubject"></p>
+      <p class="qhint" id="hwHint"></p>
+      <h2 class="q" id="hwQ"></h2>
+      <p class="hwshown" id="hwShown" hidden></p>
+      <div id="hwAnswer"></div>
+    </div>
+    <div class="hwfeed" id="hwFeed" hidden role="status"><b id="hwFeedT"></b><span id="hwFeedA"></span><button class="play" id="hwNext" type="button">Next</button></div>
+  </main>
+  <div class="overlay" id="hwEnd" hidden>
+    <div class="card">
+      <h2 id="hwEndT">Homework done!</h2>
+      <div class="big" id="hwEndStars"></div>
+      <p id="hwEndScore"></p>
+      <p class="note" id="hwEndNote"></p>
+      <p class="note" id="hwEndSaved"></p>
+      <div class="row" style="justify-content:center"><button class="play" id="hwDone" type="button">Done</button></div>
+    </div>
+  </div>
+</div>
+<div id="toast" hidden role="status"></div>
+
+<div id="lesson" hidden>
+  <div class="bar">
+    <button class="back" id="lessonBack" type="button">← Topics</button>
+    <div class="gtitle" id="ltop">Lesson</div>
+  </div>
+  <main class="lessonbody">
+    <div><p class="leyebrow" id="lkicker"></p><h2 class="ltitle" id="lname"></h2></div>
+    <section class="lintro" id="lintro"></section>
+    <div class="chips" id="lvariants" hidden></div>
+    <div class="lfacts-head" id="lfhead"><h3>Key facts</h3><label class="ltoggle" for="lhide"><input type="checkbox" id="lhide"> Hide answers to test yourself</label></div>
+    <div class="facts-grid" id="lfacts"></div>
+    <p class="lnote" id="lnote" hidden>This topic makes brand-new questions every time, so there is no fixed list to learn. Use the method and examples above, then try the quiz.</p>
+  </main>
+  <div class="lfoot"><button class="play" id="lstart" type="button">Start quiz</button></div>
+</div>
+
+<div id="game" hidden>
+  <div class="bar">
+    <button class="back" id="quit" type="button">← Topics</button>
+    <div class="gtitle" id="gtitle"></div>
+    <div class="stat"><b id="score">0</b><small>Score</small></div>
+    <div class="stat"><b id="secs">60</b><small id="secsLabel">Secs</small></div>
+    <button class="back" id="done" type="button" hidden>Finish</button>
+  </div>
+  <div class="timer" id="timer"><div id="tfill"></div></div>
+  <main class="stage">
+    <h2 class="q" id="q"></h2>
+    <p class="qhint" id="qhint" hidden></p>
+    <div class="keys" id="keys"></div>
+  </main>
+  <div class="overlay" id="countdown" hidden><div class="count" id="countn">3</div></div>
+  <div class="overlay" id="end" hidden>
+    <div class="card">
+      <h2 id="endTitle">Time's up!</h2>
+      <div class="big" id="final">0</div>
+      <div class="facts">
+        <div><b id="acc">0%</b>accuracy</div>
+        <div><b id="best">0</b>your best</div>
+      </div>
+      <div class="newbest" id="newbest" hidden>New personal best!</div>
+      <div class="board" id="board" hidden><h3 id="boardTitle">Top players</h3><ol id="boardList"></ol></div>
+      <p class="note" id="endNote" hidden></p>
+      <div class="row">
+        <button class="play" id="again" type="button">Play again</button>
+        <button class="ghost" id="other" type="button">Choose topic</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ==========================================================
+   ONLINE LEADERBOARD SETUP (optional, for your own website)
+   Paste your Supabase project URL and anon (public) key here.
+   Leave both empty and the game still works, saving scores
+   on each player's own device.
+   ========================================================== */
+const SUPABASE_URL = '';
+const SUPABASE_ANON_KEY = '';
+
+(() => {
+const rand=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const range=(a,b,s=1)=>{const r=[];for(let i=a;i<=b;i+=s)r.push(i);return r};
+function near(a,step,lo,hi,count,extra=[]){
+  const s=new Set([a]);extra.forEach(v=>{if(v>=lo&&v<=hi&&s.size<count)s.add(v)});
+  let t=0;while(s.size<count&&t++<600){const v=a+step*rand(-9,9);if(v>=lo&&v<=hi)s.add(v)}
+  return [...s].sort((x,y)=>x-y);
+}
+const withItems=(fn,items)=>{fn.items=items;return fn};
+const fixed=(items,choices,hint)=>withItems(()=>{const [q,a]=pick(items);return{q,a,opts:choices,hint}},items.map(([q,a])=>[q,a]));
+const pool=(items,hint,n=6)=>withItems(()=>{const [q,a]=pick(items);
+  const others=shuffle([...new Set(items.map(i=>String(i[1])).filter(x=>x!==String(a)))]).slice(0,n-1);
+  return{q,a,opts:shuffle([a,...others]),hint}},items.map(([q,a])=>[q,a]));
+const explicit=(items,hint)=>withItems(()=>{const [q,a,w]=pick(items);return{q,a,opts:shuffle([a,...w]),hint}},items.map(([q,a])=>[q,a]));
+
+/* ---------- Maths generators ---------- */
+const table=n=>withItems(()=>{const k=rand(1,12);return{q:`${k} × ${n}`,a:k*n,opts:range(1,12).map(i=>i*n)}},range(1,12).map(k=>[`${k} × ${n}`,k*n]));
+const mixedTable=()=>{const n=rand(2,12),k=rand(1,12),a=n*k;return{q:`${k} × ${n}`,a,opts:near(a,1,1,144,12,[(k+1)*n,(k-1)*n,k*(n+1),k*(n-1),a+10,a-10])}};
+const divide=n=>withItems(()=>{const k=rand(1,12);return{q:`${k*n} ÷ ${n}`,a:k,opts:range(1,12)}},range(1,12).map(k=>[`${k*n} ÷ ${n}`,k]));
+const mixedDivide=()=>divide(rand(2,12))();
+const bond10=withItems(()=>{const k=rand(0,9);return{q:`${k} + ? = 10`,a:10-k,opts:range(1,10)}},range(0,10).map(k=>[`${k} + ${10-k}`,10]));
+const bond20=withItems(()=>{const k=rand(0,19);return{q:`${k} + ? = 20`,a:20-k,opts:range(1,20)}},range(0,10).map(k=>[`${k} + ${20-k}`,20]));
+const bond100=()=>{const k=rand(1,19)*5;return{q:`${k} + ? = 100`,a:100-k,opts:near(100-k,5,5,95,12)}};
+const doubles=()=>{const k=rand(2,50);return{q:`Double ${k}`,a:2*k,opts:near(2*k,2,2,100,12,[2*k+10,2*k-10])}};
+const halves=()=>{const k=rand(1,50)*2;return{q:`Half of ${k}`,a:k/2,opts:near(k/2,1,1,50,12,[k/2+5,k/2-5])}};
+const squares=withItems(()=>{const k=rand(1,12);return{q:`${k}²`,a:k*k,opts:range(1,12).map(i=>i*i),hint:'square number'}},range(1,12).map(k=>[`${k}²`,k*k]));
+const add20=()=>{const a=rand(1,12),b=rand(1,8);return{q:`${a} + ${b}`,a:a+b,opts:near(a+b,1,2,20,12)}};
+const add100=()=>{const a=rand(11,79),b=rand(5,20),s=a+b;return{q:`${a} + ${b}`,a:s,opts:near(s,1,1,100,12,[s+10,s-10])}};
+const sub100=()=>{const a=rand(25,99),b=rand(5,24),s=a-b;return{q:`${a} − ${b}`,a:s,opts:near(s,1,1,99,12,[s+10,s-10])}};
+const fracOf=()=>{const d=pick([2,3,4,5,10]),k=rand(1,12);return{q:`1/${d} of ${d*k}`,a:k,opts:range(1,12)}};
+function roman(n){const m=[[100,'C'],[90,'XC'],[50,'L'],[40,'XL'],[10,'X'],[9,'IX'],[5,'V'],[4,'IV'],[1,'I']];let s='';for(const [v,r] of m)while(n>=v){s+=r;n-=v}return s}
+const romanRead=()=>{const n=rand(1,100);return{q:roman(n),a:n,opts:near(n,1,1,100,12,[n+10,n-10,n+5]),hint:'roman numeral → number'}};
+const romanWrite=()=>{const n=rand(1,50);return{q:String(n),a:roman(n),opts:shuffle(near(n,1,1,50,6,[n+10,n-1,n+1]).map(roman)),hint:'number → roman numeral'}};
+const placeValue=()=>{const ds=shuffle(range(1,9)).slice(0,4),N=+ds.join(''),p=rand(0,3),d=ds[p],v=d*10**(3-p);
+  return{q:`The ${d} in ${N.toLocaleString('en-GB')}`,a:v.toLocaleString('en-GB'),opts:[d*1000,d*100,d*10,d].map(x=>x.toLocaleString('en-GB')),hint:'what is it worth?'}};
+const measures=pool([['Days in a week',7],['Months in a year',12],['Hours in a day',24],['Minutes in an hour',60],['Weeks in a year',52],
+  ['Days in a year',365],['Days in a leap year',366],['Grams in a kilogram',1000],['Centimetres in a metre',100],['Millimetres in a centimetre',10],
+  ['Metres in a kilometre',1000],['Millilitres in a litre',1000],['Days in February (not a leap year)',28],['Years in a century',100],['Years in a decade',10]],'how many?');
+
+const tableChips=(f,mixed)=>[...range(2,12).map(n=>({label:String(n),key:String(n),gen:f(n)})),{label:'Mixed',key:'mix',gen:mixed}];
+
+/* ---------- Subjects ---------- */
+/* ---------- Secondary maths generators ---------- */
+const fmt=n=>n<0?`−${-n}`:String(n);
+const negNums=()=>{let a=rand(-15,15),b=rand(-15,15);if(!b)b=-7;const plus=Math.random()<.5,r=plus?a+b:a-b;
+  return{q:`${fmt(a)} ${plus?'+':'−'} ${b<0?`(${fmt(b)})`:b}`,a:fmt(r),opts:near(r,1,-40,40,12,[plus?a-b:a+b,-r]).map(fmt)}};
+const bidmas=()=>{const f=rand(0,3);let a=rand(2,12),b=rand(2,9),c=rand(2,9),q,v,w;
+  if(f===0){q=`${a} + ${b} × ${c}`;v=a+b*c;w=(a+b)*c}
+  else if(f===1){q=`(${a} + ${b}) × ${c}`;v=(a+b)*c;w=a+b*c}
+  else if(f===2){q=`${a} × ${b} − ${c}`;v=a*b-c;w=a*(b-c)}
+  else{const k=rand(2,9);b=c*k;a=rand(k+1,30);q=`${a} − ${b} ÷ ${c}`;v=a-k;w=Math.round((a-b)/c)}
+  return{q,a:v,opts:near(v,1,-50,250,12,[w,v+10,v-10]),hint:'BIDMAS'}};
+const gcd=(a,b)=>b?gcd(b,a%b):a;
+const percentOf=()=>{const p=pick([1,5,10,15,20,25,30,40,50,60,75,90]),step=100/gcd(p,100),amt=step*rand(1,Math.max(1,Math.floor(400/step))),v=p*amt/100;
+  return{q:`${p}% of ${amt}`,a:v,opts:near(v,Math.max(1,Math.round(v/10)),0,400,12,[v*2,amt-v])}};
+const sq15=withItems(()=>{const k=rand(1,15);return{q:`${k}²`,a:k*k,opts:range(1,15).map(i=>i*i)}},range(1,15).map(k=>[`${k}²`,k*k]));
+const cubes=withItems(()=>{const k=pick([1,2,3,4,5,6,10]);return{q:`${k}³`,a:k**3,opts:[1,6,8,9,16,25,27,64,100,125,216,1000]}},[1,2,3,4,5,6,10].map(k=>[`${k}³`,k**3]));
+const roots=withItems(()=>{const k=rand(1,15);return{q:`√${k*k}`,a:k,opts:range(1,15)}},range(1,15).map(k=>[`√${k*k}`,k]));
+const eq1=()=>{const f=rand(0,2);let x,b,q;
+  if(f===0){x=rand(1,20);b=rand(1,20);q=`x + ${b} = ${x+b}`}
+  else if(f===1){b=rand(1,15);x=rand(b+1,b+20);q=`x − ${b} = ${x-b}`}
+  else{b=rand(2,9);x=rand(1,12);q=`${b}x = ${b*x}`}
+  return{q,a:x,opts:near(x,1,1,40,12),hint:'find x'}};
+const eq2=()=>{const x=rand(1,12),a=rand(2,9),b=rand(1,20),minus=Math.random()<.5&&a*x-b>0;
+  return{q:minus?`${a}x − ${b} = ${a*x-b}`:`${a}x + ${b} = ${a*x+b}`,a:x,opts:range(1,12),hint:'find x'}};
+const fracDec=pool([['1/2','0.5'],['1/4','0.25'],['3/4','0.75'],['1/5','0.2'],['2/5','0.4'],['3/5','0.6'],['1/10','0.1'],['3/10','0.3'],['1/8','0.125'],['1/100','0.01'],['7/10','0.7'],['1/20','0.05']],'as a decimal');
+const decPct=pool([['0.5','50%'],['0.25','25%'],['0.75','75%'],['0.1','10%'],['0.05','5%'],['0.2','20%'],['0.01','1%'],['1.5','150%'],['0.9','90%'],['0.125','12.5%'],['0.6','60%'],['0.03','3%']],'as a percentage');
+const isPrime=n=>{if(n<2)return false;for(let i=2;i*i<=n;i++)if(n%i===0)return false;return true};
+const PRIMES=range(2,100).filter(isPrime),NONPRIMES=range(4,100).filter(n=>!isPrime(n));
+const primeGen=()=>{const n=Math.random()<.5?pick(PRIMES):pick(NONPRIMES);return{q:String(n),a:isPrime(n)?'Prime':'Not prime',opts:['Prime','Not prime'],hint:'prime or not?'}};
+/* ---------- Secondary computing generators ---------- */
+const bin=(n,w)=>n.toString(2).padStart(w,'0');
+const bin4=withItems(()=>{const n=rand(0,15);return{q:bin(n,4),a:n,opts:range(0,15),hint:'binary → denary'}},range(0,15).map(n=>[bin(n,4),n]));
+const bin8=()=>{const n=rand(16,255);return{q:bin(n,8),a:n,opts:near(n,1,0,255,12,[n+128>255?n-128:n+128,n^1,n^2,n+16,n-16]),hint:'binary → denary'}};
+const toBin=()=>{const n=rand(1,15);return{q:String(n),a:bin(n,4),opts:shuffle(near(n,1,0,15,6,[n^1,n^8,n^2])).map(v=>bin(v,4)),hint:'denary → 4-bit binary'}};
+const gates=()=>{const g=pick(['AND','OR','XOR','NOT']),A=rand(0,1),B=rand(0,1);
+  const r=g==='AND'?A&B:g==='OR'?A|B:g==='XOR'?A^B:1-A;return{q:g==='NOT'?`NOT ${A}`:`${A} ${g} ${B}`,a:r,opts:[0,1],hint:'output?'}};
+
+const SECONDARY=[
+{id:'maths',name:'Maths',topics:[
+  {id:'mix',name:'Times tables & division',blurb:'Mixed, up to 12 × 12.',variants:[{label:'Times',key:'t',gen:mixedTable},{label:'Divide',key:'d',gen:mixedDivide}]},
+  {id:'neg',name:'Negative numbers',blurb:'Add and subtract across zero.',gen:negNums},
+  {id:'bidmas',name:'Order of operations',blurb:'BIDMAS: brackets first, then × and ÷, then + and −.',gen:bidmas},
+  {id:'pct',name:'Percentages',blurb:'Percentages of amounts.',gen:percentOf},
+  {id:'pow',name:'Powers & roots',blurb:'Squares to 15², cubes and square roots.',variants:[{label:'Squares',key:'sq',gen:sq15},{label:'Cubes',key:'cu',gen:cubes},{label:'Roots',key:'rt',gen:roots}]},
+  {id:'alg',name:'Solving equations',blurb:'Find x.',variants:[{label:'One step',key:'1',gen:eq1},{label:'Two step',key:'2',gen:eq2}]},
+  {id:'fdp',name:'Fractions, decimals, percents',blurb:'Convert between them.',variants:[{label:'Fraction → decimal',key:'fd',gen:fracDec},{label:'Decimal → %',key:'dp',gen:decPct}]},
+  {id:'prime',name:'Prime or not?',blurb:'Numbers up to 100.',gen:primeGen},
+  {id:'angles',name:'Angle facts',blurb:'Lines, triangles and polygons.',gen:explicit([
+    ['Angles on a straight line add up to','180°',['90°','360°','270°']],
+    ['Angles around a point add up to','360°',['180°','270°','90°']],
+    ['Angles in a triangle add up to','180°',['360°','90°','270°']],
+    ['Angles in a quadrilateral add up to','360°',['180°','540°','270°']],
+    ['Each angle in an equilateral triangle','60°',['45°','90°','30°']],
+    ['Interior angles of a pentagon add up to','540°',['360°','720°','480°']],
+    ['Interior angles of a hexagon add up to','720°',['540°','360°','900°']],
+    ['An angle between 90° and 180° is','Obtuse',['Acute','Reflex','Right']],
+    ['An angle less than 90° is','Acute',['Obtuse','Reflex','Straight']],
+    ['An angle more than 180° is','Reflex',['Obtuse','Acute','Right']]
+  ])},
+]},
+{id:'english',name:'English',topics:[
+  {id:'devices',name:'Language devices',blurb:'Simile, metaphor, personification and more.',gen:fixed([
+    ['The wind howled angrily.','Personification'],['The trees danced in the breeze.','Personification'],['The sun smiled down on us.','Personification'],
+    ['Her smile was as bright as the sun.','Simile'],['He ran like the wind.','Simile'],['The water was as cold as ice.','Simile'],
+    ['The classroom was a zoo.','Metaphor'],['Time is a thief.','Metaphor'],['His heart was a stone.','Metaphor'],
+    ['Sally sells seashells by the seashore.','Alliteration'],['Peter picked purple plums.','Alliteration'],['Wild winds whipped westward.','Alliteration'],
+    ['The door creaked open.','Onomatopoeia'],['Crash! The plates hit the floor.','Onomatopoeia'],['The fire crackled.','Onomatopoeia'],
+    ["I've told you a million times!",'Hyperbole'],['This bag weighs a ton.','Hyperbole'],["I'm so hungry I could eat a horse.",'Hyperbole']
+  ],['Simile','Metaphor','Personification','Alliteration','Onomatopoeia','Hyperbole'],'which device?')},
+  {id:'texts',name:'Set texts & authors',blurb:'Who wrote it?',gen:pool([
+    ['A Christmas Carol','Charles Dickens'],['An Inspector Calls','J. B. Priestley'],['Of Mice and Men','John Steinbeck'],['Lord of the Flies','William Golding'],
+    ['Dr Jekyll and Mr Hyde','Robert Louis Stevenson'],['Frankenstein','Mary Shelley'],['Animal Farm','George Orwell'],['Pride and Prejudice','Jane Austen'],
+    ['Macbeth','William Shakespeare'],['Blood Brothers','Willy Russell'],['Jane Eyre','Charlotte Brontë'],['The Sign of Four','Arthur Conan Doyle']
+  ],'who wrote it?')},
+  {id:'shakes',name:'Shakespeare characters',blurb:'Which play are they in?',gen:pool([
+    ['Lady Macbeth','Macbeth'],['Banquo','Macbeth'],['Juliet','Romeo and Juliet'],['Mercutio','Romeo and Juliet'],['Prospero','The Tempest'],
+    ['Shylock','The Merchant of Venice'],['Puck','A Midsummer Night\'s Dream'],['Titania','A Midsummer Night\'s Dream'],['Iago','Othello'],
+    ['Ophelia','Hamlet'],['Brutus','Julius Caesar'],['Goneril','King Lear']
+  ],'which play?')},
+  {id:'grammar',name:'Grammar terms',blurb:'Know your terminology.',gen:pool([
+    ['Replaces a noun (he, they, it)','Pronoun'],['Joins words or clauses (and, but, because)','Conjunction'],['Shows where or when (under, after)','Preposition'],
+    ['Describes a verb (quickly, softly)','Adverb'],['A clause that makes sense on its own','Main clause'],["A clause that can't stand alone",'Subordinate clause'],
+    ['Names a group (team, flock, swarm)','Collective noun'],['Words with the same meaning','Synonyms'],['Words with opposite meanings','Antonyms'],
+    ['Comes before a noun (a, an, the)','Article']
+  ],'which term?')},
+  {id:'spell2',name:'Tricky spellings',blurb:'The ones that catch everyone out.',gen:explicit([
+    ['to have room for','accommodate',['accomodate','acommodate','accommadate']],
+    ['to make someone feel awkward','embarrass',['embarass','embaress','embarras']],
+    ['your sense of right and wrong','conscience',['concience','conscence','consience']],
+    ['something that happens','occurrence',['occurence','ocurrence','occurrance']],
+    ['a special right','privilege',['priviledge','privilage','privelege']],
+    ['the people who run a country','government',['goverment','govermint','governmant']],
+    ['the natural world around us','environment',['enviroment','envirnment','environmant']],
+    ['the start','beginning',['begining','beggining','beginnig']],
+    ['to get something','receive',['recieve','receeve','receve']],
+    ['to suggest something is good','recommend',['reccommend','recomend','reccomend']],
+    ['to reach a goal','achieve',['acheive','acheeve','achive']],
+    ['to talk someone into something','persuade',['persaude','perswade','pursuade']]
+  ],'pick the right spelling')},
+]},
+{id:'science',name:'Science',topics:[
+  {id:'cells',name:'Cell biology',blurb:'What does each part do?',gen:pool([
+    ['Controls the cell and holds DNA','Nucleus'],['Where respiration releases energy','Mitochondria'],['Where proteins are made','Ribosomes'],
+    ['Controls what enters and leaves','Cell membrane'],['Strengthens a plant cell','Cell wall'],['Where photosynthesis happens','Chloroplasts'],
+    ['Filled with cell sap, keeps the cell firm','Vacuole'],['Jelly where most reactions happen','Cytoplasm']
+  ],'which part?')},
+  {id:'symbols',name:'Element symbols',blurb:'The periodic table, quick-fire.',variants:[
+    {label:'Symbol → name',key:'sn',gen:pool([['Na','Sodium'],['K','Potassium'],['Fe','Iron'],['Au','Gold'],['Ag','Silver'],['Pb','Lead'],['Cu','Copper'],['Cl','Chlorine'],['O','Oxygen'],['H','Hydrogen'],['C','Carbon'],['N','Nitrogen'],['Ca','Calcium'],['Mg','Magnesium'],['He','Helium'],['Zn','Zinc']],'which element?')},
+    {label:'Name → symbol',key:'ns',gen:pool([['Sodium','Na'],['Potassium','K'],['Iron','Fe'],['Gold','Au'],['Silver','Ag'],['Lead','Pb'],['Copper','Cu'],['Chlorine','Cl'],['Oxygen','O'],['Hydrogen','H'],['Carbon','C'],['Nitrogen','N'],['Calcium','Ca'],['Magnesium','Mg'],['Helium','He'],['Zinc','Zn']],'which symbol?')}]},
+  {id:'formulas',name:'Chemical formulas',blurb:'Name the compound.',gen:pool([
+    ['H₂O','Water'],['CO₂','Carbon dioxide'],['NaCl','Sodium chloride'],['CH₄','Methane'],['O₂','Oxygen'],['NH₃','Ammonia'],
+    ['HCl','Hydrochloric acid'],['H₂SO₄','Sulfuric acid'],['CaCO₃','Calcium carbonate']
+  ],'which compound?')},
+  {id:'ph',name:'Acids & alkalis',blurb:'Acid, neutral or alkali?',gen:fixed([
+    ['lemon juice','Acid'],['vinegar','Acid'],['stomach acid','Acid'],['hydrochloric acid','Acid'],['cola','Acid'],
+    ['pure water','Neutral'],['salt solution','Neutral'],
+    ['soap','Alkali'],['bleach','Alkali'],['oven cleaner','Alkali'],['sodium hydroxide','Alkali'],['baking soda solution','Alkali']
+  ],['Acid','Neutral','Alkali'],'acid, neutral or alkali?')},
+  {id:'units',name:'Physics units',blurb:'Match the quantity to its unit.',gen:pool([
+    ['Force','newton (N)'],['Energy','joule (J)'],['Power','watt (W)'],['Current','ampere (A)'],['Potential difference','volt (V)'],
+    ['Resistance','ohm (Ω)'],['Frequency','hertz (Hz)'],['Mass','kilogram (kg)'],['Charge','coulomb (C)'],['Pressure','pascal (Pa)']
+  ],'which unit?')},
+  {id:'eqns',name:'Physics equations',blurb:'Speed, force, density and more.',gen:explicit([
+    ['Speed =','distance ÷ time',['distance × time','time ÷ distance','mass × acceleration']],
+    ['Force =','mass × acceleration',['mass ÷ acceleration','distance ÷ time','mass × volume']],
+    ['Density =','mass ÷ volume',['volume ÷ mass','mass × volume','force ÷ area']],
+    ['Pressure =','force ÷ area',['area ÷ force','force × area','mass ÷ volume']],
+    ['Power =','energy ÷ time',['energy × time','time ÷ energy','force × distance']],
+    ['Potential difference =','current × resistance',['current ÷ resistance','power × time','charge ÷ time']],
+    ['Work done =','force × distance',['force ÷ distance','mass × speed','energy ÷ time']],
+    ['Weight =','mass × gravitational field strength',['mass ÷ gravitational field strength','force × distance','mass × speed']]
+  ])},
+]},
+{id:'geography',name:'Geography',topics:[
+  {id:'caps2',name:'Capitals (hard)',blurb:'The ones people get wrong.',gen:pool([
+    ['Australia','Canberra'],['Canada','Ottawa'],['Brazil','Brasília'],['Turkey','Ankara'],['Switzerland','Bern'],['New Zealand','Wellington'],
+    ['Nigeria','Abuja'],['Morocco','Rabat'],['Pakistan','Islamabad'],['South Korea','Seoul'],['Vietnam','Hanoi'],['Argentina','Buenos Aires'],
+    ['Netherlands','Amsterdam'],['Sweden','Stockholm'],['Poland','Warsaw'],['Ukraine','Kyiv']
+  ],'capital city?')},
+  {id:'tectonics',name:'Tectonic hazards',blurb:'Volcanoes, earthquakes and plates.',gen:pool([
+    ['Molten rock underground','Magma'],['Molten rock on the surface','Lava'],['Point on the surface above an earthquake','Epicentre'],
+    ['Point underground where an earthquake starts','Focus'],['Giant wave caused by an undersea earthquake','Tsunami'],
+    ['Boundary where plates move apart','Constructive'],['Boundary where one plate sinks under another','Destructive'],
+    ['Boundary where plates slide past each other','Conservative'],['Scientist who studies volcanoes','Volcanologist']
+  ],'which term?')},
+  {id:'rivers',name:'Rivers',blurb:'From source to mouth.',gen:pool([
+    ['Where a river begins','Source'],['Where a river meets the sea','Mouth'],['A bend in a river','Meander'],['A smaller river joining a larger one','Tributary'],
+    ['Where two rivers join','Confluence'],['Tidal part of a river near the sea','Estuary'],['Area of land drained by a river','Drainage basin'],
+    ['Lake formed from a cut-off meander','Ox-bow lake'],['Wall of rock a river drops over','Waterfall']
+  ],'which feature?')},
+  {id:'weather',name:'Weather & climate',blurb:'Rainfall types and instruments.',gen:pool([
+    ['Rain caused by air rising over mountains','Relief rainfall'],['Rain caused by the ground heating the air','Convectional rainfall'],
+    ['Rain where warm air meets cold air','Frontal rainfall'],['Measures air pressure','Barometer'],['Measures wind speed','Anemometer'],
+    ['Measures rainfall','Rain gauge'],['Average weather over a long time','Climate'],['Gases trapping heat around the Earth','Greenhouse effect']
+  ],'which term?')},
+]},
+{id:'history',name:'History',topics:[
+  {id:'dates2',name:'Key dates',blurb:'Tudors to the 20th century.',gen:pool([
+    ['Henry VIII breaks with Rome','1534'],['English Civil War begins','1642'],['Battle of Waterloo','1815'],['Slavery Abolition Act','1833'],
+    ['World War One begins','1914'],['Battle of the Somme begins','1916'],['Russian Revolution','1917'],['Some women win the vote','1918'],
+    ['World War Two begins','1939'],['D-Day landings','1944'],['NHS founded','1948'],['Berlin Wall falls','1989']
+  ],'which year?')},
+  {id:'people2',name:'Key people',blurb:'Who am I?',gen:pool([
+    ['Led the suffragettes','Emmeline Pankhurst'],['Lord Protector after the Civil War','Oliver Cromwell'],['Engineer of the Great Western Railway','Isambard Kingdom Brunel'],
+    ['Jamaican-born nurse in the Crimean War','Mary Seacole'],['Wrote On the Origin of Species','Charles Darwin'],['Led India\'s non-violent independence movement','Mahatma Gandhi'],
+    ['Gave the "I Have a Dream" speech','Martin Luther King Jr'],['First Black president of South Africa','Nelson Mandela'],
+    ['Refused to give up her bus seat in 1955','Rosa Parks'],['Prime Minister when the NHS was founded','Clement Attlee']
+  ],'who was it?')},
+  {id:'terms',name:'History terms',blurb:'Events and ideas.',gen:pool([
+    ['Women campaigning for the vote with direct action','Suffragettes'],['Tension between the USA and USSR after 1945','Cold War'],
+    ['Nazi murder of six million Jewish people','Holocaust'],['Moving children out of cities in WW2','Evacuation'],['German bombing of British cities, 1940–41','The Blitz'],
+    ['Limiting food and goods in wartime','Rationing'],['Treaty that ended WW1 in 1919','Treaty of Versailles'],['Wall that divided Berlin, 1961–89','Berlin Wall'],
+    ['Change from farms to factories, 1700s–1800s','Industrial Revolution']
+  ],'which term?')},
+]},
+{id:'languages',name:'Languages',topics:[
+  {id:'frv',name:'French verbs',blurb:'Infinitives you need to know.',gen:pool([
+    ['avoir','to have'],['être','to be'],['aller','to go'],['faire','to do / make'],['manger','to eat'],['jouer','to play'],
+    ['regarder','to watch'],['aimer','to like / love'],['habiter','to live'],['parler','to speak']
+  ],'in English?')},
+  {id:'esv',name:'Spanish verbs',blurb:'Infinitives you need to know.',gen:pool([
+    ['tener','to have'],['ser','to be'],['ir','to go'],['hacer','to do / make'],['comer','to eat'],['jugar','to play'],
+    ['vivir','to live'],['hablar','to speak'],['ver','to see'],['beber','to drink']
+  ],'in English?')},
+  {id:'de',name:'German words',blurb:'Hallo! What does it mean?',gen:pool([
+    ['Hallo','Hello'],['Tschüss','Bye'],['Danke','Thank you'],['Bitte','Please'],['Ja','Yes'],['Nein','No'],['der Hund','the dog'],
+    ['die Katze','the cat'],['die Schule','school'],['rot','red'],['blau','blue'],['grün','green'],['eins','one'],['zwei','two'],['drei','three']
+  ],'in English?')},
+]},
+{id:'computing',name:'Computing',topics:[
+  {id:'binary',name:'Binary',blurb:'Convert between binary and denary.',variants:[{label:'4-bit',key:'4',gen:bin4},{label:'8-bit',key:'8',gen:bin8},{label:'To binary',key:'tb',gen:toBin}]},
+  {id:'logic',name:'Logic gates',blurb:'AND, OR, XOR, NOT.',gen:gates},
+  {id:'hardware',name:'Hardware & networks',blurb:'CPU, RAM, LAN and more.',gen:pool([
+    ['Carries out program instructions','CPU'],['Temporary memory, wiped when power is off','RAM'],['Memory holding the start-up instructions','ROM'],
+    ['Processes graphics','GPU'],['Storage with no moving parts','SSD'],['Connects all the components together','Motherboard'],
+    ['Translates a whole program at once','Compiler'],['Translates a program line by line','Interpreter'],['8 bits','Byte'],['4 bits','Nibble'],
+    ['Network across a small area, like a school','LAN'],['Network across a large area','WAN']
+  ],'which term?')},
+]},
+{id:'uk',name:'UK & Citizenship',topics:[
+  {id:'gov',name:'How the UK is run',blurb:'Parliaments, elections and rights.',gen:explicit([
+    ['Where the UK Parliament meets','Westminster',['Holyrood','Senedd','Stormont']],
+    ['Where the Scottish Parliament meets','Holyrood',['Westminster','Senedd','Stormont']],
+    ['Name of the Welsh Parliament','Senedd',['Holyrood','Dáil','Stormont']],
+    ['Where the Northern Ireland Assembly meets','Stormont',['Holyrood','Senedd','Westminster']],
+    ['Head of the UK government','Prime Minister',['Monarch','Speaker','Chancellor']],
+    ['Head of state of the UK','The monarch',['Prime Minister','Speaker','Mayor of London']],
+    ['The two Houses of Parliament','Commons and Lords',['Senate and Congress','Senedd and Dáil','Cabinet and Crown']],
+    ['Minimum voting age in UK general elections','18',['16','21','17']],
+    ['Chairs debates in the House of Commons','The Speaker',['Prime Minister','Monarch','Chancellor']],
+    ['Number of nations in the UK','4',['3','5','6']]
+  ])},
+  {id:'where',name:'Where in the UK?',blurb:'England, Scotland, Wales or Northern Ireland?',gen:null},
+]},
+];
+
+const SUBJECTS=[
+{id:'maths',name:'Maths',topics:[
+  {id:'times',name:'Times tables',blurb:'Pick a table, or mix them all up.',variants:tableChips(table,mixedTable)},
+  {id:'div',name:'Division facts',blurb:'The times tables, backwards.',variants:tableChips(divide,mixedDivide)},
+  {id:'bonds',name:'Number bonds',blurb:'What makes the total?',variants:[{label:'to 10',key:'10',gen:bond10},{label:'to 20',key:'20',gen:bond20},{label:'to 100',key:'100',gen:bond100}]},
+  {id:'addsub',name:'Adding & subtracting',blurb:'Mental maths, quick-fire.',variants:[{label:'Add to 20',key:'a20',gen:add20},{label:'Add to 100',key:'a100',gen:add100},{label:'Take away',key:'s100',gen:sub100}]},
+  {id:'dh',name:'Doubles & halves',blurb:'Numbers up to 100.',variants:[{label:'Doubles',key:'d',gen:doubles},{label:'Halves',key:'h',gen:halves}]},
+  {id:'frac',name:'Fractions of amounts',blurb:'Halves, thirds, quarters, fifths, tenths.',gen:fracOf},
+  {id:'sq',name:'Square numbers',blurb:'1² up to 12².',gen:squares},
+  {id:'rom',name:'Roman numerals',blurb:'I, V, X, L and C.',variants:[{label:'Read them',key:'r',gen:romanRead},{label:'Write them',key:'w',gen:romanWrite}]},
+  {id:'pv',name:'Place value',blurb:'Thousands, hundreds, tens and ones.',gen:placeValue},
+  {id:'meas',name:'Measures & time',blurb:'Grams, metres, days and years.',gen:measures},
+]},
+{id:'english',name:'English',topics:[
+  {id:'wc',name:'Word classes',blurb:'Noun, verb, adjective or adverb?',gen:fixed([
+    ['dog','Noun'],['table','Noun'],['happiness','Noun'],['castle','Noun'],['teacher','Noun'],['Cardiff','Noun'],
+    ['eat','Verb'],['write','Verb'],['laugh','Verb'],['whisper','Verb'],['think','Verb'],['build','Verb'],
+    ['shiny','Adjective'],['brave','Adjective'],['enormous','Adjective'],['tiny','Adjective'],['gloomy','Adjective'],['clever','Adjective'],
+    ['quickly','Adverb'],['slowly','Adverb'],['loudly','Adverb'],['gently','Adverb'],['carefully','Adverb'],['happily','Adverb']
+  ],['Noun','Verb','Adjective','Adverb'],'what type of word?')},
+  {id:'spell',name:'Spelling',blurb:'Tap the correct spelling.',gen:explicit([
+    ['the day after Tuesday','Wednesday',['Wensday','Wednsday','Wedensday']],
+    ['the second month','February',['Febuary','Februery','Febrary']],
+    ['"for the reason that"','because',['becuase','becaus','beacuse']],
+    ['someone you like spending time with','friend',['freind','frend','frined']],
+    ['to think something is true','believe',['beleive','belive','beleave']],
+    ['apart, not together','separate',['seperate','separete','seperet']],
+    ['certainly, for sure','definitely',['definately','definitly','defenitely']],
+    ['needed, must have','necessary',['neccessary','necesary','neccesary']],
+    ['land with water all around','island',['iland','islend','ieland']],
+    ['the beat in music','rhythm',['rythm','rhythem','rhytm']],
+    ['a building where you learn','school',['skool','scool','schol']],
+    ['a place to buy medicines','pharmacy',['farmacy','pharmasy','farmasy']],
+    ['very surprising','amazing',['amazeing','amaising','amazin']],
+    ['a lot of people together','crowd',['croud','crowed','krowd']]
+  ],'pick the right spelling')},
+  {id:'homo',name:'Homophones',blurb:'Sound the same, spelt differently.',gen:explicit([
+    ['I can ___ the birds singing.','hear',['here','hare','heer']],
+    ['Put the box over ___.','there',['their',"they're",'thare']],
+    ["___ going to the park later.","They're",['Their','There','Thier']],
+    ['The children packed ___ bags.','their',['there',"they're",'thier']],
+    ['I ate ___ apples.','two',['to','too','tow']],
+    ['Can I come ___?','too',['to','two','toe']],
+    ['The wind ___ my hat off.','blew',['blue','blow','bloo']],
+    ['I ___ the answer!','know',['no','now','knoe']],
+    ['She ___ a red dress.','wore',['war','wear','woar']],
+    ['We waited for an ___.','hour',['our','owr','are']]
+  ],'pick the right word')},
+  {id:'opp',name:'Opposites',blurb:'Find the antonym.',gen:pool([
+    ['hot','cold'],['big','small'],['happy','sad'],['fast','slow'],['open','closed'],['early','late'],['full','empty'],
+    ['ancient','modern'],['loud','quiet'],['deep','shallow'],['wet','dry'],['soft','hard'],['awake','asleep'],['brave','cowardly'],
+    ['generous','selfish'],['victory','defeat'],['arrive','depart'],['remember','forget']
+  ],'what is the opposite?')},
+  {id:'plur',name:'Tricky plurals',blurb:'One mouse, two…?',gen:explicit([
+    ['mouse','mice',['mouses','mices','meese']],['child','children',['childs','childrens','childes']],
+    ['tooth','teeth',['tooths','teeths','toothes']],['foot','feet',['foots','feets','footes']],
+    ['goose','geese',['gooses','geeses','goosen']],['sheep','sheep',['sheeps','sheepes','shoop']],
+    ['baby','babies',['babys','babyes','babbies']],['knife','knives',['knifes','knifs','knivs']],
+    ['leaf','leaves',['leafs','leafes','leavs']],['box','boxes',['boxs','boxen','boxies']],
+    ['woman','women',['womans','womens','womanes']],['person','people',['persons','peoples','persones']],
+    ['potato','potatoes',['potatos','potatoe','potatoies']],['wolf','wolves',['wolfs','wolfes','wolvs']]
+  ],'what is the plural?')},
+  {id:'contr',name:'Contractions',blurb:'Squash two words into one.',gen:pool([
+    ['do not',"don't"],['cannot',"can't"],['it is',"it's"],['I am',"I'm"],['will not',"won't"],['they are',"they're"],
+    ['we have',"we've"],['should not',"shouldn't"],['you are',"you're"],['she would',"she'd"],['I will',"I'll"],['let us',"let's"]
+  ],'shorten it')},
+  {id:'punc',name:'Punctuation',blurb:'Name that mark.',gen:pool([
+    ['Goes at the end of a question','question mark'],['Shows belonging or a missing letter','apostrophe'],['Separates items in a list','comma'],
+    ['Goes around the words someone says','inverted commas'],['Ends a statement','full stop'],['Shows strong feeling or surprise','exclamation mark'],
+    ['Holds extra information (like this)','brackets'],['Can introduce a list','colon']
+  ],'which punctuation?')},
+]},
+{id:'science',name:'Science',topics:[
+  {id:'animals',name:'Animal groups',blurb:'Mammal, bird, reptile and more.',gen:fixed([
+    ['whale','Mammal'],['bat','Mammal'],['dolphin','Mammal'],['hedgehog','Mammal'],['penguin','Bird'],['ostrich','Bird'],['owl','Bird'],['robin','Bird'],
+    ['crocodile','Reptile'],['snake','Reptile'],['tortoise','Reptile'],['lizard','Reptile'],['frog','Amphibian'],['newt','Amphibian'],['toad','Amphibian'],['salamander','Amphibian'],
+    ['shark','Fish'],['salmon','Fish'],['seahorse','Fish'],['cod','Fish'],['ant','Insect'],['butterfly','Insect'],['ladybird','Insect'],['bee','Insect']
+  ],['Mammal','Bird','Reptile','Amphibian','Fish','Insect'],'which group?')},
+  {id:'states',name:'States of matter',blurb:'Solid, liquid or gas?',gen:fixed([
+    ['ice','Solid'],['rock','Solid'],['wood','Solid'],['a coin','Solid'],['fridge-cold butter','Solid'],
+    ['water','Liquid'],['milk','Liquid'],['orange juice','Liquid'],['honey','Liquid'],['vinegar','Liquid'],
+    ['steam','Gas'],['oxygen','Gas'],['carbon dioxide','Gas'],['helium','Gas'],['air','Gas']
+  ],['Solid','Liquid','Gas'],'solid, liquid or gas?')},
+  {id:'space',name:'Space',blurb:'Planets, the Sun and the Moon.',gen:pool([
+    ['Planet closest to the Sun','Mercury'],['Largest planet','Jupiter'],['Known as the red planet','Mars'],['Planet with the biggest rings','Saturn'],
+    ['The planet we live on','Earth'],['Hottest planet','Venus'],['Planet furthest from the Sun','Neptune'],['The star at the centre of our solar system','The Sun'],
+    ["Earth's natural satellite",'The Moon'],['Planet that spins on its side','Uranus']
+  ])},
+  {id:'body',name:'Human body',blurb:'Organs and what they do.',gen:pool([
+    ['Pumps blood around your body','Heart'],['Takes in oxygen when you breathe','Lungs'],['Controls your thoughts and movement','Brain'],
+    ['Churns and breaks down food','Stomach'],['The largest organ','Skin'],['Cleans waste out of your blood','Kidneys'],
+    ['Bones that protect your heart and lungs','Ribs'],['Bone that protects your brain','Skull']
+  ])},
+  {id:'plants',name:'Plants',blurb:'How plants live and grow.',gen:explicit([
+    ['Part that takes in water from the soil','Roots',['Leaves','Petals','Stem']],
+    ['Part that makes food using sunlight','Leaves',['Roots','Seeds','Petals']],
+    ['Part that holds the plant up','Stem',['Roots','Petals','Pollen']],
+    ['Gas that plants take in to make food','Carbon dioxide',['Oxygen','Helium','Nitrogen']],
+    ['Gas that plants give out','Oxygen',['Carbon dioxide','Steam','Helium']],
+    ['Green substance in leaves','Chlorophyll',['Pollen','Nectar','Sap']],
+    ['Insect that carries pollen between flowers','Bee',['Ant','Beetle','Earwig']],
+    ['Making food from sunlight is called…','Photosynthesis',['Pollination','Evaporation','Germination']]
+  ])},
+  {id:'forces',name:'Forces, light & sound',blurb:'Pushes, pulls, shadows and vibrations.',gen:explicit([
+    ['Force that pulls things towards the Earth','Gravity',['Friction','Magnetism','Air resistance']],
+    ['Force that slows things sliding over a surface','Friction',['Gravity','Upthrust','Magnetism']],
+    ['Force that slows a parachute down','Air resistance',['Gravity','Friction','Magnetism']],
+    ['Metal that magnets attract','Iron',['Copper','Gold','Aluminium']],
+    ['Two north poles of magnets will…','Repel',['Attract','Melt','Stick']],
+    ['Sound is made by…','Vibrations',['Shadows','Magnets','Reflections']],
+    ['A shadow forms when light is blocked by an…','Opaque object',['Transparent object','Mirror','Echo']],
+    ['Light travels in…','Straight lines',['Circles','Zigzags','Curves']],
+    ['Light bouncing off a mirror is called…','Reflection',['Refraction','Vibration','Friction']]
+  ])},
+]},
+{id:'geography',name:'Geography',topics:[
+  {id:'caps',name:'World capitals',blurb:'Name the capital city.',gen:pool([
+    ['France','Paris'],['Germany','Berlin'],['Spain','Madrid'],['Italy','Rome'],['Republic of Ireland','Dublin'],['Japan','Tokyo'],
+    ['Australia','Canberra'],['Canada','Ottawa'],['USA','Washington, D.C.'],['Egypt','Cairo'],['China','Beijing'],['India','New Delhi'],
+    ['Kenya','Nairobi'],['Norway','Oslo'],['Greece','Athens'],['Portugal','Lisbon']
+  ],'capital city?')},
+  {id:'conts',name:'Continents',blurb:'Which continent is it in?',gen:fixed([
+    ['France','Europe'],['Poland','Europe'],['Norway','Europe'],['Japan','Asia'],['India','Asia'],['China','Asia'],
+    ['Kenya','Africa'],['Egypt','Africa'],['Nigeria','Africa'],['Canada','North America'],['Mexico','North America'],['USA','North America'],
+    ['Brazil','South America'],['Peru','South America'],['Argentina','South America'],['Australia','Oceania'],['New Zealand','Oceania'],['Fiji','Oceania']
+  ],['Europe','Asia','Africa','North America','South America','Oceania'],'which continent?')},
+  {id:'landmarks',name:'World landmarks',blurb:'Which country is it in?',gen:pool([
+    ['Eiffel Tower','France'],['Statue of Liberty','USA'],['Great Wall','China'],['Taj Mahal','India'],['Colosseum','Italy'],
+    ['Pyramids of Giza','Egypt'],['Sydney Opera House','Australia'],['Christ the Redeemer','Brazil'],['Machu Picchu','Peru'],
+    ['Mount Fuji','Japan'],['Sagrada Família','Spain'],['Table Mountain','South Africa']
+  ],'which country?')},
+  {id:'oceans',name:'Oceans & compass',blurb:'Big waters and directions.',gen:explicit([
+    ['Largest ocean','Pacific',['Atlantic','Indian','Arctic']],
+    ['Ocean between the UK and America','Atlantic',['Pacific','Indian','Southern']],
+    ['Ocean around the North Pole','Arctic',['Southern','Indian','Pacific']],
+    ['Ocean around Antarctica','Southern',['Arctic','Atlantic','Indian']],
+    ['Opposite of north','South',['East','West','North-east']],
+    ['The Sun rises in the…','East',['West','North','South']],
+    ['The Sun sets in the…','West',['East','North','South']],
+    ['Halfway between north and east','North-east',['South-west','North-west','South-east']]
+  ])},
+]},
+{id:'history',name:'History',topics:[
+  {id:'peoples',name:'Invaders & ancients',blurb:'Romans, Vikings, Tudors and more.',gen:pool([
+    ["Built Hadrian's Wall",'Romans'],['Sailed from Scandinavia in longships','Vikings'],['Royal family of Henry VIII','Tudors'],
+    ['Built the pyramids at Giza','Ancient Egyptians'],['Held the first Olympic Games','Ancient Greeks'],['Settled in England after the Romans left','Anglo-Saxons'],
+    ['Won the Battle of Hastings in 1066','Normans'],['Built Stonehenge','Stone Age people'],['Invaded Britain in AD 43','Romans'],['Buried a king in a ship at Sutton Hoo','Anglo-Saxons']
+  ],'which people?')},
+  {id:'famous',name:'Famous people',blurb:'Who am I?',gen:pool([
+    ['Queen from 1837 to 1901','Queen Victoria'],['King who had six wives','Henry VIII'],['Queen when the Spanish Armada was beaten','Elizabeth I'],
+    ['UK prime minister for most of WW2','Winston Churchill'],['"The Lady with the Lamp"','Florence Nightingale'],['Iceni queen who fought the Romans','Boudicca'],
+    ['Welsh leader who rebelled against English rule in 1400','Owain Glyndŵr'],['Scottish king who won at Bannockburn in 1314','Robert the Bruce'],
+    ['Wrote Hamlet and Macbeth','William Shakespeare'],['Edinburgh-born inventor of the telephone','Alexander Graham Bell'],
+    ['Queen for 70 years, until 2022','Elizabeth II'],['Fossil hunter from Lyme Regis','Mary Anning']
+  ],'who was it?')},
+  {id:'dates',name:'Key dates',blurb:'When did it happen?',gen:pool([
+    ['Battle of Hastings','1066'],['Magna Carta sealed','1215'],['Gunpowder Plot','1605'],['Great Fire of London','1666'],
+    ['Act of Union joins England and Scotland','1707'],['Victoria becomes queen','1837'],['Titanic sinks','1912'],['World War One begins','1914'],
+    ['World War Two ends','1945'],['First Moon landing','1969'],['Romans invade Britain','AD 43']
+  ],'which year?')},
+]},
+{id:'languages',name:'Languages',topics:[
+  {id:'fr',name:'French words',blurb:'Bonjour! What does it mean?',gen:pool([
+    ['Bonjour','Hello'],['Au revoir','Goodbye'],['Merci','Thank you'],["S'il vous plaît",'Please'],['Oui','Yes'],['Non','No'],
+    ['le chat','the cat'],['le chien','the dog'],['la pomme','the apple'],["l'école",'school'],['rouge','red'],['bleu','blue'],
+    ['vert','green'],['un','one'],['deux','two'],['trois','three']
+  ],'in English?')},
+  {id:'es',name:'Spanish words',blurb:'¡Hola! What does it mean?',gen:pool([
+    ['Hola','Hello'],['Adiós','Goodbye'],['Gracias','Thank you'],['Por favor','Please'],['Sí','Yes'],['Buenos días','Good morning'],
+    ['el gato','the cat'],['el perro','the dog'],['la manzana','the apple'],['la escuela','school'],['rojo','red'],['azul','blue'],
+    ['verde','green'],['uno','one'],['dos','two'],['tres','three']
+  ],'in English?')},
+]},
+{id:'computing',name:'Computing',topics:[
+  {id:'terms',name:'Computing words',blurb:'Algorithms, loops and bugs.',gen:pool([
+    ['Step-by-step instructions to solve a problem','Algorithm'],['Finding and fixing mistakes in code','Debugging'],['Repeating part of a program','Loop'],
+    ['Choosing what to do with if… then…','Selection'],['A named place to store a value','Variable'],['A mistake in a program','Bug'],
+    ['A tiny dot of colour on a screen','Pixel'],['A worldwide network of computers','Internet'],['A website that helps you find other pages','Search engine'],
+    ['The number system that uses only 0 and 1','Binary']
+  ])},
+  {id:'safe',name:'Staying safe online',blurb:'Smart choices on the internet.',gen:explicit([
+    ['A stranger online asks where you live. You…','Tell a trusted adult',['Tell them','Send a photo','Keep it secret']],
+    ['Who should know your password?','Only you and a trusted adult',['Your best friend','Everyone in class','Anyone who asks']],
+    ['A strong password uses…','Letters, numbers and symbols',['Your name','123456','Your pet\'s name']],
+    ['A message makes you feel upset. You…','Tell a trusted adult',['Reply angrily','Delete everything','Keep it secret']],
+    ['A pop-up says you won a prize! You…','Close it and tell an adult',['Click it','Enter your details','Share it']]
+  ])},
+]},
+{id:'uk',name:'Whole UK',topics:[
+  {id:'where',name:'Where in the UK?',blurb:'England, Scotland, Wales or Northern Ireland?',gen:fixed([
+    ['London','England'],['Manchester','England'],['Birmingham','England'],['Gloucester','England'],['Stonehenge','England'],['Lake District','England'],['York','England'],['Liverpool','England'],
+    ['Edinburgh','Scotland'],['Glasgow','Scotland'],['Aberdeen','Scotland'],['Loch Ness','Scotland'],['Ben Nevis','Scotland'],['Isle of Skye','Scotland'],['Inverness','Scotland'],
+    ['Cardiff','Wales'],['Swansea','Wales'],['Yr Wyddfa (Snowdon)','Wales'],['Conwy Castle','Wales'],['Anglesey','Wales'],['Aberystwyth','Wales'],['Wrexham','Wales'],
+    ['Belfast','Northern Ireland'],["Giant's Causeway",'Northern Ireland'],['Lough Neagh','Northern Ireland'],['Armagh','Northern Ireland'],['Mourne Mountains','Northern Ireland'],['Derry~Londonderry','Northern Ireland']
+  ],['England','Scotland','Wales','Northern Ireland'],'which nation?')},
+  {id:'symbols',name:'Capitals, saints & symbols',blurb:'Know all four nations.',gen:explicit([
+    ['Capital city of Wales','Cardiff',['Swansea','Newport','Bangor']],
+    ['Capital city of Scotland','Edinburgh',['Glasgow','Aberdeen','Dundee']],
+    ['Capital city of Northern Ireland','Belfast',['Armagh','Newry','Lisburn']],
+    ['Capital city of England','London',['Birmingham','Manchester','York']],
+    ['Patron saint of Wales','St David',['St George','St Andrew','St Patrick']],
+    ['Patron saint of Scotland','St Andrew',['St David','St George','St Patrick']],
+    ['Patron saint of England','St George',['St Andrew','St David','St Patrick']],
+    ['Patron saint of Ireland','St Patrick',['St George','St David','St Andrew']],
+    ['National flower of England','Rose',['Thistle','Daffodil','Shamrock']],
+    ['National flower of Scotland','Thistle',['Rose','Daffodil','Shamrock']],
+    ['National flower of Wales','Daffodil',['Rose','Thistle','Shamrock']],
+    ["Plant worn on St Patrick's Day",'Shamrock',['Thistle','Daffodil','Rose']]
+  ])},
+  {id:'land',name:'Mountains, rivers & seas',blurb:'The landscape of the UK.',gen:explicit([
+    ['Highest mountain in the UK','Ben Nevis',['Yr Wyddfa (Snowdon)','Scafell Pike','Slieve Donard']],
+    ['Longest river in the UK','River Severn',['River Thames','River Trent','River Tay']],
+    ['Largest lake in the UK','Lough Neagh',['Loch Ness','Loch Lomond','Windermere']],
+    ['Sea between Great Britain and Ireland','Irish Sea',['North Sea','Baltic Sea','English Channel']],
+    ['Water between England and France','English Channel',['Irish Sea','North Sea','Bristol Channel']],
+    ['Sea off the east coast of England','North Sea',['Irish Sea','Celtic Sea','English Channel']]
+  ])},
+]},
+];
+
+/* ---------- Country packs ---------- */
+const COUNTRIES=[
+{id:'england',name:'England',native:'England',curric:'National Curriculum · KS1–KS2',topics:[
+  {id:'facts',name:'England facts',blurb:'Flag, flower, saint and more.',gen:explicit([
+    ['Capital city of England','London',['Manchester','Birmingham','York']],
+    ['Patron saint of England','St George',['St Andrew','St David','St Patrick']],
+    ["St George's Day is on…",'23 April',['1 March','17 March','30 November']],
+    ['The flag of England is…','Red cross on white',['White cross on blue','Red dragon on green and white','Blue cross on red']],
+    ['National flower of England','Rose',['Thistle','Daffodil','Shamrock']],
+    ['Highest mountain in England','Scafell Pike',['Ben Nevis','Helvellyn','Yr Wyddfa (Snowdon)']],
+    ['Longest river entirely in England','River Thames',['River Severn','River Mersey','River Tyne']],
+    ['Largest natural lake in England','Windermere',['Loch Lomond','Lough Neagh','Coniston Water']],
+    ['City famous for its Roman baths','Bath',['Leeds','Hull','Leicester']],
+    ['Ancient stone circle in Wiltshire','Stonehenge',['Avebury Castle','Hadrian\'s Wall','Durham Cathedral']]
+  ])},
+  {id:'counties',name:'Cities & counties',blurb:'Which county is the city in?',gen:pool([
+    ['Gloucester','Gloucestershire'],['Oxford','Oxfordshire'],['Cambridge','Cambridgeshire'],['Norwich','Norfolk'],['Ipswich','Suffolk'],
+    ['Exeter','Devon'],['Truro','Cornwall'],['Canterbury','Kent'],['Lincoln','Lincolnshire'],['Chester','Cheshire'],['Lancaster','Lancashire'],
+    ['Derby','Derbyshire'],['Nottingham','Nottinghamshire'],['Dorchester','Dorset'],['Durham','County Durham']
+  ],'which county?')},
+  {id:'monarchs',name:'Kings & queens',blurb:'Monarchs of England.',gen:pool([
+    ['Anglo-Saxon king who fought the Vikings','Alfred the Great'],['Last Anglo-Saxon king, killed in 1066','Harold II'],
+    ['First Norman king, won at Hastings','William the Conqueror'],['Sealed Magna Carta in 1215','King John'],
+    ['Won the Battle of Agincourt in 1415','Henry V'],['First Tudor king','Henry VII'],['Married six times','Henry VIII'],
+    ['Last Tudor monarch','Elizabeth I'],['King executed in 1649','Charles I'],['Became king in 2022','Charles III']
+  ],'which monarch?')},
+]},
+{id:'wales',name:'Wales',native:'Cymru',curric:'Curriculum for Wales',topics:[
+  {id:'facts',name:'Wales facts',blurb:'Ffeithiau am Gymru.',gen:explicit([
+    ['Capital city of Wales','Cardiff',['Swansea','Newport','Bangor']],
+    ['Patron saint of Wales','St David',['St George','St Andrew','St Patrick']],
+    ["St David's Day is on…",'1 March',['23 April','17 March','30 November']],
+    ['Creature on the Welsh flag','Red dragon',['Lion','Unicorn','Eagle']],
+    ['National flower of Wales','Daffodil',['Rose','Thistle','Shamrock']],
+    ['Vegetable worn as a Welsh emblem','Leek',['Carrot','Potato','Onion']],
+    ['Highest mountain in Wales','Yr Wyddfa (Snowdon)',['Pen y Fan','Cadair Idris','Ben Nevis']],
+    ['Name of the Welsh Parliament','Senedd',['Stormont','Holyrood','Westminster']],
+    ['Largest natural lake in Wales','Llyn Tegid (Bala Lake)',['Llyn Padarn','Llyn Brianne','Lough Neagh']],
+    ['Welsh national anthem','Hen Wlad Fy Nhadau',['Flower of Scotland','Danny Boy','Jerusalem']]
+  ])},
+  {id:'places',name:'Welsh place names',blurb:'English name → Welsh name.',gen:pool([
+    ['Wales','Cymru'],['Cardiff','Caerdydd'],['Swansea','Abertawe'],['Newport','Casnewydd'],['Snowdonia','Eryri'],
+    ['Anglesey','Ynys Môn'],['Brecon Beacons','Bannau Brycheiniog'],['Carmarthen','Caerfyrddin'],['Holyhead','Caergybi']
+  ],'in Welsh?')},
+  {id:'words',name:'Welsh words',blurb:'Geiriau Cymraeg.',gen:pool([
+    ['Bore da','Good morning'],['Nos da','Good night'],['Diolch','Thank you'],['Croeso','Welcome'],
+    ['Cath','Cat'],['Ci','Dog'],['Afal','Apple'],['Ysgol','School'],['Mam','Mum'],['Dŵr','Water'],['Haul','Sun'],['Draig','Dragon']
+  ],'what does it mean?')},
+  {id:'nums',name:'Numbers & colours',blurb:'Rhifau a lliwiau.',gen:pool([
+    ['Un','One'],['Dau','Two'],['Tri','Three'],['Pedwar','Four'],['Pump','Five'],['Chwech','Six'],['Deg','Ten'],
+    ['Coch','Red'],['Glas','Blue'],['Gwyrdd','Green'],['Melyn','Yellow'],['Du','Black'],['Gwyn','White']
+  ],'in English?')},
+]},
+{id:'scotland',name:'Scotland',native:'Alba',curric:'Curriculum for Excellence · P1–P7',topics:[
+  {id:'facts',name:'Scotland facts',blurb:'Saltire, thistle and lochs.',gen:explicit([
+    ['Capital city of Scotland','Edinburgh',['Glasgow','Aberdeen','Dundee']],
+    ['Largest city in Scotland','Glasgow',['Edinburgh','Aberdeen','Inverness']],
+    ['Patron saint of Scotland','St Andrew',['St George','St David','St Patrick']],
+    ["St Andrew's Day is on…",'30 November',['1 March','23 April','25 January']],
+    ['The Saltire is…','White cross on blue',['Red cross on white','Red dragon on green','Gold harp on blue']],
+    ['National animal of Scotland','Unicorn',['Stag','Golden eagle','Lion']],
+    ['National flower of Scotland','Thistle',['Heather','Rose','Daffodil']],
+    ['Longest river in Scotland','River Tay',['River Clyde','River Forth','River Spey']],
+    ['Largest loch by area','Loch Lomond',['Loch Ness','Loch Tay','Loch Awe']],
+    ['Burns Night is on…','25 January',['30 November','5 November','1 March']],
+    ['Where the Scottish Parliament meets','Holyrood',['Stormont','Senedd','Westminster']]
+  ])},
+  {id:'history',name:'Scottish history',blurb:'Battles, kings and inventors.',gen:pool([
+    ['Won the Battle of Bannockburn in 1314','Robert the Bruce'],['Won the Battle of Stirling Bridge in 1297','William Wallace'],
+    ['Became king of England too in 1603','James VI'],['Queen of Scots executed in 1587','Mary, Queen of Scots'],
+    ['Lost the Battle of Culloden in 1746','Bonnie Prince Charlie'],['Wrote "Auld Lang Syne"','Robert Burns'],
+    ['Showed the first working television','John Logie Baird'],['Discovered penicillin','Alexander Fleming'],['Improved the steam engine','James Watt']
+  ],'who was it?')},
+  {id:'scots',name:'Scots words',blurb:'Braw words fae Scotland.',gen:pool([
+    ['wee','small'],['bairn','child'],['dreich','dull, wet weather'],['ken','know'],['braw','fine, good'],['glaikit','silly, foolish'],
+    ['greet','cry'],['kirk','church'],['burn','stream'],['bonnie','pretty'],['loch','lake']
+  ],'what does it mean?')},
+  {id:'gaelic',name:'Gaelic words',blurb:'Faclan Gàidhlig.',gen:pool([
+    ['Alba','Scotland'],['Fàilte','Welcome'],['Tapadh leat','Thank you'],['Madainn mhath','Good morning'],['Oidhche mhath','Good night'],
+    ['Uisge','Water'],['Cù','Dog'],['Taigh','House'],['Sgoil','School'],['Beinn','Mountain']
+  ],'in English?')},
+]},
+{id:'ni',name:'Northern Ireland',native:'Tuaisceart Éireann',curric:'Northern Ireland Curriculum · P1–P7',topics:[
+  {id:'facts',name:'Northern Ireland facts',blurb:'Loughs, causeways and the Titanic.',gen:explicit([
+    ['Capital city of Northern Ireland','Belfast',['Derry~Londonderry','Armagh','Newry']],
+    ['Largest lake in the UK','Lough Neagh',['Lough Erne','Loch Ness','Strangford Lough']],
+    ['Highest mountain in Northern Ireland','Slieve Donard',['Slieve Gullion','Ben Nevis','Scafell Pike']],
+    ["The Giant's Causeway is in County…",'Antrim',['Fermanagh','Tyrone','Armagh']],
+    ['Famous ship built in Belfast','Titanic',['Mary Rose','Victory','Cutty Sark']],
+    ['River that flows through Belfast','River Lagan',['River Bann','River Foyle','River Erne']],
+    ['Longest river in Northern Ireland','River Bann',['River Lagan','River Foyle','River Erne']],
+    ['Where the Northern Ireland Assembly meets','Stormont',['Holyrood','Senedd','Westminster']],
+    ["St Patrick's Day is on…",'17 March',['1 March','23 April','30 November']],
+    ['Belfast-born author of the Narnia books','C. S. Lewis',['Roald Dahl','J. K. Rowling','Lewis Carroll']]
+  ])},
+  {id:'counties',name:'The six counties',blurb:'Which county is the town in?',gen:fixed([
+    ['Ballymena','Antrim'],['Larne','Antrim'],['Enniskillen','Fermanagh'],['Lisnaskea','Fermanagh'],['Omagh','Tyrone'],['Dungannon','Tyrone'],['Strabane','Tyrone'],
+    ['Armagh','Armagh'],['Portadown','Armagh'],['Coleraine','Londonderry'],['Limavady','Londonderry'],['Downpatrick','Down'],['Bangor','Down']
+  ],['Antrim','Armagh','Down','Fermanagh','Londonderry','Tyrone'],'which county?')},
+  {id:'irish',name:'Irish words',blurb:'Focail Ghaeilge.',gen:pool([
+    ['Dia dhuit','Hello'],['Go raibh maith agat','Thank you'],['Slán','Goodbye'],['Fáilte','Welcome'],['Oíche mhaith','Good night'],
+    ['Madra','Dog'],['Uisce','Water'],['Scoil','School'],['Teach','House'],['Lá','Day']
+  ],'in English?')},
+]},
+];
+// Secondary "Where in the UK?" reuses the primary question set.
+SECONDARY.find(s=>s.id==='uk').topics.find(t=>t.id==='where').gen=SUBJECTS.find(s=>s.id==='uk').topics.find(t=>t.id==='where').gen;
+
+const LEVELS={primary:{label:'Primary',sub:'Ages 4–11',subjects:SUBJECTS},secondary:{label:'Secondary',sub:'Ages 11–16',subjects:SECONDARY}};
+const CURRIC={
+  england:{primary:'National Curriculum · KS1–KS2 · Years 1–6',secondary:'National Curriculum · KS3–KS4 · Years 7–11'},
+  wales:{primary:'Curriculum for Wales · Years 1–6',secondary:'Curriculum for Wales · Years 7–11'},
+  scotland:{primary:'Curriculum for Excellence · P1–P7',secondary:'Curriculum for Excellence · S1–S6'},
+  ni:{primary:'Northern Ireland Curriculum · P1–P7',secondary:'Northern Ireland Curriculum · Years 8–12'}};
+let level='primary';
+const subjects=()=>LEVELS[level].subjects;
+const isCountry=p=>COUNTRIES.includes(p);
+const packById=id=>[...subjects(),...COUNTRIES].find(p=>p.id===id);
+const scopeOf=p=>isCountry(p)?'all':level;
+
+/* ---------- Local storage ---------- */
+const store={get(k,d){try{const v=localStorage.getItem('bdash:'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+  set(k,v){try{localStorage.setItem('bdash:'+k,JSON.stringify(v))}catch(e){}}};
+
+/* ---------- Accounts, sign-in & leaderboard ----------
+   Inside claude.ai  → Claude account + shared artifact database.
+   Any website       → device accounts: username + PIN, username + password, email + password.
+   With Supabase set → online accounts too: email + password, Google, Microsoft.            */
+const DEFAULT_AVATAR="data:image/svg+xml,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36"><rect width="36" height="36" fill="#8A97AD"/><circle cx="18" cy="14" r="6" fill="#fff"/><path d="M6 32c2-7 7-10 12-10s10 3 12 10" fill="#fff"/></svg>');
+let BACKEND='local',UID=null,canPost=true,ROWS=[],MYDOC=null,USER=null,DB=null,SB=null,ONLINE=false,SBUSER=null;
+const boardKey=(k,secs)=>`${k.replace(/\//g,'-')}-${secs}`;
+function topFor(k,n=5){return ROWS.filter(r=>r.key===k&&r.s>0).sort((a,b)=>b.s-a.s).slice(0,n)}
+function myBest(k){
+  if(UID&&BACKEND!=='claude'){const m=ROWS.find(r=>r.key===k&&r.id===UID);return m?m.s:0}
+  const local=store.get('best:'+k,0);const mine=UID&&ROWS.find(r=>r.key===k&&r.id===UID);return Math.max(local,mine?mine.s:0);
+}
+async function names(ids){
+  if(!ids.length)return{};
+  if(BACKEND==='claude'&&USER){try{return await USER.profiles(ids)}catch(e){return{}}}
+  if(BACKEND==='local'){const m={};players().forEach(pl=>{if(ids.includes(pl.id))m[pl.id]={name:pl.name,avatarUrl:avatarFor(pl.name)}});return m}
+  const m={};ROWS.forEach(r=>{if(ids.includes(r.id)&&r.name)m[r.id]={name:r.name,avatarUrl:avatarFor(r.name)}});return m;
+}
+function setWho(name,note){$('whoName').textContent=name;$('whoNote').textContent=note}
+const el=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e};
+
+/* ----- helpers ----- */
+const PCOLORS=['#2D67E6','#C73B7A','#0E9A6E','#B9770A','#7552DC','#D04A1F','#0D7A92','#00843D'];
+const hashStr=str=>{let h=5381;for(let i=0;i<str.length;i++)h=((h*33)^str.charCodeAt(i))>>>0;return h.toString(36)};
+function avatarFor(name){const col=PCOLORS[parseInt(hashStr(name||'?'),36)%PCOLORS.length];
+  const ch=(((name||'?').trim()[0]||'?').toUpperCase()).replace(/[<>&"']/g,'?');
+  return 'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36"><rect width="36" height="36" rx="18" fill="'+col+'"/><text x="18" y="24" font-family="Arial,sans-serif" font-size="17" font-weight="700" fill="#fff" text-anchor="middle">'+ch+'</text></svg>')}
+const randHex=n=>{try{const a=new Uint8Array(n);crypto.getRandomValues(a);return [...a].map(b=>b.toString(16).padStart(2,'0')).join('')}catch(e){return Math.random().toString(16).slice(2)+Date.now().toString(16)}};
+async function hashSecret(salt,secret){
+  try{if(window.crypto&&crypto.subtle){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(salt+':'+secret));return 's2:'+[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('')}}catch(e){}
+  return 'f1:'+hashStr(salt+':'+secret)+hashStr(secret+':'+salt);
+}
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function ageFrom(dob){const [y,m,d]=dob.split('-').map(Number);const t=new Date();let a=t.getFullYear()-y;if(t.getMonth()+1<m||(t.getMonth()+1===m&&t.getDate()<d))a--;return a}
+const levelForAge=a=>a>=11?'secondary':'primary';
+function applyAgeLevel(dob){
+  if(!dob)return;const lv=levelForAge(ageFrom(dob));
+  if(lv!==level){level=lv;store.set('level',lv);if(!packById(current))current='maths';if(!$('home').hidden)renderHome()}
+}
+const ageNote=dob=>dob?` · ${LEVELS[levelForAge(ageFrom(dob))].label}, age ${ageFrom(dob)}`:'';
+
+/* ----- device accounts ----- */
+const players=()=>store.get('players',[]).map(pl=>pl.login?pl:{...pl,login:'pin',ident:pl.name.toLowerCase()});
+function savePlayer(pl){const list=store.get('players',[]).filter(x=>x.id!==pl.id);store.set('players',[...list,pl])}
+function loadLocalRows(){const rows=[];players().forEach(pl=>{const b=store.get('pb:'+pl.id,{});for(const k in b)rows.push({id:pl.id,key:k,s:b[k],name:pl.name})});ROWS=rows}
+function setAuthButtons(mode){
+  const a=$('authBtn'),c=$('createBtn');
+  if(mode==='out'){a.textContent='Sign in';c.hidden=false}
+  else if(mode==='in'){a.textContent='Sign out';c.hidden=true}
+  else{a.textContent='✓ Signed in';c.hidden=true}
+}
+function useLocalPlayer(id){
+  BACKEND='local';const pl=players().find(x=>x.id===id);UID=pl?pl.id:null;store.set('current',UID);
+  if(pl){setWho(pl.name,`${ROLE_LABEL[pl.role||'student']} · signed in on this device`+ageNote(pl.dob));$('avatar').src=avatarFor(pl.name);setAuthButtons('in');applyAgeLevel(pl.dob)}
+  else{setWho('Guest player','Sign in or create an account to keep your own scores');$('avatar').src=DEFAULT_AVATAR;setAuthButtons('out')}
+  loadLocalRows();renderStats();if(!$('home').hidden)renderTopics();
+  refreshRoleUI();
+}
+let FAILS=0,LOCKED_UNTIL=0;
+async function verifyPlayer(pl,secret){
+  if(pl.hash)return (await hashSecret(pl.salt,secret))===pl.hash;
+  if(pl.pin)return hashStr('bd:'+secret)===pl.pin;   // accounts from the earlier version
+  return true;
+}
+
+/* ----- account panel ----- */
+const METHODS=[
+  {id:'pin',label:'Username + PIN'},{id:'password',label:'Username + password'},{id:'email',label:'Email + password'},
+  {id:'google',label:'Google'},{id:'microsoft',label:'Microsoft'}];
+let PANEL={mode:'signin',method:'pin'};
+function panelField(id,label,attrs){
+  const l=el('label');l.htmlFor=id;l.append(label);const i=el('input');i.id=id;i.autocomplete='off';
+  Object.assign(i,attrs||{});l.append(i);return l;
+}
+function dobField(){
+  const fs=el('fieldset','dob');fs.append(el('legend',null,'Date of birth'));
+  const mk=(id,label,opts)=>{const l=el('label');l.htmlFor=id;l.append(label);const s=el('select');s.id=id;s.required=true;
+    s.append(new Option(label==='Day'?'Day':label==='Month'?'Month':'Year',''));opts.forEach(([v,t])=>s.append(new Option(t,v)));l.append(s);return l};
+  const yNow=new Date().getFullYear();
+  fs.append(mk('dobD','Day',range(1,31).map(d=>[d,d])),mk('dobM','Month',MONTHS.map((m,i)=>[i+1,m])),mk('dobY','Year',range(yNow-100,yNow-3).reverse().map(y=>[y,y])));
+  return fs;
+}
+function readDob(){
+  const d=+$('dobD').value,m=+$('dobM').value,y=+$('dobY').value;
+  if(!d||!m||!y)return{err:'Please enter your full date of birth.'};
+  const dt=new Date(y,m-1,d);if(dt.getFullYear()!==y||dt.getMonth()!==m-1||dt.getDate()!==d)return{err:`${d} ${MONTHS[m-1]} ${y} is not a real date. Please check it.`};
+  const dob=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;const a=ageFrom(dob);
+  if(a<4)return{err:'You need to be at least 4 to make an account.'};
+  return{dob};
+}
+function openPanel(mode,method){PANEL={...PANEL,mode,method:method||PANEL.method||'pin'};renderPanel()}
+function closePanel(){$('acctPanel').hidden=true}
+function renderPanel(msg,keep){
+  const P=$('acctPanel');P.innerHTML='';P.dataset.mode=PANEL.mode;P.hidden=false;
+  const create=PANEL.mode==='create',m=PANEL.method;
+  P.append(el('h3','panel-h',create?'Create account':'Sign in'));
+  const tabs=el('div','mtabs');tabs.setAttribute('role','tablist');
+  METHODS.forEach(x=>{const b=el('button','mtab',x.label);b.type='button';b.setAttribute('role','tab');b.setAttribute('aria-selected',x.id===m);
+    b.onclick=()=>{PANEL.method=x.id;renderPanel()};tabs.append(b)});
+  if(create){const rr=el('div','rolepick');rr.append(el('span','fldlabel','I am a'));
+    ['student','teacher','parent'].forEach(r=>{const b=el('button','mtab',ROLE_LABEL[r]);b.type='button';b.setAttribute('aria-selected',(PANEL.role||'student')===r);
+      b.onclick=()=>{PANEL.role=r;renderPanel(null,keepVals())};rr.append(b)});P.append(rr)}
+  P.append(tabs);
+  const f=el('form','newp');f.noValidate=true;
+  if(m==='google'||m==='microsoft'){
+    const name=m==='google'?'Google':'Microsoft';
+    const b=el('button','oauth',`Continue with ${name}`);b.type='button';b.onclick=()=>oauth(m);f.append(b);
+    P.append(f);
+    P.append(el('p','authmsg',create
+      ?`You'll choose your ${name} account, then we'll ask for your date of birth. Under 13? Ask a parent or carer to help: ${name} accounts for children are set up by a parent.`
+      :`Use the ${name} account you signed up with.`));
+  }else{
+    const user=m==='email'?panelField('fId','Email',{type:'email',autocomplete:'email',placeholder:'you@example.com',required:true})
+                         :panelField('fId','Username',{maxLength:20,autocomplete:'username',placeholder:'e.g. sam_j',required:true});
+    const secLabel=m==='pin'?(create?'Choose a 4-digit PIN':'PIN'):(create?'Choose a password (8+ characters)':'Password');
+    const secAttrs=m==='pin'?{type:'password',maxLength:4,inputMode:'numeric',placeholder:'••••',required:true}:{type:'password',minLength:8,placeholder:'••••••••',required:true,autocomplete:create?'new-password':'current-password'};
+    if(create&&m==='email')f.append(panelField('fName','Display name',{maxLength:24,placeholder:'e.g. Sam J',required:true}));
+    f.append(user,panelField('fSec',secLabel,secAttrs));
+    if(create)f.append(panelField('fSec2',m==='pin'?'Type the PIN again':'Type the password again',secAttrs),dobField());
+    const go=el('button','play',create?'Create account':'Sign in');go.type='submit';f.append(go);
+    f.onsubmit=e=>{e.preventDefault();(create?doCreate:doSignIn)(m)};
+    P.append(f);
+    const where=m==='email'&&ONLINE?'Email accounts work on any device.':'This account is saved in this browser on this device.';
+    P.append(el('p','authmsg',create?`Use a nickname, not your full name. ${where}`:where));
+    if(!create&&m==='email'&&ONLINE){const fp=el('button','linkbtn','Forgot your password?');fp.type='button';fp.onclick=forgotPassword;P.append(fp)}
+  }
+  if(msg)P.append(el('p','authmsg err',msg));
+  const sw=el('button','linkbtn',create?'Already have an account? Sign in':'No account yet? Create one');sw.type='button';
+  sw.onclick=()=>openPanel(create?'signin':'create',PANEL.method);P.append(sw);
+  if(keep)for(const k in keep){const i=$(k);if(i)i.value=keep[k]}
+  const first=P.querySelector('form input, form select, .oauth');if(first&&!msg)first.focus();
+}
+const val=id=>($(id)?.value||'').trim();
+function fail(msg){const P=$('acctPanel');let e=P.querySelector('.authmsg.live');
+  if(!e){e=el('p','authmsg err live');e.setAttribute('role','alert');const sw=P.querySelector(':scope > .linkbtn:last-child');P.insertBefore(e,sw||null)}
+  e.textContent=msg;}
+const keepVals=()=>{const k={};['fId','fName','dobD','dobM','dobY'].forEach(id=>{if($(id))k[id]=$(id).value});return k};
+
+async function doCreate(m){
+  const keep=keepVals();
+  let ident=val('fId').toLowerCase(),name=m==='email'?val('fName'):val('fId');const sec=$('fSec').value,sec2=$('fSec2').value;
+  if(m==='email'){if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ident))return fail('Please enter a real email address.');if(!name)return fail('Please choose a display name.')}
+  else if(!/^[a-z0-9_.]{3,20}$/.test(ident))return fail('Usernames need 3 to 20 letters, numbers, dots or underscores, with no spaces.');
+  if(m==='pin'&&!/^[0-9]{4}$/.test(sec))return fail('Your PIN must be exactly 4 numbers.');
+  if(m!=='pin'&&sec.length<8)return fail('Your password needs at least 8 characters.');
+  if(sec!==sec2)return fail(m==='pin'?'The two PINs do not match.':'The two passwords do not match.');
+  const d=readDob();if(d.err)return fail(d.err);
+  const role=PANEL.role||'student';
+  if(role!=='student'&&ageFrom(d.dob)<18)return fail('Teacher and parent accounts are for adults aged 18 or over.');
+  name=name.slice(0,24);
+  if(m==='email'&&ONLINE){
+    const {data,error}=await SB.auth.signUp({email:ident,password:sec,options:{emailRedirectTo:location.origin+location.pathname,data:{display_name:name,dob:d.dob,role}}});
+    if(error)return fail(`That didn't work: ${error.message}`);
+    if(!data.session){renderPanel();$('acctPanel').append(el('p','authmsg ok',`Nearly done! We sent a link to ${ident}. Open it to confirm your email, then sign in.`));return}
+    closePanel();return;
+  }
+  if(players().some(x=>x.ident===ident))return fail(m==='email'?'There is already an account with that email on this device. Try signing in.':`The username "${ident}" is taken on this device. Pick another one.`);
+  const salt=randHex(16);
+  const pl={id:'p'+Date.now().toString(36)+randHex(3),name:m==='email'?name:val('fId').slice(0,20),login:m,ident,salt,hash:await hashSecret(salt,sec),dob:d.dob,role,parent_code:role==='student'?code6():null,created:Date.now()};
+  savePlayer(pl);closePanel();useLocalPlayer(pl.id);
+}
+async function doSignIn(m){
+  const keep=keepVals();const ident=val('fId').toLowerCase(),sec=$('fSec').value;
+  const legacyOpen=players().find(x=>x.ident===ident&&!x.hash&&!x.pin);
+  if(!ident||(!sec&&!legacyOpen))return fail(m==='email'?'Enter your email and password.':`Enter your username and ${m==='pin'?'PIN':'password'}.`);
+  if(Date.now()<LOCKED_UNTIL)return fail(`Too many wrong tries. Wait ${Math.ceil((LOCKED_UNTIL-Date.now())/1000)} seconds and try again.`);
+  const pl=players().find(x=>x.ident===ident);
+  if(m==='email'&&ONLINE&&!pl){
+    const {error}=await SB.auth.signInWithPassword({email:ident,password:sec});
+    if(error)return fail(/confirm/i.test(error.message)?'Please confirm your email first: open the link we sent you.':'That email or password is not right.');
+    closePanel();return;
+  }
+  if(!pl)return fail(m==='email'?'There is no account with that email on this device.':`There is no account called "${ident}" on this device. Check the spelling, or create an account.`);
+  if(pl.login!==m){const tab=METHODS.find(x=>x.id===pl.login);return fail(`This account signs in with ${tab?tab.label:'a different method'}. Choose that tab above.`)}
+  if(!(await verifyPlayer(pl,sec))){FAILS++;if(FAILS>=5){LOCKED_UNTIL=Date.now()+30000;FAILS=0}
+    return fail(m==='pin'?'That PIN is not right.':'That password is not right.')}
+  FAILS=0;closePanel();
+  if(!pl.dob)return askDob({kind:'device',pl});
+  useLocalPlayer(pl.id);
+}
+function askDob(who){
+  const P=$('acctPanel');P.innerHTML='';P.dataset.mode='dob';P.hidden=false;
+  P.append(el('h3','panel-h','Add your date of birth'));
+  P.append(el('p','authmsg','We use it to show the right school level: primary or secondary. It stays private and never appears on the leaderboard.'));
+  const f=el('form','newp');f.noValidate=true;f.append(dobField());
+  const go=el('button','play','Save');go.type='submit';const no=el('button','ghost','Cancel and sign out');no.type='button';
+  f.append(go,no);P.append(f);
+  const err=el('p','authmsg err');err.hidden=true;P.append(err);
+  no.onclick=()=>{closePanel();signOut()};
+  f.onsubmit=async e=>{e.preventDefault();const d=readDob();if(d.err){err.textContent=d.err;err.hidden=false;return}
+    const role=who.kind==='device'?(who.pl.role||'student'):who.kind==='online'?(PROFILE?.role||'student'):'student';
+    if(role!=='student'&&ageFrom(d.dob)<18){err.textContent='Teacher and parent accounts are for adults aged 18 or over.';err.hidden=false;return}
+    if(who.kind==='device'){who.pl.dob=d.dob;savePlayer(who.pl);closePanel();useLocalPlayer(who.pl.id)}
+    else if(who.kind==='online'){const {error}=await SB.auth.updateUser({data:{dob:d.dob}});if(!error&&PROFILE)await SB.from('profiles').update({level:levelForAge(ageFrom(d.dob))}).eq('id',UID);if(error){err.textContent=error.message;err.hidden=false;return}closePanel();setSbUser((await SB.auth.getUser()).data.user)}
+    else{store.set('cdob:'+UID,d.dob);closePanel();applyAgeLevel(d.dob);setWho($('whoName').textContent,'Signed in with Claude'+ageNote(d.dob))}};
+  $('dobD').focus();
+}
+async function forgotPassword(){
+  const email=val('fId').toLowerCase();if(!email)return fail('Type your email address first, then tap "Forgot your password?".');
+  const {error}=await SB.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
+  fail(error?`That didn't work: ${error.message}`:`If there's an account for ${email}, we've emailed a link to reset the password.`);
+}
+async function oauth(m){
+  if(PANEL.mode==='create')store.set('pendingRole',PANEL.role||'student');
+  if(!ONLINE)return fail(`${m==='google'?'Google':'Microsoft'} sign-in isn't switched on for this site yet. Ask whoever runs this site to set it up, or use a username or email account.`);
+  const {error}=await SB.auth.signInWithOAuth({provider:m==='google'?'google':'azure',options:{redirectTo:location.origin+location.pathname,scopes:m==='microsoft'?'email':undefined}});
+  if(error)fail(`That didn't work: ${error.message}`);
+}
+async function signOut(){
+  closePanel();
+  if(BACKEND==='supabase'&&SB){await SB.auth.signOut();SBUSER=null;PROFILE=null}
+  useLocalPlayer(null);
+}
+
+/* ----- online accounts (Supabase) ----- */
+function loadScript(src){if(window.supabase)return Promise.resolve();return new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=no;setTimeout(no,10000);document.head.appendChild(s)})}
+const onlineName=u=>{const md=u.user_metadata||{};return (md.display_name||(md.full_name||md.name||'').split(' ')[0]||(u.email||'Player').split('@')[0]).slice(0,24)};
+async function initSupabase(){
+  try{await loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js')}catch(e){return false}
+  SB=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);ONLINE=true;
+  const {data}=await SB.auth.getSession();
+  if(data.session?.user)setSbUser(data.session.user);else useLocalPlayer(store.get('current',null));
+  SB.auth.onAuthStateChange((evt,s)=>{if(s?.user&&s.user.id!==SBUSER?.id)setSbUser(s.user)});
+  const q=new URLSearchParams(location.hash.slice(1)+'&'+location.search.slice(1));
+  if(q.get('error_description'))openPanel('signin'),renderPanel(`Sign-in didn't finish: ${q.get('error_description')}`);
+  return true;
+}
+async function ensureProfile(u){
+  const {data}=await SB.from('profiles').select('*').eq('id',u.id).maybeSingle();let row=data;
+  if(!row){const md=u.user_metadata||{};const pr=store.get('pendingRole',null);
+    const role=['student','teacher','parent'].includes(md.role)?md.role:['student','teacher','parent'].includes(pr)?pr:'student';
+    const ins={id:u.id,role,display_name:onlineName(u),level:md.dob?levelForAge(ageFrom(md.dob)):null,parent_code:role==='student'?(/^[A-Z2-9]{6}$/.test(md.parent_code||'')?md.parent_code:code6()):null};
+    const r=await SB.from('profiles').insert(ins).select().single();row=r.data||ins;}
+  store.set('pendingRole',null);
+  PROFILE={id:row.id,name:row.display_name,role:row.role||'student',school_id:row.school_id||null,parent_code:row.parent_code||null,level:row.level||null,dob:u.user_metadata?.dob||null};
+}
+async function setSbUser(u){
+  if(!u){PROFILE=null;useLocalPlayer(null);return}
+  SBUSER=u;BACKEND='supabase';UID=u.id;store.set('current',null);
+  const name=onlineName(u),dob=u.user_metadata?.dob;
+  setWho(name,'Signed in online'+ageNote(dob));$('avatar').src=avatarFor(name);setAuthButtons('in');
+  renderStats();loadRows();
+  try{await ensureProfile(u)}catch(e){PROFILE={id:u.id,name,role:'student',school_id:null,parent_code:null,dob}}
+  setWho(name,`${ROLE_LABEL[PROFILE.role]} · signed in online`+ageNote(dob));
+  if(!dob)askDob({kind:'online'});else applyAgeLevel(dob);
+  refreshRoleUI();
+}
+async function loadRows(){
+  if(!SB)return;
+  const {data,error}=await SB.from('scores').select('user_id,name,board_key,score').order('score',{ascending:false}).limit(2000);
+  if(!error&&data&&BACKEND==='supabase'){ROWS=data.map(r=>({id:r.user_id,key:r.board_key,s:r.score,name:r.name}));renderTopicMeta()}
+}
+
+/* ----- Claude (inside claude.ai) ----- */
+async function initClaude(){
+  try{USER=await window.claude.use('user')}catch(e){}
+  if(USER){const me=await USER.me();UID=me.id;$('avatar').src=me.avatarUrl||DEFAULT_AVATAR;
+    if(UID){BACKEND='claude';const dob=store.get('cdob:'+UID,null);setWho(me.name||'Signed in','Signed in with Claude'+ageNote(dob));setAuthButtons('claude');
+      if(dob)applyAgeLevel(dob);else askDob({kind:'claude'});refreshRoleUI()}
+    if(await USER.can('data.write')===false)canPost=false;}
+  try{DB=await window.claude.use('db')}catch(e){}
+  if(DB&&UID){BACKEND='claude';
+    DB.collection('scores').onSnapshot(snap=>{
+      const rows=[];MYDOC=null;
+      snap.docs.forEach(d=>{const data=d.data()||{};if(d.id===UID)MYDOC=data;const b=data.best||{};for(const k in b)rows.push({id:d.id,key:k,s:b[k]})});
+      ROWS=rows;renderStats();renderTopicMeta();
+    },()=>{});
+  }
+}
+
+/* ----- scores ----- */
+function bumpStats(score){const st=store.get('ps:'+UID,{games:0,correct:0});store.set('ps:'+UID,{games:st.games+1,correct:st.correct+score})}
+async function postScore(key,score){
+  if(!UID)return 'local';
+  if(BACKEND==='claude'){
+    if(!DB||!canPost)return 'fail';
+    const prev=MYDOC||{best:{},games:0,correct:0};
+    const best={...(prev.best||{})};if(score>(best[key]||0))best[key]=score;
+    try{await DB.doc('scores/'+UID).set({best,games:(prev.games||0)+1,correct:(prev.correct||0)+score,updated:Date.now()});return 'ok'}
+    catch(e){if(e&&e.code==='invalid_argument')canPost=false;return 'fail'}
+  }
+  if(BACKEND==='supabase'){
+    bumpStats(score);
+    const mine=ROWS.find(r=>r.key===key&&r.id===UID);if(mine&&mine.s>=score)return 'ok';
+    const {error}=await SB.from('scores').upsert({user_id:UID,board_key:key,name:onlineName(SBUSER),score,updated_at:new Date().toISOString()},{onConflict:'user_id,board_key'});
+    if(error)return 'fail';await loadRows();return 'ok';
+  }
+  const pb=store.get('pb:'+UID,{});if(score>(pb[key]||0)){pb[key]=score;store.set('pb:'+UID,pb)}
+  bumpStats(score);loadLocalRows();return 'ok';
+}
+function initAuthUi(){
+  $('authBtn').onclick=()=>{
+    if(BACKEND==='claude'){const P=$('acctPanel');if(!P.hidden){P.hidden=true;return}P.innerHTML='';
+      P.append(el('h3','panel-h','You are signed in'),el('p','authmsg','You are signed in with your claude.ai account, so your scores already go on the leaderboard.'));P.hidden=false;return}
+    if(UID)return signOut();
+    const P=$('acctPanel');if(!P.hidden&&P.dataset.mode==='signin'){P.hidden=true;return}openPanel('signin');
+  };
+  $('createBtn').onclick=()=>{const P=$('acctPanel');if(!P.hidden&&P.dataset.mode==='create'){P.hidden=true;return}openPanel('create')};
+}
+async function initCloud(){
+  initAuthUi();
+  if(window.claude?.use){await initClaude();if(BACKEND==='claude')return}
+  if(SUPABASE_URL&&SUPABASE_ANON_KEY&&await initSupabase())return;
+  useLocalPlayer(store.get('current',null));
+}
+function renderStats(){
+  let g,c,b;
+  if(BACKEND==='claude'&&UID){g=MYDOC?.games||0;c=MYDOC?.correct||0;b=Object.keys(MYDOC?.best||{}).length}
+  else if(UID){const st=store.get('ps:'+UID,{games:0,correct:0});g=st.games;c=st.correct;b=ROWS.filter(r=>r.id===UID).length}
+  else{g=store.get('games',0);c=store.get('correct',0);b=store.get('bests',0)}
+  $('mystats').hidden=!g;$('stGames').textContent=g;$('stCorrect').textContent=c;$('stBests').textContent=b;
+}
+
+/* ---------- Schools, classes, homework & progress ----------
+   Works on one device with no setup (everything saved in this browser).
+   With Supabase switched on, teachers, pupils and parents share it across devices. */
+const CODECHARS='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+function code6(){const r=new Uint8Array(6);try{crypto.getRandomValues(r)}catch(e){for(let i=0;i<6;i++)r[i]=Math.floor(Math.random()*256)}let s='';for(const x of r)s+=CODECHARS[x%CODECHARS.length];return s}
+const newId=()=>'x'+Date.now().toString(36)+randHex(4);
+const isoDay=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const todayISO=()=>isoDay(new Date());
+const nowISO=()=>new Date().toISOString();
+const Ld=k=>store.get('d:'+k,[]),Sd=(k,v)=>store.set('d:'+k,v);
+const fmtDate=iso=>{if(!iso)return'';const d=new Date(iso.length===10?iso+'T12:00:00':iso);return d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})};
+const ROLE_LABEL={student:'Student',teacher:'Teacher',parent:'Parent'};
+let PROFILE=null;
+
+function me(){
+  if(!UID)return null;
+  if(BACKEND==='supabase')return PROFILE;
+  if(BACKEND==='claude'){const p=store.get('cprof:'+UID,{});return{id:UID,name:$('whoName').textContent,role:p.role||'student',school_id:p.school_id||null,parent_code:p.parent_code||null,dob:store.get('cdob:'+UID,null)}}
+  const pl=players().find(x=>x.id===UID);return pl?{...pl,role:pl.role||'student'}:null;
+}
+function updateMe(patch){
+  if(BACKEND==='claude'){store.set('cprof:'+UID,{...store.get('cprof:'+UID,{}),...patch});return}
+  const pl=store.get('players',[]).find(x=>x.id===UID);if(pl)savePlayer({...pl,...patch});
+}
+async function myParentCode(){
+  const m=me();if(!m||m.role!=='student')return null;if(m.parent_code)return m.parent_code;
+  const c=code6();
+  if(BACKEND==='supabase'){await SB.from('profiles').update({parent_code:c}).eq('id',UID);PROFILE.parent_code=c}else updateMe({parent_code:c});
+  return c;
+}
+
+const Data={
+  on(){return BACKEND==='supabase'},
+  async searchSchools(q){q=(q||'').trim().toLowerCase();
+    if(this.on()){let r=SB.from('schools').select('*').order('name').limit(30);
+      if(q){const e=q.replace(/[%,()]/g,' ');r=r.or(`name.ilike.%${e}%,town.ilike.%${e}%,postcode.ilike.%${e}%`)}
+      const {data}=await r;return data||[]}
+    return Ld('schools').filter(s=>!q||[s.name,s.town,s.postcode].join(' ').toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name)).slice(0,30)},
+  async getSchool(id){if(!id)return null;
+    if(this.on()){const {data}=await SB.from('schools').select('*').eq('id',id).maybeSingle();return data}
+    return Ld('schools').find(s=>s.id===id)||null},
+  async addSchool(s){
+    if(this.on()){const {data,error}=await SB.from('schools').insert(s).select().single();if(error)throw error;return data}
+    const row={...s,id:newId(),created_by:UID};Sd('schools',[...Ld('schools'),row]);return row},
+  async setMySchool(id){
+    if(this.on()){const {error}=await SB.from('profiles').update({school_id:id}).eq('id',UID);if(error)throw error;PROFILE.school_id=id;return}
+    updateMe({school_id:id})},
+  async teacherClasses(){
+    if(this.on()){const {data}=await SB.from('classes').select('*').eq('teacher_id',UID).order('created_at');return data||[]}
+    return Ld('classes').filter(c=>c.teacher_id===UID)},
+  async createClass(name){const row={name,school_id:me().school_id||null,join_code:code6()};
+    if(this.on()){const {data,error}=await SB.from('classes').insert(row).select().single();if(error)throw error;return data}
+    const r={...row,id:newId(),teacher_id:UID,created_at:nowISO()};Sd('classes',[...Ld('classes'),r]);return r},
+  async classMembers(cid){
+    if(this.on()){const {data}=await SB.from('class_members').select('student_id, profiles!class_members_student_id_fkey(display_name)').eq('class_id',cid);
+      return (data||[]).map(m=>({id:m.student_id,name:m.profiles?.display_name||'Pupil'}))}
+    return Ld('members').filter(m=>m.class_id===cid).map(m=>({id:m.student_id,name:(players().find(p=>p.id===m.student_id)||{}).name||'Pupil'}))},
+  async joinClass(code){code=code.trim().toUpperCase();
+    if(this.on()){const {data,error}=await SB.rpc('join_class',{p_code:code});if(error)throw new Error(error.message);
+      const c=Array.isArray(data)?data[0]:data;if(!c)throw new Error('No class has that code. Check it with your teacher.');
+      if(!PROFILE.school_id&&c.school_id)PROFILE.school_id=c.school_id;return c}
+    const c=Ld('classes').find(x=>x.join_code===code);if(!c)throw new Error('No class has that code. Check it with your teacher.');
+    if(!Ld('members').some(m=>m.class_id===c.id&&m.student_id===UID))Sd('members',[...Ld('members'),{class_id:c.id,student_id:UID,joined_at:nowISO()}]);
+    if(!me().school_id&&c.school_id)updateMe({school_id:c.school_id});return c},
+  async studentClasses(sid){sid=sid||UID;
+    if(this.on()){const {data}=await SB.from('class_members').select('classes(*)').eq('student_id',sid);return (data||[]).map(r=>r.classes).filter(Boolean)}
+    const ids=Ld('members').filter(m=>m.student_id===sid).map(m=>m.class_id);return Ld('classes').filter(c=>ids.includes(c.id))},
+  async setHomework(hw){
+    if(this.on()){const {data,error}=await SB.from('homework').insert(hw).select().single();if(error)throw error;return data}
+    const r={...hw,id:newId(),teacher_id:UID,created_at:nowISO()};Sd('homework',[...Ld('homework'),r]);return r},
+  async deleteHomework(id){
+    if(this.on()){const {error}=await SB.from('homework').delete().eq('id',id);if(error)throw error;return}
+    Sd('homework',Ld('homework').filter(h=>h.id!==id));Sd('subs',Ld('subs').filter(s=>s.homework_id!==id))},
+  async homeworkFor(cids){if(!cids.length)return[];
+    if(this.on()){const {data}=await SB.from('homework').select('*').in('class_id',cids).order('due_date');return data||[]}
+    return Ld('homework').filter(h=>cids.includes(h.class_id)).sort((a,b)=>a.due_date.localeCompare(b.due_date))},
+  async submissions({hwIds,studentId}){
+    if(hwIds&&!hwIds.length)return[];
+    if(this.on()){let r=SB.from('submissions').select('*');if(hwIds)r=r.in('homework_id',hwIds);if(studentId)r=r.eq('student_id',studentId);const {data}=await r;return data||[]}
+    return Ld('subs').filter(s=>(!hwIds||hwIds.includes(s.homework_id))&&(!studentId||s.student_id===studentId))},
+  async submit(hwId,res){
+    const prev=(await this.submissions({hwIds:[hwId],studentId:UID}))[0];
+    if(prev&&prev.score>res.score)return prev;
+    const row={homework_id:hwId,student_id:UID,score:res.score,total:res.total,stars:res.stars,completed_at:nowISO()};
+    if(this.on()){const {error}=await SB.from('submissions').upsert(row,{onConflict:'homework_id,student_id'});if(error)throw error;return row}
+    Sd('subs',[...Ld('subs').filter(s=>!(s.homework_id===hwId&&s.student_id===UID)),row]);return row},
+  async log(entry){
+    if(!UID||me()?.role!=='student')return;
+    const row={student_id:UID,...entry,created_at:nowISO()};
+    try{if(this.on()){await SB.from('activity').insert(row);return}}catch(e){return}
+    const a=Ld('activity');a.push(row);Sd('activity',a.slice(-3000))},
+  async activity(sid){
+    if(this.on()){const {data}=await SB.from('activity').select('*').eq('student_id',sid).order('created_at',{ascending:false}).limit(400);return data||[]}
+    return Ld('activity').filter(a=>a.student_id===sid).sort((a,b)=>b.created_at.localeCompare(a.created_at)).slice(0,400)},
+  async linkChild(code){code=code.trim().toUpperCase();
+    if(this.on()){const {data,error}=await SB.rpc('link_child',{p_code:code});if(error)throw new Error(error.message);
+      const k=Array.isArray(data)?data[0]:data;if(!k)throw new Error('No pupil has that parent code. Check it in your child\'s account.');return k}
+    const kid=players().find(p=>(p.role||'student')==='student'&&p.parent_code===code);
+    if(!kid)throw new Error('No pupil on this device has that parent code. Check it in your child\'s account under "My school".');
+    if(!Ld('plinks').some(l=>l.parent_id===UID&&l.student_id===kid.id))Sd('plinks',[...Ld('plinks'),{parent_id:UID,student_id:kid.id}]);
+    return{id:kid.id,display_name:kid.name}},
+  async children(){
+    if(this.on()){const {data}=await SB.from('parent_links').select('student_id, profiles!parent_links_student_id_fkey(display_name,level,school_id)').eq('parent_id',UID);
+      return (data||[]).map(r=>({id:r.student_id,name:r.profiles?.display_name||'Child',level:r.profiles?.level,school_id:r.profiles?.school_id}))}
+    return Ld('plinks').filter(l=>l.parent_id===UID).map(l=>{const k=players().find(p=>p.id===l.student_id)||{};
+      return{id:l.student_id,name:k.name||'Child',level:k.dob?levelForAge(ageFrom(k.dob)):null,school_id:k.school_id}})},
+};
+
+/* ----- topic references used by homework: "level|pack|topic|variant" ----- */
+function packsFor(lv){return lv==='all'?COUNTRIES:LEVELS[lv].subjects}
+function resolveRef(ref){
+  const [lv,pid,tid,vk]=ref.split('|');const p=(packsFor(lv)||[]).find(x=>x.id===pid);const t=p&&p.topics.find(x=>x.id===tid);if(!t)return null;
+  const v=vk?(t.variants||[]).find(x=>x.key===vk):null;const gen=v?v.gen:t.gen;if(!gen)return null;
+  return{p,t,gen,name:t.name+(v?`: ${v.label}`:''),subject:p.name,ref};
+}
+function allRefs(lv){const out=[];packsFor(lv).forEach(p=>p.topics.forEach(t=>{
+  if(t.variants)t.variants.forEach(v=>out.push(`${lv}|${p.id}|${t.id}|${v.key}`));else out.push(`${lv}|${p.id}|${t.id}|`)}));return out}
+
+/* ----- question styles ----- */
+const FORMATS=[{id:'mc',label:'Multiple choice'},{id:'type',label:'Type the answer'},{id:'tf',label:'True or false'}];
+const normAns=x=>String(x).replace(/[−–]/g,'-').replace(/[’‘]/g,"'").replace(/\s+/g,' ').trim().toLowerCase();
+function sameAns(a,b){a=normAns(a);b=normAns(b);if(a===b)return true;
+  const na=a.replace(/,/g,''),nb=b.replace(/,/g,'');if(na!==''&&nb!==''&&!isNaN(na)&&!isNaN(nb))return Number(na)===Number(nb);
+  return a.replace(/[.!?]$/,'')===b.replace(/[.!?]$/,'');}
+const isNumAns=a=>/^-?[0-9][0-9,]*(\.[0-9]+)?%?$/.test(String(a).replace(/[−]/g,'-'));
+function makeQ(gen,formats){
+  const c=gen();const a=String(c.a);
+  const ok=(formats&&formats.length?formats:['mc']).filter(f=>f!=='type'||a.length<=16);
+  const f=ok.length?pick(ok):'mc';
+  let opts=c.opts.map(String);
+  if(opts.length>6){
+    const numVal=o=>Number(o.replace(/,/g,'').replace(/−/g,'-').replace(/%$/,''));
+    const others=shuffle(opts.filter(o=>o!==a)).slice(0,5);opts=[a,...others];
+    opts=opts.every(o=>!isNaN(numVal(o)))?opts.sort((x,y)=>numVal(x)-numVal(y)):shuffle(opts)}
+  const q={q:String(c.q),a,hint:c.hint||'',type:f,opts};
+  if(f==='tf'){const wrong=opts.filter(o=>o!==a);q.truth=!wrong.length||Math.random()<.5;q.shown=q.truth?a:pick(wrong)}
+  if(f==='type')q.numeric=isNumAns(a);
+  return q;
+}
+
+/* ----- bite-size quiz player (homework + Daily 7) ----- */
+let HW=null;
+function openQuiz(cfg){
+  // cfg: {title, refs:[...], count, formats, kind:'homework'|'daily', hw}
+  clearAll();
+  const items=[];const refs=cfg.refs.map(resolveRef).filter(Boolean);if(!refs.length)return toast('This homework has no topics that still exist.');
+  for(let i=0;i<cfg.count;i++){const r=refs[i%refs.length];let q,t=0;do{q=makeQ(r.gen,cfg.formats)}while(items.some(x=>x.q.q===q.q)&&t++<6);items.push({r,q,ok:null})}
+  HW={...cfg,items:shuffle(items),i:0,score:0,stars:0,run:0};
+  setColor(refs[0].p.id);
+  ['home','game','lesson'].forEach(id=>$(id).hidden=true);$('hw').hidden=false;$('hwEnd').hidden=true;
+  $('hwTitle').textContent=cfg.title;$('hwStars').textContent='0';
+  renderHwQ();
+}
+function renderHwDots(){const d=$('hwDots');d.innerHTML='';HW.items.forEach((it,i)=>{const s=el('span','dot'+(it.ok===true?' ok':it.ok===false?' bad':'')+(i===HW.i?' now':''));d.append(s)})}
+function renderHwQ(){
+  const it=HW.items[HW.i],q=it.q;renderHwDots();
+  $('hwSubject').textContent=it.r.subject+' · '+it.r.name;
+  $('hwQ').textContent=q.q;$('hwQ').classList.toggle('long',q.q.length>18);
+  $('hwHint').textContent=q.type==='tf'?'True or false?':q.type==='type'?(q.hint?q.hint+' · ':'')+'type your answer':q.hint;
+  $('hwShown').hidden=q.type!=='tf';if(q.type==='tf')$('hwShown').textContent='Answer: '+q.shown;
+  $('hwFeed').hidden=true;const box=$('hwAnswer');box.innerHTML='';
+  if(q.type==='mc'){const g=el('div','keys');const long=Math.max(...q.opts.map(o=>o.length));g.classList.toggle('text',long>5);
+    g.style.setProperty('--cols',long>13?2:q.opts.length<=4?2:3);
+    q.opts.forEach(o=>{const b=el('button','key',o);b.type='button';b.onclick=()=>hwAnswer(o,b);g.append(b)});box.append(g)}
+  else if(q.type==='tf'){const g=el('div','keys tfkeys');g.style.setProperty('--cols',2);
+    [['True','✓ True'],['False','✗ False']].forEach(([v,l])=>{const b=el('button','key',l);b.type='button';b.onclick=()=>hwAnswer(v,b);g.append(b)});box.append(g)}
+  else{const f=el('form','typeans');const i=el('input');i.id='hwInput';i.autocomplete='off';i.setAttribute('aria-label','Your answer');
+    if(q.numeric){i.inputMode='decimal'}i.placeholder=q.numeric?'Type a number':'Type your answer';
+    const go=el('button','play','Check');go.type='submit';f.append(i,go);f.onsubmit=e=>{e.preventDefault();if(i.value.trim())hwAnswer(i.value,null)};box.append(f);
+    if(q.numeric){const pad=el('div','keypad');['7','8','9','4','5','6','1','2','3','−','0','⌫'].forEach(k=>{const b=el('button','kp',k);b.type='button';
+      b.onclick=()=>{if(k==='⌫')i.value=i.value.slice(0,-1);else i.value+=k==='−'?'-':k;i.focus()};pad.append(b)});box.append(pad)}
+    setTimeout(()=>i.focus(),30)}
+}
+function hwAnswer(v,btn){
+  const it=HW.items[HW.i];if(it.ok!==null)return;const q=it.q;
+  const right=q.type==='tf'?(v==='True')===q.truth:sameAns(v,q.a);
+  it.ok=right;it.given=String(v);
+  if(right){HW.score++;HW.run++;HW.stars+=1+(HW.run%3===0?1:0)}else HW.run=0;
+  $('hwStars').textContent=HW.stars;
+  [...$('hwAnswer').querySelectorAll('button,input')].forEach(x=>x.disabled=true);
+  if(btn)btn.classList.add(right?'hit':'miss');
+  const feed=$('hwFeed');feed.hidden=false;feed.classList.toggle('good',right);feed.classList.toggle('bad',!right);
+  $('hwFeedT').textContent=right?pick(['Brilliant!','Spot on!','Great work!','Yes!','Nailed it!'])+(HW.run>0&&HW.run%3===0?' +1 bonus star for 3 in a row':''):'Not quite.';
+  $('hwFeedA').textContent=right?'':`The answer is ${q.type==='tf'?(q.truth?'True':'False')+` (${q.q} → ${q.a})`:q.a}.`;
+  $('hwNext').textContent=HW.i===HW.items.length-1?'See results':'Next';
+  renderHwDots();$('hwNext').focus();
+}
+async function hwNext(){
+  if(HW.i<HW.items.length-1){HW.i++;renderHwQ();return}
+  const total=HW.items.length,pct=Math.round(HW.score/total*100);
+  $('hwEndT').textContent=HW.kind==='daily'?'Daily 7 done!':'Homework done!';
+  $('hwEndStars').textContent='★ '+HW.stars;
+  $('hwEndScore').textContent=`${HW.score} out of ${total} right (${pct}%)`;
+  $('hwEndNote').textContent=pct===100?'Perfect score!':pct>=70?'Great effort. Keep it up!':'Good try. Read the lesson and have another go.';
+  $('hwEnd').hidden=false;
+  const bySub={};HW.items.forEach(x=>{const k=x.r.subject;bySub[k]=bySub[k]||{s:0,t:0};bySub[k].t++;if(x.ok)bySub[k].s++});
+  try{
+    if(HW.kind==='homework'&&HW.hw){await Data.submit(HW.hw.id,{score:HW.score,total,stars:HW.stars});}
+    for(const k in bySub)await Data.log({kind:HW.kind,topic_key:HW.hw?HW.hw.id:'daily',topic_name:HW.title,subject:k,score:bySub[k].s,total:bySub[k].t});
+    $('hwEndSaved').textContent=me()?'Saved. Your teacher and parent can see this.':'Sign in to save your results.';
+  }catch(e){$('hwEndSaved').textContent='Could not save your result: '+(e.message||e)}
+}
+function closeQuiz(){HW=null;$('hw').hidden=true;home();if(UID)showView(VIEW||'play')}
+function openDaily(){
+  const refs=shuffle(subjects().flatMap(p=>p.topics.map(t=>t.variants?`${level}|${p.id}|${t.id}|${pick(t.variants).key}`:`${level}|${p.id}|${t.id}|`))).slice(0,7);
+  openQuiz({title:`Daily 7 · ${LEVELS[level].label}`,refs,count:7,formats:['mc','type','tf'],kind:'daily'});
+}
+function streakOf(acts){const days=new Set(acts.filter(a=>a.kind==='daily').map(a=>isoDay(new Date(a.created_at))));
+  let n=0;const d=new Date();if(!days.has(isoDay(d)))d.setDate(d.getDate()-1);while(days.has(isoDay(d))){n++;d.setDate(d.getDate()-1)}return n}
+function toast(msg){let t=$('toast');t.textContent=msg;t.hidden=false;clearTimeout(t._h);t._h=setTimeout(()=>t.hidden=true,3500)}
+
+/* ----- role menu & views ----- */
+let VIEW='play';
+const NAV={
+  student:[['play','🎮 Play'],['homework','📚 Homework'],['daily','⭐ Daily 7'],['school','🏫 My school']],
+  teacher:[['play','🎮 Play'],['classes','👩‍🏫 Classes'],['sethw','📝 Set homework'],['results','📊 Results'],['school','🏫 My school']],
+  parent:[['play','🎮 Play'],['children','👪 My children']]};
+function refreshRoleUI(){
+  const m=me(),nav=$('roleNav');nav.innerHTML='';
+  if(!m){nav.hidden=true;showView('play');return}
+  nav.hidden=false;const items=NAV[m.role]||NAV.student;
+  const badge=el('span','rolebadge',ROLE_LABEL[m.role]||'Student');nav.append(badge);
+  items.forEach(([id,label])=>{const b=el('button','navbtn',label);b.type='button';b.dataset.view=id;b.onclick=()=>showView(id);nav.append(b)});
+  if(!items.some(x=>x[0]===VIEW))VIEW='play';showView(VIEW);
+}
+function showView(v){
+  VIEW=v;$('roleNav').querySelectorAll('.navbtn').forEach(b=>b.setAttribute('aria-pressed',b.dataset.view===v));
+  $('viewPlay').hidden=v!=='play';const rv=$('roleView');rv.hidden=v==='play';
+  if(v==='play')return;rv.innerHTML='';
+  ({homework:viewHomework,daily:viewDaily,school:viewSchool,classes:viewClasses,sethw:viewSetHw,results:viewResults,children:viewChildren}[v]||(()=>{}))(rv);
+}
+const sec=(title,sub)=>{const s=el('section','rcard');s.append(el('h3','rtitle',title));if(sub)s.append(el('p','rsub',sub));return s};
+const btn=(label,cls,fn)=>{const b=el('button',cls||'play',label);b.type='button';if(fn)b.onclick=fn;return b};
+function inputRow(id,label,attrs){const l=el('label','fld');l.htmlFor=id;l.append(label);const i=el(attrs&&attrs.tag||'input');i.id=id;Object.assign(i,attrs||{});l.append(i);return l}
+const errP=()=>{const p=el('p','authmsg err');p.setAttribute('role','alert');return p};
+
+/* School card with location + map */
+function schoolCard(s,actions){
+  const c=el('div','school');const h=el('div','schoolhead');h.append(el('b',null,s.name));
+  const loc=[s.town,s.postcode,s.nation].filter(Boolean).join(' · ');h.append(el('span','loc','📍 '+(loc||'Location not set')));c.append(h);
+  if(s.lat&&s.lon){
+    const a=el('a','maplink','Open map');a.href=`https://www.openstreetmap.org/?mlat=${s.lat}&mlon=${s.lon}#map=15/${s.lat}/${s.lon}`;a.target='_blank';a.rel='noopener';h.append(a);
+    if(!window.claude?.use){const f=el('iframe','map');f.title='Map of '+s.name;f.loading='lazy';
+      f.src=`https://www.openstreetmap.org/export/embed.html?bbox=${s.lon-0.012},${s.lat-0.006},${+s.lon+0.012},${+s.lat+0.006}&layer=mapnik&marker=${s.lat},${s.lon}`;c.append(f)}}
+  if(actions)c.append(actions);return c;
+}
+async function lookupPostcode(pc){
+  const r=await fetch('https://api.postcodes.io/postcodes/'+encodeURIComponent(pc.trim()));const j=await r.json();
+  if(!r.ok||!j.result)throw new Error('That postcode was not found.');const x=j.result;
+  return{postcode:x.postcode,town:x.admin_district||x.parish||'',region:x.region||'',nation:x.country||'',lat:x.latitude,lon:x.longitude};
+}
+async function viewSchool(root){
+  const m=me();
+  const cur=sec('My school');root.append(cur);
+  const s=await Data.getSchool(m.school_id);
+  if(s)cur.append(schoolCard(s));else cur.append(el('p','rsub','You have not picked a school yet. Search for it below.'));
+  // search
+  const find=sec('Find your school','Search by school name, town or postcode.');root.append(find);
+  const q=inputRow('schoolQ','Search',{placeholder:'e.g. Kingsholm or GL1',autocomplete:'off'});find.append(q);
+  const list=el('div','schoollist');find.append(list);
+  const run=async()=>{list.innerHTML='';const rows=await Data.searchSchools($('schoolQ').value);
+    if(!rows.length){list.append(el('p','rsub',m.role==='teacher'?'No schools found. Add yours below.':'No schools found. Ask your teacher to add your school.'));return}
+    rows.forEach(r=>{const act=el('div','row');act.append(btn(r.id===m.school_id?'✓ Selected':'Choose this school',r.id===m.school_id?'ghost':'play',async()=>{
+      try{await Data.setMySchool(r.id);toast('School saved.');showView('school')}catch(e){toast(e.message)}}));list.append(schoolCard(r,act))})};
+  $('schoolQ').oninput=()=>{clearTimeout(run._t);run._t=setTimeout(run,250)};run();
+  // add (teachers)
+  if(m.role==='teacher'){
+    const add=sec('Add a school','Type the postcode and we fill in the town and map.');root.append(add);
+    const f=el('form','rform');f.noValidate=true;
+    f.append(inputRow('nsName','School name',{required:true,maxLength:80,placeholder:'e.g. Kingsholm Primary School'}),
+      inputRow('nsPc','Postcode',{required:true,maxLength:9,placeholder:'e.g. GL1 3BN',autocomplete:'off'}),
+      inputRow('nsTown','Town or area',{maxLength:60,placeholder:'Filled in from the postcode'}),
+      inputRow('nsNation','Nation',{tag:'select'}));
+    const e=errP();const look=btn('Look up postcode','ghost');const save=el('button','play','Add school');save.type='submit';
+    const r=el('div','row');r.append(look,save);f.append(r,e);add.append(f);
+    ['England','Wales','Scotland','Northern Ireland'].forEach(n=>$('nsNation').append(new Option(n,n)));
+    let geo=null;
+    look.onclick=async()=>{e.textContent='Looking up…';e.className='authmsg';
+      try{geo=await lookupPostcode($('nsPc').value);$('nsTown').value=geo.town;$('nsNation').value=geo.nation;$('nsPc').value=geo.postcode;e.textContent=`Found: ${geo.town}, ${geo.region?geo.region+', ':''}${geo.nation}.`}
+      catch(x){geo=null;e.className='authmsg err';e.textContent=(x.message||'Lookup failed')+' You can still type the town yourself.'}};
+    f.onsubmit=async ev=>{ev.preventDefault();e.className='authmsg err';
+      const name=$('nsName').value.trim(),pc=$('nsPc').value.trim().toUpperCase();
+      if(name.length<3)return e.textContent='Please type the school name.';
+      if(!/^[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2}$/.test(pc))return e.textContent='Please type a full UK postcode, like GL1 3BN.';
+      if(!geo||geo.postcode.replace(/\s/g,'')!==pc.replace(/\s/g,'')){try{geo=await lookupPostcode(pc)}catch(x){geo=null}}
+      const row={name,postcode:geo?geo.postcode:pc,town:$('nsTown').value.trim()||(geo&&geo.town)||'',region:geo?geo.region:'',nation:$('nsNation').value,lat:geo?geo.lat:null,lon:geo?geo.lon:null};
+      try{const s2=await Data.addSchool(row);await Data.setMySchool(s2.id);toast('School added and selected.');showView('school')}catch(x){e.textContent='Could not add the school: '+x.message}};
+  }
+  // pupils: classes + parent code
+  if(m.role==='student'){
+    const cls=sec('My classes','Your teacher gives you a 6-letter class code.');root.append(cls);
+    const mine=await Data.studentClasses();if(mine.length){const ul=el('ul','plain');mine.forEach(c=>ul.append(el('li',null,'✓ '+c.name)));cls.append(ul)}
+    const f=el('form','rform');f.noValidate=true;f.append(inputRow('joinCode','Class code',{maxLength:6,placeholder:'e.g. K7P2QX',autocomplete:'off'}));
+    const go=el('button','play','Join class');go.type='submit';const e=errP();f.append(go,e);cls.append(f);
+    f.onsubmit=async ev=>{ev.preventDefault();try{const c=await Data.joinClass($('joinCode').value);toast(`You joined ${c.name}.`);showView('school')}catch(x){e.textContent=x.message}};
+    const pc=sec('Parent code','Give this code to your parent or carer so they can see your progress.');root.append(pc);
+    const code=await myParentCode();const big=el('div','bigcode',code);pc.append(big);
+    pc.append(btn('Copy code','ghost',async()=>{try{await navigator.clipboard.writeText(code);toast('Copied.')}catch(x){toast('Select the code and copy it.')}}));
+  }
+}
+
+/* Teacher: classes */
+async function viewClasses(root){
+  const m=me();
+  const mk=sec('Create a class','Pupils join with the class code.');root.append(mk);
+  if(!m.school_id)mk.append(el('p','authmsg err','Tip: pick your school first in "My school" so classes show the school.'));
+  const f=el('form','rform');f.noValidate=true;f.append(inputRow('clsName','Class name',{maxLength:40,placeholder:'e.g. Year 4 Oak'}));
+  const go=el('button','play','Create class');go.type='submit';const e=errP();f.append(go,e);mk.append(f);
+  f.onsubmit=async ev=>{ev.preventDefault();const n=$('clsName').value.trim();if(!n)return e.textContent='Please name the class.';
+    try{await Data.createClass(n);toast('Class created.');showView('classes')}catch(x){e.textContent=x.message}};
+  const cls=await Data.teacherClasses();
+  if(!cls.length){root.append(sec('No classes yet','Create your first class above.'));return}
+  const hws=await Data.homeworkFor(cls.map(c=>c.id));const subs=await Data.submissions({hwIds:hws.map(h=>h.id)});
+  for(const c of cls){
+    const s=sec(c.name);const code=el('div','codeline');code.append('Class code: ',el('span','bigcode sm',c.join_code));s.append(code);
+    const mem=await Data.classMembers(c.id);const myHw=hws.filter(h=>h.class_id===c.id);
+    s.append(el('p','rsub',`${mem.length} pupil${mem.length===1?'':'s'} · ${myHw.length} homework set`));
+    if(mem.length){const t=el('table','rtable');const hr=el('tr');['Pupil','Homework done','Average'].forEach(x=>hr.append(el('th',null,x)));t.append(hr);
+      mem.forEach(p=>{const ps=subs.filter(x=>x.student_id===p.id&&myHw.some(h=>h.id===x.homework_id));
+        const avg=ps.length?Math.round(ps.reduce((a,x)=>a+x.score/x.total,0)/ps.length*100)+'%':'–';
+        const tr=el('tr');tr.append(el('td',null,p.name),el('td',null,`${ps.length} / ${myHw.length}`),el('td',null,avg));t.append(tr)});
+      const w=el('div','tablewrap');w.append(t);s.append(w)}
+    s.append(btn('Set homework for this class','ghost',()=>{SETHW_CLASS=c.id;showView('sethw')}));
+    root.append(s);
+  }
+}
+/* Teacher: set homework */
+let SETHW_CLASS=null;
+async function viewSetHw(root){
+  const cls=await Data.teacherClasses();
+  if(!cls.length){root.append(sec('Create a class first','Go to Classes and make one. Then come back here.'));return}
+  const s=sec('Set homework','Pick topics, how many questions, the question styles and the due date.');root.append(s);
+  const f=el('form','rform');f.noValidate=true;s.append(f);
+  const csel=inputRow('hwClass','Class',{tag:'select'});f.append(csel);cls.forEach(c=>$('hwClass').append(new Option(c.name,c.id)));if(SETHW_CLASS)$('hwClass').value=SETHW_CLASS;
+  f.append(inputRow('hwTitleIn','Title',{maxLength:60,placeholder:'e.g. Times tables practice'}));
+  // topic picker
+  const pk=el('div','picker');pk.append(el('span','fldlabel','Topics'));
+  const prow=el('div','row');const lvSel=el('select');lvSel.id='pkLevel';lvSel.setAttribute('aria-label','Level');
+  [['primary','Primary'],['secondary','Secondary'],['all','Countries']].forEach(([v,l])=>lvSel.append(new Option(l,v)));lvSel.value=level;
+  const pkSel=el('select');pkSel.id='pkPack';pkSel.setAttribute('aria-label','Subject');prow.append(lvSel,pkSel);pk.append(prow);
+  const tl=el('div','topiclist');pk.append(tl);const chosen=el('div','chosen');pk.append(el('span','fldlabel','Chosen'),chosen);f.append(pk);
+  const picked=new Set();
+  const drawChosen=()=>{chosen.innerHTML='';if(!picked.size)chosen.append(el('span','rsub','None yet. Tick some topics above.'));
+    [...picked].forEach(ref=>{const r=resolveRef(ref);if(!r)return;const c=el('button','chip',`${r.subject}: ${r.name} ✕`);c.type='button';c.onclick=()=>{picked.delete(ref);drawChosen();drawTopics()};chosen.append(c)})};
+  const drawPacks=()=>{pkSel.innerHTML='';packsFor(lvSel.value).forEach(p=>pkSel.append(new Option(p.name,p.id)));drawTopics()};
+  const drawTopics=()=>{tl.innerHTML='';const p=packsFor(lvSel.value).find(x=>x.id===pkSel.value);if(!p)return;
+    p.topics.forEach(t=>{const opts=t.variants?t.variants.map(v=>[`${lvSel.value}|${p.id}|${t.id}|${v.key}`,`${t.name}: ${v.label}`]):[[`${lvSel.value}|${p.id}|${t.id}|`,t.name]];
+      opts.forEach(([ref,label])=>{const l=el('label','tick');const c=el('input');c.type='checkbox';c.checked=picked.has(ref);
+        c.onchange=()=>{c.checked?picked.add(ref):picked.delete(ref);drawChosen()};l.append(c,' '+label);tl.append(l)})})};
+  lvSel.onchange=drawPacks;pkSel.onchange=drawTopics;drawPacks();drawChosen();
+  const nrow=el('div','row');
+  const cnt=inputRow('hwCount','Questions',{tag:'select'});nrow.append(cnt);
+  const due=inputRow('hwDue','Due date',{type:'date'});nrow.append(due);f.append(nrow);
+  [5,10,15,20].forEach(n=>$('hwCount').append(new Option(n,n)));$('hwCount').value=10;
+  const d=new Date();d.setDate(d.getDate()+7);$('hwDue').value=isoDay(d);$('hwDue').min=todayISO();
+  const fm=el('div','picker');fm.append(el('span','fldlabel','Question styles'));
+  FORMATS.forEach(x=>{const l=el('label','tick');const c=el('input');c.type='checkbox';c.value=x.id;c.checked=true;c.className='fmt';l.append(c,' '+x.label);fm.append(l)});f.append(fm);
+  const go=el('button','play','Set homework');go.type='submit';const e=errP();f.append(go,e);
+  f.onsubmit=async ev=>{ev.preventDefault();
+    const formats=[...f.querySelectorAll('.fmt:checked')].map(x=>x.value);
+    const title=$('hwTitleIn').value.trim()||'Homework';
+    if(!picked.size)return e.textContent='Tick at least one topic.';
+    if(!formats.length)return e.textContent='Pick at least one question style.';
+    if(!$('hwDue').value)return e.textContent='Choose a due date.';
+    try{await Data.setHomework({class_id:$('hwClass').value,title,topics:[...picked],question_count:+$('hwCount').value,formats,due_date:$('hwDue').value});
+      toast('Homework set.');SETHW_CLASS=$('hwClass').value;showView('results')}catch(x){e.textContent='Could not save: '+x.message}};
+}
+/* Teacher: results */
+async function viewResults(root){
+  const cls=await Data.teacherClasses();const hws=await Data.homeworkFor(cls.map(c=>c.id));
+  if(!hws.length){root.append(sec('No homework yet','Set some in "Set homework".'));return}
+  const subs=await Data.submissions({hwIds:hws.map(h=>h.id)});
+  for(const h of hws.slice().reverse()){
+    const c=cls.find(x=>x.id===h.class_id);const mem=await Data.classMembers(h.class_id);
+    const s=sec(h.title,`${c?c.name:''} · due ${fmtDate(h.due_date)} · ${h.question_count} questions · ${h.topics.length} topic${h.topics.length===1?'':'s'}`);
+    const t=el('table','rtable');const hr=el('tr');['Pupil','Status','Score','Stars'].forEach(x=>hr.append(el('th',null,x)));t.append(hr);
+    if(!mem.length){const tr=el('tr');const td=el('td',null,'No pupils have joined this class yet.');td.colSpan=4;tr.append(td);t.append(tr)}
+    mem.forEach(p=>{const sb=subs.find(x=>x.homework_id===h.id&&x.student_id===p.id);const tr=el('tr');
+      const late=!sb&&h.due_date<todayISO();
+      tr.append(el('td',null,p.name),el('td',sb?'st ok':late?'st bad':'st',sb?'Done '+fmtDate(sb.completed_at):late?'Overdue':'Not started'),
+        el('td',null,sb?`${sb.score}/${sb.total} (${Math.round(sb.score/sb.total*100)}%)`:'–'),el('td',null,sb?'★ '+sb.stars:'–'));t.append(tr)});
+    const w=el('div','tablewrap');w.append(t);s.append(w);
+    s.append(btn('Delete this homework','ghost danger',async()=>{if(s._sure){await Data.deleteHomework(h.id);toast('Homework deleted.');showView('results')}else{s._sure=true;toast('Tap "Delete" again to confirm.')}}));
+    root.append(s);
+  }
+}
+/* Pupil: homework list */
+async function viewHomework(root){
+  const cls=await Data.studentClasses();
+  if(!cls.length){const s=sec('Join your class first','Ask your teacher for the class code, then enter it in "My school".');s.append(btn('Go to My school','play',()=>showView('school')));root.append(s);return}
+  const hws=await Data.homeworkFor(cls.map(c=>c.id));const subs=await Data.submissions({hwIds:hws.map(h=>h.id),studentId:UID});
+  const s=sec('My homework');root.append(s);
+  if(!hws.length){s.append(el('p','rsub','No homework right now. Try the Daily 7!'));return}
+  const list=el('div','hwlist');s.append(list);
+  hws.forEach(h=>{const sb=subs.find(x=>x.homework_id===h.id);const late=!sb&&h.due_date<todayISO();
+    const card=el('div','hwitem'+(sb?' done':late?' late':''));
+    const info=el('div');info.append(el('b',null,h.title),el('span','rsub',`${(cls.find(c=>c.id===h.class_id)||{}).name||''} · ${h.question_count} questions · due ${fmtDate(h.due_date)}`));
+    const st=el('div','hwstate',sb?`✓ ${sb.score}/${sb.total} · ★ ${sb.stars}`:late?'Overdue':'To do');
+    const go=btn(sb?'Try again':'Start','play',()=>openQuiz({title:h.title,refs:h.topics,count:h.question_count,formats:h.formats,kind:'homework',hw:h}));
+    card.append(info,st,go);list.append(card)});
+}
+/* Pupil: Daily 7 */
+async function viewDaily(root){
+  const acts=await Data.activity(UID);const streak=streakOf(acts);const doneToday=acts.some(a=>a.kind==='daily'&&isoDay(new Date(a.created_at))===todayISO());
+  const s=sec('Daily 7',`7 quick questions from across ${LEVELS[level].label.toLowerCase()} subjects, every day.`);root.append(s);
+  const row=el('div','statrow');row.append(el('div','statbox',`🔥 ${streak}`),el('div','statlbl',streak===1?'day streak':'day streak'));s.append(row);
+  s.append(el('p','rsub',doneToday?'You have done today\'s Daily 7. You can play again for practice.':'Do it every day to build your streak.'));
+  s.append(btn(doneToday?'Play again':"Start today's 7",'play',openDaily));
+}
+/* Parent */
+async function viewChildren(root){
+  const add=sec('Link a child who already has an account','Ask your child for the parent code in their account under "My school".');root.append(add);
+  const f=el('form','rform');f.noValidate=true;f.append(inputRow('pcode','Parent code',{maxLength:6,placeholder:'e.g. M4QZ8R',autocomplete:'off'}));
+  const go=el('button','play','Link child');go.type='submit';const e=errP();f.append(go,e);add.append(f);
+  f.onsubmit=async ev=>{ev.preventDefault();try{const k=await Data.linkChild($('pcode').value);toast(`Linked to ${k.display_name||'your child'}.`);showView('children')}catch(x){e.textContent=x.message}};
+  root.append(addChildSection());
+  await linkPendingKids();
+  const kids=await Data.children();
+  const pend=store.get('pendingKids:'+UID,[]);if(pend.length){const w=sec('Waiting for first sign-in',pend.map(k=>`${k.name} (${k.email})`).join(', ')+'. They appear here after confirming their email and signing in once.');root.append(w)}
+  if(!kids.length){root.append(sec('No children linked yet','Once linked, their progress shows here.'));return}
+  for(const k of kids)root.append(await childProgress(k));
+}
+
+/* Parent: create a child's account (linked automatically) */
+function addChildSection(){
+  const s=sec('Add a child',"Make your child's account here. It's linked to you straight away, so there's no code to type.");
+  const methods=[['pin','Username + PIN'],['password','Username + password']];
+  if(ONLINE)methods.unshift(['email','Email + password (works on any device)']);else methods.push(['email','Email + password']);
+  let m=methods[0][0];
+  const tabs=el('div','mtabs');s.append(tabs);
+  const f=el('form','rform');f.noValidate=true;s.append(f);
+  const e=errP();
+  const draw=()=>{
+    tabs.innerHTML='';methods.forEach(([id,l])=>{const b=el('button','mtab',l);b.type='button';b.setAttribute('aria-selected',id===m);b.onclick=()=>{m=id;draw()};tabs.append(b)});
+    f.innerHTML='';
+    f.append(inputRow('kName',"Child's first name or nickname",{maxLength:24,placeholder:'e.g. Ella',autocomplete:'off'}));
+    if(m==='email')f.append(inputRow('kId',"Email for your child's account",{type:'email',placeholder:'e.g. you+ella@example.com',autocomplete:'off'}));
+    else f.append(inputRow('kId','Username they will sign in with',{maxLength:20,placeholder:'e.g. ella_b',autocomplete:'off'}));
+    const sa=m==='pin'?{type:'password',maxLength:4,inputMode:'numeric',placeholder:'••••',autocomplete:'new-password'}:{type:'password',minLength:8,placeholder:'••••••••',autocomplete:'new-password'};
+    f.append(inputRow('kSec',m==='pin'?'Choose a 4-digit PIN':'Choose a password (8+ characters)',sa),inputRow('kSec2',m==='pin'?'Type the PIN again':'Type the password again',sa));
+    const dob=dobField();dob.classList.add('dobwide');f.append(dob);
+    const go=el('button','play',"Create child's account");go.type='submit';f.append(go,e);
+    if(m==='email'&&ONLINE)f.append(el('p','rsub','Tip: you can use your own email with "+name" added, like you+ella@example.com. Most email services deliver it to you.'));
+    else f.append(el('p','rsub','This account is saved in this browser on this device. Your child signs in here with their username.'));
+  };
+  draw();
+  f.onsubmit=async ev=>{ev.preventDefault();e.className='authmsg err';
+    const name=$('kName').value.trim().slice(0,24),ident=$('kId').value.trim().toLowerCase(),sec=$('kSec').value,sec2=$('kSec2').value;
+    if(!name)return e.textContent="Please type your child's name.";
+    if(m==='email'){if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ident))return e.textContent='Please type a real email address.'}
+    else if(!/^[a-z0-9_.]{3,20}$/.test(ident))return e.textContent='Usernames need 3 to 20 letters, numbers, dots or underscores, with no spaces.';
+    if(m==='pin'&&!/^[0-9]{4}$/.test(sec))return e.textContent='The PIN must be exactly 4 numbers.';
+    if(m!=='pin'&&sec.length<8)return e.textContent='The password needs at least 8 characters.';
+    if(sec!==sec2)return e.textContent=m==='pin'?'The two PINs do not match.':'The two passwords do not match.';
+    const d=readDob();if(d.err)return e.textContent=d.err;
+    const age=ageFrom(d.dob);if(age>=18)return e.textContent='Child accounts are for under-18s. Adults can make their own account.';
+    const pc=code6();
+    try{
+      if(m==='email'&&ONLINE){
+        e.className='authmsg';e.textContent='Creating account…';
+        const tmp=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false,storageKey:'bd-child-'+Date.now()}});
+        const {data,error}=await tmp.auth.signUp({email:ident,password:sec,options:{emailRedirectTo:location.origin+location.pathname,data:{display_name:name,dob:d.dob,role:'student',parent_code:pc}}});
+        if(error)throw new Error(error.message);
+        if(data.session){
+          await tmp.from('profiles').insert({id:data.user.id,role:'student',display_name:name,level:levelForAge(age),parent_code:pc});
+          await tmp.auth.signOut();await Data.linkChild(pc);
+          toast(`${name}'s account is ready and linked to you.`);showView('children');return;
+        }
+        store.set('pendingKids:'+UID,[...store.get('pendingKids:'+UID,[]),{pc,name,email:ident}]);
+        e.className='authmsg ok';e.textContent=`Nearly done! We emailed a confirmation link to ${ident}. Once it's opened and ${name} signs in for the first time, they'll appear here automatically.`;return;
+      }
+      if(players().some(x=>x.ident===ident))return e.textContent=m==='email'?'There is already an account with that email on this device.':`The username "${ident}" is taken on this device. Pick another one.`;
+      const salt=randHex(16);
+      const kid={id:'p'+Date.now().toString(36)+randHex(3),name,login:m,ident,salt,hash:await hashSecret(salt,sec),dob:d.dob,role:'student',parent_code:pc,created:Date.now(),parent_id:UID};
+      savePlayer(kid);Sd('plinks',[...Ld('plinks'),{parent_id:UID,student_id:kid.id}]);
+      toast(`${name}'s account is ready. They sign in with ${m==='pin'?'username + PIN':m==='password'?'username + password':'email + password'}.`);showView('children');
+    }catch(x){e.className='authmsg err';e.textContent="Couldn't create the account: "+(x.message||x)}
+  };
+  return s;
+}
+async function linkPendingKids(){
+  if(!Data.on())return;const list=store.get('pendingKids:'+UID,[]);if(!list.length)return;
+  const left=[];for(const k of list){try{await Data.linkChild(k.pc);toast(`${k.name} is now linked to you.`)}catch(x){left.push(k)}}
+  store.set('pendingKids:'+UID,left);
+}
+async function childProgress(k){
+  const s=sec(`${k.name}'s progress`);
+  const school=await Data.getSchool(k.school_id);
+  s.append(el('p','rsub',[k.level?LEVELS[k.level].label:null,school?`${school.name}${school.town?', '+school.town:''}`:'No school picked yet'].filter(Boolean).join(' · ')));
+  const acts=await Data.activity(k.id);const cls=await Data.studentClasses(k.id);const hws=await Data.homeworkFor(cls.map(c=>c.id));
+  const subs=await Data.submissions({hwIds:hws.map(h=>h.id),studentId:k.id});
+  const week=Date.now()-7*864e5;const thisWeek=acts.filter(a=>new Date(a.created_at).getTime()>week);
+  const stars=subs.reduce((a,x)=>a+(x.stars||0),0);
+  const grid=el('div','kpis');
+  [[`🔥 ${streakOf(acts)}`,'day streak'],[`${thisWeek.length}`,'activities this week'],[`${subs.length}/${hws.length}`,'homework done'],[`★ ${stars}`,'homework stars']]
+    .forEach(([v,l])=>{const b=el('div','kpi');b.append(el('b',null,v),el('span',null,l));grid.append(b)});s.append(grid);
+  // homework
+  if(hws.length){s.append(el('h4','rmini','Homework'));const t=el('table','rtable');const hr=el('tr');['Homework','Due','Result'].forEach(x=>hr.append(el('th',null,x)));t.append(hr);
+    hws.forEach(h=>{const sb=subs.find(x=>x.homework_id===h.id);const late=!sb&&h.due_date<todayISO();const tr=el('tr');
+      tr.append(el('td',null,h.title),el('td',null,fmtDate(h.due_date)),el('td',sb?'st ok':late?'st bad':'st',sb?`${sb.score}/${sb.total} · ★ ${sb.stars}`:late?'Overdue':'Not started'));t.append(tr)});
+    const w=el('div','tablewrap');w.append(t);s.append(w)}
+  // accuracy by subject
+  const by={};acts.forEach(a=>{if(!a.total)return;by[a.subject]=by[a.subject]||{s:0,t:0};by[a.subject].s+=a.score;by[a.subject].t+=a.total});
+  const subsK=Object.keys(by);
+  if(subsK.length){s.append(el('h4','rmini','Accuracy by subject'));const bars=el('div','bars');
+    subsK.sort((a,b)=>by[b].t-by[a].t).forEach(x=>{const pct=Math.round(by[x].s/by[x].t*100);const r=el('div','barrow');
+      const fill=el('div','barfill');fill.style.width=pct+'%';fill.classList.add(pct>=70?'hi':pct>=40?'mid':'lo');const track=el('div','bartrack');track.append(fill);
+      r.append(el('span','barname',x),track,el('span','barpct',pct+'%'));bars.append(r)});s.append(bars)}
+  // recent
+  s.append(el('h4','rmini','Recent activity'));
+  if(!acts.length)s.append(el('p','rsub','Nothing yet.'));
+  else{const ul=el('ul','recent');acts.slice(0,8).forEach(a=>{const li=el('li');
+    li.append(el('span',null,`${a.kind==='homework'?'📚':a.kind==='daily'?'⭐':'🎮'} ${a.topic_name||a.subject}`),el('span','rsub',`${a.score}/${a.total} · ${fmtDate(a.created_at)}`));ul.append(li)});s.append(ul)}
+  return s;
+}
+
+/* ---------- Home ---------- */
+const $=id=>document.getElementById(id);
+const root=document.documentElement;
+level=store.get('level','primary');if(!LEVELS[level])level='primary';
+let current=store.get('pack','maths');if(!packById(current))current='maths';
+let roundSecs=store.get('round',60);if(![30,60,90,0].includes(roundSecs))roundSecs=60;
+const setColor=id=>root.style.setProperty('--sc',`var(--${id})`);
+
+function renderRound(){
+  const box=$('round');box.innerHTML='';
+  [[30,'30s'],[60,'60s'],[90,'90s'],[0,'Practice']].forEach(([v,l])=>{
+    const b=document.createElement('button');b.type='button';b.textContent=l;b.setAttribute('aria-pressed',v===roundSecs);
+    b.onclick=()=>{roundSecs=v;store.set('round',v);renderRound();renderTopics()};box.appendChild(b)});
+}
+function renderLevels(){
+  const box=$('levels');box.innerHTML='';
+  Object.entries(LEVELS).forEach(([id,L])=>{const b=document.createElement('button');b.type='button';b.className='lvl';
+    b.setAttribute('aria-pressed',id===level);b.innerHTML='<b></b><small></small>';
+    b.querySelector('b').textContent=L.label;b.querySelector('small').textContent=L.sub;
+    b.onclick=()=>{level=id;store.set('level',id);if(!packById(current))current='maths';renderHome()};box.appendChild(b)});
+}
+function renderCountries(){
+  const box=$('countries');box.innerHTML='';
+  COUNTRIES.forEach(c=>{const b=document.createElement('button');b.type='button';b.className='country';
+    b.style.setProperty('--c',`var(--${c.id})`);b.setAttribute('aria-pressed',current===c.id);
+    b.innerHTML=`<b></b><i></i><small></small>`;
+    b.querySelector('b').textContent=c.name;b.querySelector('i').textContent=c.native!==c.name?c.native:'Home of the Three Lions';
+    b.querySelector('small').textContent=`${c.topics.length} topics`;
+    b.onclick=()=>{select(c.id);$('packName').scrollIntoView?.({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})};
+    box.appendChild(b)});
+}
+function renderTabs(){
+  const box=$('tabs');box.innerHTML='';
+  subjects().forEach(s=>{const b=document.createElement('button');b.type='button';b.className='tab';b.setAttribute('role','tab');
+    b.setAttribute('aria-selected',s.id===current);b.style.setProperty('--c',`var(--${s.id})`);
+    b.innerHTML='<i></i>';b.append(s.name);b.onclick=()=>select(s.id);box.appendChild(b)});
+}
+function select(id){current=id;store.set('pack',id);renderHome()}
+function renderTopics(){
+  const p=packById(current);const box=$('topics');box.innerHTML='';
+  $('packName').textContent=p.name;$('packNote').textContent=isCountry(p)?`${CURRIC[p.id][level]} · ${p.topics.length} topics`:`${LEVELS[level].label} · ${p.topics.length} topics`;
+  const sc=scopeOf(p);
+  p.topics.forEach(t=>{
+    const card=document.createElement('article');card.className='topic';
+    card.innerHTML='<h4></h4><p></p>';card.querySelector('h4').textContent=t.name;card.querySelector('p').textContent=t.blurb;
+    if(t.variants){
+      const chips=document.createElement('div');chips.className='chips';
+      t.variants.forEach(v=>{const c=document.createElement('button');c.type='button';c.className='chip';c.textContent=v.label;
+        const k=boardKey(`${sc}/${p.id}/${t.id}/${v.key}`,roundSecs);const vb=myBest(k);if(vb&&roundSecs)c.title=`Your best: ${vb}`;
+        c.onclick=()=>start(p,`${t.name}: ${v.label}`,v.gen,`${sc}/${p.id}/${t.id}/${v.key}`);chips.appendChild(c)});
+      card.appendChild(chips);
+      const lb=el('button','learn','📖 Learn');lb.type='button';lb.onclick=()=>openLesson(p,t,0);card.appendChild(lb);
+    }else{
+      const meta=document.createElement('div');meta.className='meta';meta.dataset.key=boardKey(`${sc}/${p.id}/${t.id}`,roundSecs);card.appendChild(meta);
+      const b=document.createElement('button');b.type='button';b.className='play';b.textContent='Play';
+      b.onclick=()=>start(p,t.name,t.gen,`${sc}/${p.id}/${t.id}`);
+      const lb=el('button','learn','📖 Learn');lb.type='button';lb.onclick=()=>openLesson(p,t,0);
+      const row=el('div','cardbtns');row.append(b,lb);card.appendChild(row);
+    }
+    box.appendChild(card);
+  });
+  renderTopicMeta();
+}
+async function renderTopicMeta(){
+  const metas=[...document.querySelectorAll('.meta[data-key]')];if(!roundSecs){metas.forEach(m=>m.textContent='Practice: no scores kept');return}
+  const tops=metas.map(m=>topFor(m.dataset.key,1)[0]);const ps=await names(tops.filter(Boolean).map(t=>t.id));
+  metas.forEach((m,i)=>{m.innerHTML='';const mb=myBest(m.dataset.key);
+    if(mb){const s=document.createElement('span');s.textContent=`Your best: ${mb}`;m.appendChild(s)}
+    const t=tops[i];if(t){const s=document.createElement('span');s.className='top';s.textContent=`Top: ${(ps[t.id]?.name)||'A player'} ${t.s}`;m.appendChild(s)}});
+}
+function renderHome(){setColor(current);renderLevels();renderCountries();renderTabs();renderTopics()}
+
+
+/* ---------- Lessons ---------- */
+const TIPS={
+  times:{say:['Multiplying is adding equal groups: 4 × 3 means four groups of three, which is 12.','Learn one table at a time and look for patterns. The 5 times table always ends in 5 or 0. In the 9 times table the digits add up to 9 (18, 27, 36). Double the 2s to get the 4s, and double the 4s to get the 8s.','Turnarounds work: 7 × 8 is the same as 8 × 7, so every fact you learn gives you two.'],ex:['6 × 7 = 42','8 × 9 = 72','12 × 4 = 48']},
+  div:{say:['Dividing undoes multiplying. If 6 × 7 = 42, then 42 ÷ 7 = 6 and 42 ÷ 6 = 7.','Ask yourself: how many 7s make 42? Count up in sevens if you need to.'],ex:['56 ÷ 8 = 7','45 ÷ 9 = 5','36 ÷ 4 = 9']},
+  bonds:{say:['Number bonds are pairs that make a total. The bonds to 10 are 1 + 9, 2 + 8, 3 + 7, 4 + 6 and 5 + 5.','Use them for bigger numbers: 3 + 7 = 10, so 13 + 7 = 20 and 30 + 70 = 100.','For 100, the tens make 90 and the ones make 10: 35 + 65 = 100.'],ex:['6 + 4 = 10','12 + 8 = 20','45 + 55 = 100']},
+  addsub:{say:['Partition the second number into tens and ones: 47 + 15 = 47 + 10 + 5 = 62.','To take away, count back the tens, then the ones: 63 − 18 = 63 − 10 − 8 = 45.','Check an answer with the inverse: 45 + 18 should give 63.'],ex:['36 + 27 = 63','82 − 15 = 67']},
+  dh:{say:['Double means × 2. Half means ÷ 2.','Split tens and ones: double 37 = double 30 + double 7 = 60 + 14 = 74.','Half of 58 = half of 50 + half of 8 = 25 + 4 = 29.'],ex:['Double 24 = 48','Half of 76 = 38']},
+  frac:{say:['The bottom number of a fraction says how many equal parts to split into.','To find 1/4 of 20, divide by 4: 20 ÷ 4 = 5.'],ex:['1/2 of 18 = 9','1/3 of 21 = 7','1/5 of 35 = 7']},
+  sq:{say:['A square number is a number multiplied by itself. The small ² means "squared".','6² = 6 × 6 = 36. The square numbers make square patterns of dots.'],ex:['4² = 16','9² = 81','12² = 144']},
+  rom:{say:['I = 1, V = 5, X = 10, L = 50, C = 100.','Add when a smaller numeral comes after a bigger one: VI = 6, XV = 15.','Subtract when a smaller numeral comes before: IV = 4, IX = 9, XL = 40, XC = 90.'],ex:['XXIV = 24','LXXVIII = 78','XCIX = 99']},
+  pv:{say:['Each digit is worth a different amount depending on its place.','In 4,827 the 4 is worth 4,000, the 8 is worth 800, the 2 is worth 20 and the 7 is worth 7.'],ex:['The 6 in 3,642 = 600','The 9 in 9,135 = 9,000']},
+  mix:{say:['These are all the times tables up to 12 × 12, mixed up, plus the division facts that go with them.','If you know 7 × 8 = 56, you also know 56 ÷ 8 = 7 and 56 ÷ 7 = 8.'],ex:['9 × 7 = 63','84 ÷ 12 = 7']},
+  neg:{say:['Use a number line: adding moves right, subtracting moves left.','Adding a negative is the same as subtracting: 5 + (−3) = 2.','Subtracting a negative is the same as adding: 5 − (−3) = 8.'],ex:['−4 + 9 = 5','−6 − 3 = −9','2 − (−7) = 9']},
+  bidmas:{say:['Work in this order: Brackets, Indices (powers), Division and Multiplication (left to right), then Addition and Subtraction (left to right).','3 + 4 × 2 = 3 + 8 = 11, not 14. With brackets, (3 + 4) × 2 = 14.'],ex:['10 − 6 ÷ 2 = 7','(5 + 3) × 4 = 32']},
+  pct:{say:['Per cent means "out of 100".','10% = divide by 10. 50% = divide by 2. 25% = divide by 4. 1% = divide by 100.','Build the rest: 30% = 3 × 10%. 75% = 50% + 25%. 15% = 10% + 5%.'],ex:['15% of 60 = 9','75% of 80 = 60']},
+  pow:{say:['Squared means times itself once: 7² = 7 × 7 = 49.','Cubed means times itself twice: 4³ = 4 × 4 × 4 = 64.','A square root undoes squaring: √49 = 7 because 7² = 49.'],ex:['13² = 169','5³ = 125','√144 = 12']},
+  alg:{say:['Whatever you do to one side of the equals sign, do to the other side.','x + 5 = 12: take 5 from both sides, so x = 7.','3x + 4 = 19: take 4 from both sides (3x = 15), then divide both sides by 3 (x = 5).','Check by putting your answer back in.'],ex:['x − 6 = 9 → x = 15','4x = 28 → x = 7','2x + 3 = 17 → x = 7']},
+  fdp:{say:['Fraction to decimal: divide the top by the bottom. 3/4 = 3 ÷ 4 = 0.75.','Decimal to percentage: multiply by 100. 0.75 = 75%.'],ex:['2/5 = 0.4 = 40%','1/8 = 0.125 = 12.5%']},
+  prime:{say:['A prime number has exactly two factors: 1 and itself.','1 is not prime. 2 is the only even prime.','To check a number up to 100, see if 2, 3, 5 or 7 divide into it. If none do, it is prime.'],ex:['Prime: 2, 3, 5, 7, 11, 13, 17, 19, 23, 29','Not prime: 21 = 3 × 7, 91 = 7 × 13']},
+  binary:{say:['Binary uses only 0 and 1. Each place is worth double the one to its right.','4-bit place values: 8 4 2 1. 8-bit place values: 128 64 32 16 8 4 2 1.','Add up the place values that have a 1. 1011 = 8 + 2 + 1 = 11.'],ex:['0110 = 6','1111 = 15','10000000 = 128']},
+  logic:{say:['AND gives 1 only if both inputs are 1.','OR gives 1 if at least one input is 1.','XOR gives 1 if exactly one input is 1.','NOT flips the input: 0 becomes 1 and 1 becomes 0.'],ex:['1 AND 0 = 0','1 OR 0 = 1','1 XOR 1 = 0','NOT 0 = 1']},
+  devices:{say:['A simile compares using "like" or "as". A metaphor says something IS something else.','Personification gives human actions to things that are not human.','Alliteration repeats the first sound. Onomatopoeia is a word that sounds like its noise. Hyperbole is big exaggeration.']},
+  angles:{say:['Angles on a straight line add up to 180°. Angles around a point add up to 360°.','Angles in a triangle add up to 180°, and in a quadrilateral 360°.','For any polygon, the interior angles add up to (number of sides − 2) × 180°.']},
+};
+const factsOf=g=>(g&&g.items)||[];
+let L=null;
+function openLesson(p,t,vi){
+  clearAll();setColor(p.id);L={p,t,vi:vi||0};
+  $('home').hidden=true;$('game').hidden=true;$('lesson').hidden=false;
+  $('ltop').textContent=`${p.name} · Lesson`;
+  $('lkicker').textContent=isCountry(p)?`${p.name} · ${CURRIC[p.id][level]}`:`${p.name} · ${LEVELS[level].label}`;
+  $('lname').textContent=t.name;
+  const intro=$('lintro');intro.innerHTML='';const tip=TIPS[t.id];
+  intro.append(el('h3',null,'How it works'));
+  (tip?tip.say:[t.blurb,'Read through the key facts. Then tick "Hide answers" and tap each card to test yourself before you start the quiz.']).forEach(x=>intro.append(el('p',null,x)));
+  if(tip&&tip.ex){intro.append(el('h3',null,'Examples'));const ex=el('div','lex');tip.ex.forEach(x=>ex.append(el('span',null,x)));intro.append(ex)}
+  $('lhide').checked=false;$('lfacts').classList.remove('hideans');
+  renderLessonFacts();
+  window.scrollTo&&window.scrollTo(0,0);$('lesson').scrollTop=0;
+}
+function renderLessonFacts(){
+  const {t}=L;const vbox=$('lvariants');vbox.innerHTML='';
+  if(t.variants){vbox.hidden=false;
+    t.variants.forEach((v,i)=>{const c=el('button','chip',v.label);c.type='button';c.setAttribute('aria-pressed',i===L.vi);
+      c.onclick=()=>{L.vi=i;renderLessonFacts()};vbox.append(c)})}
+  else vbox.hidden=true;
+  const g=t.variants?t.variants[L.vi].gen:t.gen;const items=factsOf(g);
+  const grid=$('lfacts');grid.innerHTML='';
+  $('lfhead').hidden=!items.length;$('lnote').hidden=!!items.length;
+  items.forEach(([q,a])=>{const b=el('button','fact');b.type='button';b.append(el('span','fq',String(q)),el('span','fa',String(a)));
+    b.onclick=()=>b.classList.toggle('shown');grid.append(b)});
+  $('lstart').textContent=t.variants?`Start quiz: ${t.variants[L.vi].label}`:'Start quiz';
+}
+function startFromLesson(){
+  const {p,t}=L;const sc=scopeOf(p);
+  if(t.variants){const v=t.variants[L.vi];start(p,`${t.name}: ${v.label}`,v.gen,`${sc}/${p.id}/${t.id}/${v.key}`)}
+  else start(p,t.name,t.gen,`${sc}/${p.id}/${t.id}`);
+}
+
+/* ---------- Game ---------- */
+let G=null,timers=[];
+const later=(f,ms)=>{const id=setTimeout(f,ms);timers.push(id);return id};
+function clearAll(){timers.forEach(clearTimeout);timers=[];if(G&&G.raf)cancelAnimationFrame(G.raf)}
+
+function start(p,title,gen,baseKey){
+  clearAll();
+  const secs=roundSecs;
+  G={p,title,gen,baseKey,secs,key:boardKey(baseKey,secs),score:0,tries:0,running:false,lock:false,last:null};
+  setColor(p.id);
+  $('home').hidden=true;$('lesson').hidden=true;$('game').hidden=false;$('end').hidden=true;
+  $('gtitle').textContent=`${p.name} · ${title}`;
+  $('score').textContent='0';
+  $('timer').hidden=!secs;$('done').hidden=!!secs;
+  $('secs').textContent=secs||'∞';$('secsLabel').textContent=secs?'Secs':'Practice';
+  $('tfill').style.width='100%';$('timer').classList.remove('low');
+  next();
+  const cd=$('countdown'),n=$('countn');cd.hidden=false;let c=3;
+  const step=()=>{if(c===0){cd.hidden=true;go();return}n.textContent=c;n.style.animation='none';void n.offsetWidth;n.style.animation='';c--;later(step,600)};
+  step();
+}
+function go(){
+  G.running=true;if(!G.secs)return;
+  const total=G.secs*1000;G.end=performance.now()+total;
+  const tick=()=>{const left=Math.max(0,G.end-performance.now());
+    $('tfill').style.width=(left/total*100)+'%';$('secs').textContent=Math.ceil(left/1000);
+    $('timer').classList.toggle('low',left<10000);
+    if(left<=0){finish();return}G.raf=requestAnimationFrame(tick)};
+  tick();
+}
+function next(){
+  let c,t=0;do{c=G.gen()}while(c.q===G.last&&t++<8);G.last=c.q;G.cur=c;
+  const q=$('q');q.textContent=c.q;q.classList.toggle('long',String(c.q).length>16);
+  const h=$('qhint');h.hidden=!c.hint;h.textContent=c.hint||'';
+  const k=$('keys');k.innerHTML='';
+  const opts=c.opts.map(String),n=opts.length,longest=Math.max(...opts.map(o=>o.length)),textual=longest>5;
+  let cols=n===16?4:n>=16?5:n===10?5:n>6?4:n===4?4:3;
+  if(textual)cols=longest>13?2:(n>4?3:2);
+  else if(n<=3)cols=n;
+  k.style.setProperty('--cols',cols);k.classList.toggle('text',textual);
+  opts.forEach(o=>{const b=document.createElement('button');b.type='button';b.className='key';b.textContent=o;
+    b.onclick=()=>press(b,o);k.appendChild(b)});
+}
+function press(b,o){
+  if(!G||!G.running||G.lock)return;
+  G.tries++;
+  if(o===String(G.cur.a)){
+    G.score++;G.lock=true;b.classList.add('hit');
+    const sc=$('score');sc.textContent=G.score;sc.classList.remove('bump');void sc.offsetWidth;sc.classList.add('bump');
+    later(()=>{G.lock=false;if(G.running)next()},140);
+  }else{
+    b.classList.remove('miss');void b.offsetWidth;b.classList.add('miss');
+    later(()=>b.classList.remove('miss'),420);
+    if(!G.secs){[...$('keys').children].forEach(x=>{if(x.textContent===String(G.cur.a))x.classList.add('reveal')})}
+  }
+}
+async function finish(){
+  G.running=false;clearAll();
+  const practice=!G.secs;
+  $('endTitle').textContent=practice?'Practice done':"Time's up!";
+  $('final').textContent=G.score;
+  $('acc').textContent=G.tries?Math.round(G.score/G.tries*100)+'%':'–';
+  const prev=myBest(G.key),isBest=!practice&&G.score>prev&&G.score>0;
+  $('best').textContent=practice?'–':Math.max(prev,G.score);
+  $('newbest').hidden=!isBest;$('board').hidden=true;$('endNote').hidden=true;
+  $('end').hidden=false;$('again').focus();
+  if(practice)return;
+  if(isBest)store.set('best:'+G.key,G.score);
+  if(!UID){store.set('games',store.get('games',0)+1);store.set('correct',store.get('correct',0)+G.score);
+  if(isBest&&!prev)store.set('bests',store.get('bests',0)+1);}
+  const res=await postScore(G.key,G.score);
+  Data.log({kind:'game',topic_key:G.baseKey,topic_name:G.title,subject:G.p.name,score:G.score,total:G.tries});
+  const note=$('endNote');
+  if(!UID){note.textContent=BACKEND==='supabase'?'Sign in at the top of the page to put your scores on the leaderboard.':BACKEND==='claude'?'Open this page while signed in to claude.ai to join the leaderboard.':'Tap Sign in or Create account at the top to keep your own scores and get on the leaderboard.';note.hidden=false}
+  else if(res!=='ok'){note.textContent=BACKEND==='claude'?'Your score is saved on this device. To post scores, ask the page owner for Contributor access.':'Could not reach the leaderboard. Your score is saved on this device.';note.hidden=false}
+  renderStats();
+  await renderBoard(G.key);
+}
+async function renderBoard(key){
+  const rows=topFor(key,5);if(!rows.length)return;
+  const ps=await names(rows.map(r=>r.id));const ol=$('boardList');ol.innerHTML='';
+  $('boardTitle').textContent=BACKEND==='local'?`Top players on this device · ${G.secs}s rounds`:`Top players · ${G.secs}s rounds`;
+  rows.forEach((r,i)=>{const li=document.createElement('li');if(r.id===UID)li.className='me';
+    const n=document.createElement('span');n.className='n';n.textContent=i+1;
+    const img=document.createElement('img');img.alt='';img.src=ps[r.id]?.avatarUrl||DEFAULT_AVATAR;
+    const nm=document.createElement('span');nm.className='nm';nm.textContent=(ps[r.id]?.name)||(r.id===UID?'You':'A player');
+    const b=document.createElement('b');b.textContent=r.s;li.append(n,img,nm,b);ol.appendChild(li)});
+  $('board').hidden=false;
+}
+function home(){clearAll();if(G)G.running=false;$('game').hidden=true;$('lesson').hidden=true;$('hw').hidden=true;$('home').hidden=false;renderHome()}
+$('hwNext').onclick=()=>hwNext();$('hwDone').onclick=()=>closeQuiz();$('hwQuit').onclick=()=>closeQuiz();
+$('lessonBack').onclick=()=>home();$('lstart').onclick=()=>startFromLesson();
+$('lhide').onchange=()=>{$('lfacts').classList.toggle('hideans',$('lhide').checked);[...$('lfacts').children].forEach(c=>c.classList.remove('shown'))};
+$('quit').onclick=home;$('other').onclick=home;$('done').onclick=()=>{if(G&&G.running)finish()};
+$('again').onclick=()=>{const p=G.p;roundSecs=G.secs;start(p,G.title,G.gen,G.baseKey)};
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!$('hw').hidden)closeQuiz();else if(!$('game').hidden||!$('lesson').hidden)home()});
+
+$('avatar').src=DEFAULT_AVATAR;
+renderRound();renderHome();renderStats();initCloud();
+})();
+</script>
+
+<script src="../assets/nav.js" defer></script>
+</body></html>
