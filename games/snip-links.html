@@ -1,0 +1,214 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Snip Links</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one narrow tool column — maker on top, saved links list below; a #code in the address shows the "open link" card instead */
+:root {
+  --bg: #f3f4f7;
+  --surface: #ffffff;
+  --ink: #141a2b;
+  --muted: #5d6478;
+  --line: #dcdfe8;
+  --accent: #2e48e8;
+  --accent-ink: #ffffff;
+  --accent-soft: #e5e9ff;
+  --ok: #157a4a;
+  --bad: #b3261e;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f1220; --surface: #181c2e; --ink: #e9ecf5; --muted: #9aa1b8; --line: #2a3048;
+  --accent: #7d8fff; --accent-ink: #0f1220; --accent-soft: #232a52; --ok: #5fd39a; --bad: #ff8a80;
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0f1220; --surface: #181c2e; --ink: #e9ecf5; --muted: #9aa1b8; --line: #2a3048;
+  --accent: #7d8fff; --accent-ink: #0f1220; --accent-soft: #232a52; --ok: #5fd39a; --bad: #ff8a80;
+  color-scheme: dark }
+
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 720px; margin: 0 auto; padding: 40px 16px 64px; display: grid; gap: 28px; }
+
+header h1 { font-family: var(--display); font-weight: 800; font-size: clamp(2.2rem, 7vw, 3.4rem); line-height: 1; margin: 0; letter-spacing: -0.02em; text-wrap: balance; }
+header h1 .cut { color: var(--accent); }
+header p { color: var(--muted); margin: 10px 0 0; max-width: 52ch; }
+
+.maker { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; display: grid; gap: 14px; }
+label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); display: block; margin-bottom: 6px; }
+input { width: 100%; box-sizing: border-box; font: 500 15px var(--mono); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+input:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: end; }
+@media (max-width: 520px) { .row { grid-template-columns: 1fr; } }
+.code-field { display: flex; align-items: stretch; }
+.code-field span { font: 500 15px var(--mono); color: var(--muted); background: var(--accent-soft); border: 1px solid var(--line); border-right: 0; border-radius: 10px 0 0 10px; padding: 12px 10px; }
+.code-field input { border-radius: 0 10px 10px 0; min-width: 0; }
+button { font: 600 15px var(--body); border-radius: 10px; border: 0; padding: 12px 20px; cursor: pointer; }
+.primary { background: var(--accent); color: var(--accent-ink); }
+.primary:disabled { opacity: .5; cursor: default; }
+.ghost { background: transparent; color: var(--accent); border: 1px solid var(--line); padding: 7px 12px; font-size: 13px; }
+.msg { font-size: 14px; min-height: 1.5em; margin: 0; }
+.msg.err { color: var(--bad); } .msg.ok { color: var(--ok); }
+
+.result { background: var(--accent); color: var(--accent-ink); border-radius: 14px; padding: 18px 20px; display: grid; gap: 10px; }
+.result .short { font: 500 16px var(--mono); word-break: break-all; }
+.result .ghost { color: var(--accent-ink); border-color: currentColor; justify-self: start; }
+
+h2 { font-family: var(--display); font-weight: 500; font-size: 1.4rem; margin: 0 0 10px; }
+.list { display: grid; gap: 0; border-top: 1px solid var(--line); }
+.item { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; padding: 14px 0; border-bottom: 1px solid var(--line); align-items: center; }
+.item > div { min-width: 0; }
+.item .code { font: 500 15px var(--mono); color: var(--accent); }
+.item .long { color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.item .acts { display: flex; gap: 6px; flex-wrap: wrap; justify-content: end; }
+.empty { color: var(--muted); padding: 16px 0; }
+
+.go { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 28px 22px; display: grid; gap: 12px; }
+.go .dest { font: 500 14px var(--mono); word-break: break-all; color: var(--muted); }
+.go a.primary { text-decoration: none; display: inline-block; justify-self: start; }
+.note { font-size: 13px; color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Snip<span class="cut">/</span>Links</h1>
+    <p>Paste a long web address, give it a short name, and get a short link anyone you share this page with can open.</p>
+  </header>
+
+  <section class="go" id="goCard" hidden>
+    <label>Short link</label>
+    <div style="font:500 22px var(--mono)" id="goCode"></div>
+    <div class="dest" id="goDest">Looking up this link…</div>
+    <a class="primary" id="goBtn" href="#" target="_blank" rel="noopener" hidden>Open link →</a>
+    <button class="ghost" id="goBack" type="button" style="justify-self:start">Make your own short link</button>
+  </section>
+
+  <form class="maker" id="maker" autocomplete="off">
+    <div>
+      <label for="longUrl">Long link</label>
+      <input id="longUrl" type="url" placeholder="https://www.example.com/a/very/long/page?with=lots&of=stuff" required>
+    </div>
+    <div class="row">
+      <div>
+        <label for="code">Short name</label>
+        <div class="code-field"><span>#</span><input id="code" placeholder="webname" maxlength="40"></div>
+      </div>
+      <button class="primary" id="makeBtn" type="submit">Shorten</button>
+    </div>
+    <p class="msg" id="msg"></p>
+  </form>
+
+  <section class="result" id="result" hidden>
+    <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600">Your short link</div>
+    <div class="short" id="shortOut"></div>
+    <button class="ghost" id="copyNew" type="button">Copy link</button>
+  </section>
+
+  <section>
+    <h2>Saved links</h2>
+    <div class="list" id="list"><div class="empty">Loading saved links…</div></div>
+  </section>
+
+  <p class="note">Short names use letters, numbers, dots and dashes. Each short link opens this page with the name after a #, then sends the visitor on to the long link.</p>
+</div>
+
+<script>
+const BASE = "https://claude.ai/artifact/7gUGxYiXm6Zh2QGEkxsTDq"; // this page's shared address, filled in after publishing
+const $ = id => document.getElementById(id);
+let db = null, canWrite = true, links = [];
+
+function shortFor(code) { return (BASE || "this-page") + "#" + code; }
+function cleanCode(s) { return s.trim().replace(/\s+/g, "-").replace(/[^A-Za-z0-9._~-]/g, ""); }
+function randCode() { const c = "abcdefghijkmnpqrstuvwxyz23456789"; let s = ""; for (let i = 0; i < 6; i++) s += c[Math.floor(Math.random() * c.length)]; return s; }
+function normUrl(u) { u = u.trim(); if (!/^https?:\/\//i.test(u)) u = "https://" + u; try { const x = new URL(u); return x.href; } catch { return null; } }
+function setMsg(t, kind) { const m = $("msg"); m.textContent = t; m.className = "msg " + (kind || ""); }
+
+async function copy(text, btn) {
+  try { await navigator.clipboard.writeText(text); const o = btn.textContent; btn.textContent = "Copied"; setTimeout(() => btn.textContent = o, 1400); }
+  catch { setMsg("Couldn't copy automatically. Select the link and copy it by hand.", "err"); }
+}
+
+function render() {
+  const list = $("list");
+  list.replaceChildren();
+  if (!db) { list.innerHTML = '<div class="empty">Saved links aren’t available in this view. Open the page signed in to claude.ai.</div>'; return; }
+  if (!links.length) { list.innerHTML = '<div class="empty">No short links yet. Paste a long link above to make the first one.</div>'; return; }
+  for (const l of links) {
+    const row = document.createElement("div"); row.className = "item";
+    const info = document.createElement("div");
+    const c = document.createElement("div"); c.className = "code"; c.textContent = "#" + l.code;
+    const lg = document.createElement("div"); lg.className = "long"; lg.textContent = l.url; lg.title = l.url;
+    info.append(c, lg);
+    const acts = document.createElement("div"); acts.className = "acts";
+    const cp = document.createElement("button"); cp.className = "ghost"; cp.type = "button"; cp.textContent = "Copy";
+    cp.onclick = () => copy(shortFor(l.code), cp);
+    const op = document.createElement("a"); op.className = "ghost"; op.href = l.url; op.target = "_blank"; op.rel = "noopener"; op.textContent = "Open"; op.style.textDecoration = "none";
+    acts.append(cp, op);
+    if (canWrite) {
+      const del = document.createElement("button"); del.className = "ghost"; del.type = "button"; del.textContent = "Delete";
+      del.onclick = async () => {
+        if (del.dataset.armed !== "1") { del.dataset.armed = "1"; del.textContent = "Confirm"; setTimeout(() => { del.dataset.armed = ""; del.textContent = "Delete"; }, 3000); return; }
+        try { await db.doc("links/" + l.code).delete(); } catch (e) { setMsg("Couldn't delete that link. Try again.", "err"); }
+      };
+      acts.append(del);
+    }
+    row.append(info, acts); list.append(row);
+  }
+}
+
+async function showGo(code) {
+  $("goCard").hidden = false; $("goCode").textContent = "#" + code;
+  if (!db) { $("goDest").textContent = "Open this page signed in to claude.ai to follow this short link."; return; }
+  try {
+    const snap = await db.doc("links/" + code).get();
+    if (!snap.exists) { $("goDest").textContent = "No link is saved under this name."; return; }
+    const url = snap.data().url;
+    $("goDest").textContent = url; $("goBtn").href = url; $("goBtn").hidden = false;
+  } catch { $("goDest").textContent = "Couldn't look up this link right now. Reload to try again."; }
+}
+
+$("goBack").onclick = () => { $("goCard").hidden = true; try { history.replaceState(null, "", location.pathname); } catch {} };
+
+$("maker").addEventListener("submit", async e => {
+  e.preventDefault();
+  if (!db) { setMsg("Saving needs the page opened signed in to claude.ai.", "err"); return; }
+  const url = normUrl($("longUrl").value);
+  if (!url) { setMsg("That doesn't look like a web address. Try something like https://example.com/page.", "err"); return; }
+  let code = cleanCode($("code").value) || randCode();
+  if (code === "." || code === "..") { setMsg("Pick a short name with at least one letter or number.", "err"); return; }
+  const btn = $("makeBtn"); btn.disabled = true; setMsg("Saving…");
+  try {
+    const ref = db.doc("links/" + code);
+    const lease = await ref.acquire({ holder: Math.random().toString(36).slice(2), ttlMs: 5000 });
+    if (!lease.acquired) { setMsg("Someone is saving that name right now. Pick another.", "err"); return; }
+    const cur = await ref.get();
+    if (cur.exists && cur.data().url) { setMsg("“" + code + "” is already taken. Pick another short name.", "err"); return; }
+    await ref.set({ code, url, created: new Date().toISOString() });
+    $("shortOut").textContent = shortFor(code); $("result").hidden = false;
+    $("longUrl").value = ""; $("code").value = ""; setMsg("Short link saved.", "ok");
+  } catch (err) {
+    if (err && err.code === "invalid_argument") { canWrite = false; setMsg("You can view these links but not add new ones. Ask the page owner for Contributor access.", "err"); }
+    else if (err && err.code === "quota_exceeded") setMsg("The link list is full. Delete some old links first.", "err");
+    else setMsg("Couldn't save the link. Try again in a moment.", "err");
+  } finally { btn.disabled = false; }
+});
+$("copyNew").onclick = e => copy($("shortOut").textContent, e.currentTarget);
+
+(async () => {
+  db = await window.claude?.use?.("db") ?? null;
+  const user = db ? await window.claude.use("user") : null;
+  if (user) { try { const w = await user.can("data.write"); if (w === false) canWrite = false; } catch {} }
+  if (!canWrite) { $("maker").hidden = true; }
+  const code = (location.hash || "").slice(1);
+  if (code) showGo(code);
+  if (!db) { render(); return; }
+  db.collection("links").orderBy("created", "desc").limit(500).onSnapshot(s => {
+    links = s.docs.map(d => d.data()); render();
+  }, () => { $("list").innerHTML = '<div class="empty">Lost connection to saved links. Reload the page.</div>'; });
+})();
+window.addEventListener("hashchange", () => { const c = location.hash.slice(1); if (c) showGo(c); });
+</script>
+
+<script src="../assets/nav.js" defer></script>
+</body></html>
