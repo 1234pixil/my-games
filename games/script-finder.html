@@ -1,0 +1,456 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Script Finder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,700&display=swap">
+<style>
+/* Layout: a two-step input console on top, then a summary strip and a filterable list of script cards */
+:root {
+  --bg: #f3f5f4;
+  --surface: #ffffff;
+  --sunk: #e9eeec;
+  --fg: #16201d;
+  --muted: #5a6964;
+  --line: #d3dcd8;
+  --accent: #0b7a5f;
+  --accent-fg: #ffffff;
+  --code-bg: #f7faf9;
+  --k-ext: #1e5fb4;
+  --k-inl: #9a5b00;
+  --k-mod: #7b3fb8;
+  --k-data: #4f6b62;
+  --k-pre: #0b7a5f;
+  --k-evt: #b3363a;
+  --display: "Bricolage Grotesque", "IBM Plex Sans", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1513; --surface: #161e1b; --sunk: #1d2724; --fg: #e3ebe8; --muted: #93a39e; --line: #2c3a36;
+    --accent: #3fc79f; --accent-fg: #06261c; --code-bg: #121a17;
+    --k-ext: #7fb0ff; --k-inl: #f0b35a; --k-mod: #c79cf5; --k-data: #9fbab1; --k-pre: #3fc79f; --k-evt: #ff8c8f;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1513; --surface: #161e1b; --sunk: #1d2724; --fg: #e3ebe8; --muted: #93a39e; --line: #2c3a36;
+  --accent: #3fc79f; --accent-fg: #06261c; --code-bg: #121a17;
+  --k-ext: #7fb0ff; --k-inl: #f0b35a; --k-mod: #c79cf5; --k-data: #9fbab1; --k-pre: #3fc79f; --k-evt: #ff8c8f;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 1.5; padding: 0 16px; padding-block: 28px 64px; }
+.wrap { max-width: 980px; margin: 0 auto; display: grid; gap: 22px; }
+header { display: grid; gap: 6px; }
+h1 { font-family: var(--display); font-size: clamp(30px, 6vw, 44px); line-height: 1.05; margin: 0; letter-spacing: -0.02em; text-wrap: balance; }
+h1 .tag { font-family: var(--mono); font-size: 0.42em; color: var(--accent); vertical-align: middle; letter-spacing: 0; }
+.lede { margin: 0; color: var(--muted); max-width: 64ch; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 14px; }
+.step { display: grid; gap: 8px; }
+.step-label { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+input[type=url], textarea { width: 100%; font: 14px/1.45 var(--mono); color: var(--fg); background: var(--code-bg); border: 1px solid var(--line); border-radius: 7px; padding: 10px 12px; }
+input[type=url] { flex: 1 1 260px; width: auto; min-width: 0; }
+textarea { min-height: 120px; resize: vertical; }
+input:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button { font: 500 14px var(--body); border-radius: 7px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); padding: 8px 13px; cursor: pointer; }
+button:hover { border-color: var(--accent); }
+button.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); font-weight: 600; }
+button.small { padding: 4px 9px; font-size: 13px; }
+.hint { font-size: 13px; color: var(--muted); margin: 0; }
+.vs { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; background: var(--sunk); border-radius: 7px; padding: 8px 10px; }
+.vs code { font-family: var(--mono); font-size: 13px; word-break: break-all; flex: 1 1 200px; min-width: 0; }
+.drop { border: 1.5px dashed var(--line); border-radius: 8px; padding: 2px; }
+.drop.over { border-color: var(--accent); }
+.notice { font-size: 13px; padding: 8px 12px; border-radius: 7px; background: var(--sunk); color: var(--fg); margin: 0; }
+.notice.err { color: var(--k-evt); }
+
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.stat { background: var(--surface); padding: 12px 14px; display: grid; gap: 2px; }
+.stat b { font: 600 24px var(--mono); font-variant-numeric: tabular-nums; }
+.stat span { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.domains { display: flex; gap: 6px; flex-wrap: wrap; }
+.domain { font: 12px var(--mono); background: var(--sunk); border-radius: 999px; padding: 3px 10px; color: var(--muted); }
+.domain.third { color: var(--fg); }
+.toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { font: 500 13px var(--body); border-radius: 999px; padding: 4px 11px; }
+.chip[aria-pressed=true] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.source-note { font-size: 13px; color: var(--muted); }
+.source-note .ex { font: 600 11px var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--k-inl); border: 1px solid currentColor; border-radius: 4px; padding: 1px 5px; margin-right: 6px; }
+
+.list { display: grid; gap: 10px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--kc); border-radius: 8px; padding: 12px 14px; display: grid; gap: 8px; min-width: 0; }
+.card-top { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.num { font: 12px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.kind { font: 600 11px var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--kc); }
+.where { font: 12px var(--mono); color: var(--muted); }
+.src { font: 13.5px var(--mono); word-break: break-all; color: var(--fg); min-width: 0; }
+.src a { color: var(--k-ext); text-decoration: none; }
+.src a:hover { text-decoration: underline; }
+.attrs { display: flex; gap: 5px; flex-wrap: wrap; }
+.attr { font: 11.5px var(--mono); background: var(--sunk); border-radius: 4px; padding: 1px 6px; color: var(--muted); word-break: break-all; }
+.actions { display: flex; gap: 6px; flex-wrap: wrap; }
+pre { margin: 0; background: var(--code-bg); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; font: 12.5px/1.5 var(--mono); overflow: auto; max-height: 340px; white-space: pre; tab-size: 2; }
+.empty { text-align: center; color: var(--muted); padding: 28px 12px; background: var(--surface); border: 1px dashed var(--line); border-radius: 10px; }
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 8px 14px; border-radius: 7px; font-size: 13px; }
+@media (prefers-reduced-motion: no-preference) { .card { transition: border-color .15s; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Script Finder <span class="tag">&lt;script&gt;</span></h1>
+    <p class="lede">Paste a page link and its source, and get every script the page loads: external files, inline code, modules, preloads, data blocks and inline event handlers.</p>
+  </header>
+
+  <section class="panel" aria-label="Input">
+    <div class="step">
+      <label class="step-label" for="url">1 · Page link</label>
+      <div class="row">
+        <input id="url" type="url" placeholder="https://example.com/page" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="vs" id="vsBox" hidden>
+        <code id="vsText"></code>
+        <button class="small" id="copyVs" type="button">Copy</button>
+      </div>
+      <p class="hint" id="vsHint">Browsers don't let a page read another site directly, so copy the page's source in two quick steps: paste the <b>view-source:</b> address shown above into a new tab, then press Ctrl+A and Ctrl+C (⌘A, ⌘C on Mac).</p>
+    </div>
+    <div class="step">
+      <label class="step-label" for="src">2 · Page source</label>
+      <div class="drop" id="drop">
+        <textarea id="src" spellcheck="false" placeholder="Paste the page's HTML here, or drop a saved .html file"></textarea>
+      </div>
+      <div class="row">
+        <button class="primary" id="go" type="button">Find scripts</button>
+        <label class="hint" style="display:flex;gap:6px;align-items:center;cursor:pointer;">
+          <input type="file" id="file" accept=".html,.htm,text/html" style="max-width:210px;font-size:13px;">
+        </label>
+        <button id="clear" type="button">Clear</button>
+      </div>
+      <p class="notice err" id="err" hidden></p>
+    </div>
+  </section>
+
+  <section id="results" aria-live="polite" style="display:grid;gap:14px;">
+    <div class="source-note" id="sourceNote"></div>
+    <div class="summary" id="summary"></div>
+    <div class="domains" id="domains"></div>
+    <div class="toolbar">
+      <div class="chips" id="chips" role="group" aria-label="Filter by kind"></div>
+      <div class="actions">
+        <button id="copyAll" type="button">Copy all</button>
+        <button id="saveAll" type="button" hidden>Save as .txt</button>
+        <button id="copyUrls" type="button">Copy URLs</button>
+      </div>
+    </div>
+    <div class="list" id="list"></div>
+  </section>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function () {
+  const KINDS = {
+    external: { label: "External", color: "var(--k-ext)" },
+    inline:   { label: "Inline",   color: "var(--k-inl)" },
+    module:   { label: "Module",   color: "var(--k-mod)" },
+    preload:  { label: "Preload",  color: "var(--k-pre)" },
+    data:     { label: "Data / JSON", color: "var(--k-data)" },
+    handler:  { label: "Event handler", color: "var(--k-evt)" }
+  };
+  const EXEC_TYPES = ["", "text/javascript", "application/javascript", "module", "text/ecmascript", "application/ecmascript", "text/jsx", "text/babel"];
+
+  const SAMPLE_URL = "https://shop.example.com/products/kettle";
+  const SAMPLE = `<!doctype html>
+<html><head>
+<meta charset="utf-8"><title>Copper Kettle · Example Shop</title>
+<link rel="modulepreload" href="/assets/app.4f1c.js">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-EXAMPLE"><\/script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', 'G-EXAMPLE');
+<\/script>
+<script type="application/ld+json">
+{ "@context": "https://schema.org", "@type": "Product", "name": "Copper Kettle", "offers": { "price": "49.00", "priceCurrency": "GBP" } }
+<\/script>
+</head><body>
+<button onclick="addToBasket('kettle-01')">Add to basket</button>
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" integrity="sha384-EXAMPLE" crossorigin="anonymous" defer><\/script>
+<script type="module" src="/assets/app.4f1c.js"><\/script>
+<script src="js/basket.js"><\/script>
+</body></html>`;
+
+  const $ = (id) => document.getElementById(id);
+  const urlIn = $("url"), srcIn = $("src");
+  let items = [], filter = "all", isSample = false, pageUrl = "";
+  let downloads = null;
+
+  function toast(msg) {
+    const t = $("toast"); t.textContent = msg; t.hidden = false;
+    clearTimeout(toast._t); toast._t = setTimeout(() => { t.hidden = true; }, 1800);
+  }
+  async function copy(text, done) {
+    try { await navigator.clipboard.writeText(text); toast(done || "Copied"); }
+    catch (e) {
+      const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); toast(done || "Copied"); } catch (_) { toast("Select the text and copy it manually"); }
+      ta.remove();
+    }
+  }
+
+  function normalizeUrl(v) {
+    v = (v || "").trim();
+    if (!v) return "";
+    if (v.startsWith("view-source:")) v = v.slice(12);
+    if (!/^https?:\/\//i.test(v)) v = "https://" + v;
+    try { return new URL(v).href; } catch (e) { return ""; }
+  }
+  function showViewSource() {
+    const u = normalizeUrl(urlIn.value);
+    $("vsBox").hidden = !u;
+    $("vsText").textContent = u ? "view-source:" + u : "";
+  }
+
+  function resolve(href, base) {
+    if (!href) return "";
+    try { return new URL(href, base || undefined).href; } catch (e) { return href; }
+  }
+  function attrList(el, skip) {
+    const out = [];
+    for (const a of el.attributes) {
+      if (skip.includes(a.name)) continue;
+      out.push(a.value === "" ? a.name : a.name + '="' + (a.value.length > 60 ? a.value.slice(0, 57) + "…" : a.value) + '"');
+    }
+    return out;
+  }
+  function where(el) {
+    let n = el.parentElement;
+    while (n && n.tagName !== "HEAD" && n.tagName !== "BODY") n = n.parentElement;
+    return n ? n.tagName.toLowerCase() : "page";
+  }
+  function bytes(s) {
+    const n = new Blob([s]).size;
+    return n < 1024 ? n + " B" : (n / 1024).toFixed(1) + " KB";
+  }
+
+  function parse(html, base) {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const baseEl = doc.querySelector("base[href]");
+    const realBase = baseEl ? resolve(baseEl.getAttribute("href"), base) : base;
+    const out = [];
+    doc.querySelectorAll("script").forEach((s) => {
+      const type = (s.getAttribute("type") || "").trim().toLowerCase();
+      const src = s.getAttribute("src");
+      const code = s.textContent.replace(/^\n+|\s+$/g, "");
+      let kind;
+      if (type === "module") kind = "module";
+      else if (!EXEC_TYPES.includes(type)) kind = "data";
+      else kind = src ? "external" : "inline";
+      out.push({
+        kind, where: where(s), type: type || null,
+        src: src ? resolve(src, realBase) : null,
+        rawSrc: src || null,
+        code: src ? (code || null) : code,
+        attrs: attrList(s, ["src"])
+      });
+    });
+    doc.querySelectorAll('link[rel~="preload"][as="script"], link[rel~="modulepreload"], link[rel~="prefetch"][as="script"]').forEach((l) => {
+      const href = l.getAttribute("href");
+      out.push({ kind: "preload", where: where(l), type: null, src: resolve(href, realBase), rawSrc: href, code: null, attrs: attrList(l, ["href"]) });
+    });
+    const handlers = [];
+    doc.querySelectorAll("*").forEach((el) => {
+      for (const a of el.attributes) {
+        if (/^on[a-z]+$/.test(a.name) && a.value.trim()) handlers.push({ el, name: a.name, value: a.value.trim() });
+        if ((a.name === "href" || a.name === "src") && /^\s*javascript:/i.test(a.value)) handlers.push({ el, name: a.name, value: a.value.trim() });
+      }
+    });
+    handlers.forEach((h) => {
+      const tag = h.el.tagName.toLowerCase();
+      const id = h.el.id ? "#" + h.el.id : "";
+      out.push({ kind: "handler", where: "<" + tag + id + "> " + h.name, type: null, src: null, rawSrc: null, code: h.value, attrs: [] });
+    });
+    return out;
+  }
+
+  function hostOf(u) { try { return new URL(u).host; } catch (e) { return ""; } }
+
+  function render() {
+    const pageHost = hostOf(pageUrl);
+    // source note
+    const note = $("sourceNote");
+    note.innerHTML = "";
+    if (isSample) {
+      const ex = document.createElement("span"); ex.className = "ex"; ex.textContent = "Example";
+      note.append(ex, document.createTextNode("Showing a sample shop page. Paste your own link and source above to scan a real page."));
+    } else {
+      note.textContent = items.length + " found" + (pageUrl ? " on " + pageUrl : "") + ".";
+    }
+    // summary
+    const counts = {}; Object.keys(KINDS).forEach((k) => counts[k] = 0);
+    items.forEach((i) => counts[i.kind]++);
+    const sum = $("summary"); sum.innerHTML = "";
+    const tot = document.createElement("div"); tot.className = "stat";
+    tot.innerHTML = "<b></b><span>Total</span>"; tot.querySelector("b").textContent = items.length; sum.append(tot);
+    Object.keys(KINDS).forEach((k) => {
+      const d = document.createElement("div"); d.className = "stat";
+      d.innerHTML = "<b></b><span></span>";
+      d.querySelector("b").textContent = counts[k];
+      d.querySelector("b").style.color = counts[k] ? KINDS[k].color : "var(--muted)";
+      d.querySelector("span").textContent = KINDS[k].label;
+      sum.append(d);
+    });
+    // domains
+    const hosts = {};
+    items.forEach((i) => { if (i.src) { const h = hostOf(i.src); if (h) hosts[h] = (hosts[h] || 0) + 1; } });
+    const dom = $("domains"); dom.innerHTML = "";
+    Object.entries(hosts).sort((a, b) => b[1] - a[1]).forEach(([h, n]) => {
+      const s = document.createElement("span");
+      const third = pageHost && h !== pageHost;
+      s.className = "domain" + (third ? " third" : "");
+      s.textContent = h + " · " + n + (third ? " · third-party" : "");
+      dom.append(s);
+    });
+    // chips
+    const chips = $("chips"); chips.innerHTML = "";
+    [["all", "All"]].concat(Object.keys(KINDS).filter((k) => counts[k]).map((k) => [k, KINDS[k].label])).forEach(([k, label]) => {
+      const b = document.createElement("button"); b.type = "button"; b.className = "chip";
+      b.textContent = label + (k === "all" ? " " + items.length : " " + counts[k]);
+      b.setAttribute("aria-pressed", String(filter === k));
+      b.onclick = () => { filter = k; render(); };
+      chips.append(b);
+    });
+    if (filter !== "all" && !counts[filter]) filter = "all";
+    // list
+    const list = $("list"); list.innerHTML = "";
+    const shown = items.map((it, idx) => [it, idx]).filter(([it]) => filter === "all" || it.kind === filter);
+    if (!shown.length) {
+      const e = document.createElement("div"); e.className = "empty";
+      e.textContent = items.length ? "Nothing of this kind." : "No scripts found in this source. Check that you pasted the full page source (view-source), not the visible text.";
+      list.append(e);
+    }
+    shown.forEach(([it, idx]) => list.append(card(it, idx)));
+  }
+
+  function card(it, idx) {
+    const k = KINDS[it.kind];
+    const c = document.createElement("article"); c.className = "card"; c.style.setProperty("--kc", k.color);
+    const top = document.createElement("div"); top.className = "card-top";
+    const num = document.createElement("span"); num.className = "num"; num.textContent = "#" + String(idx + 1).padStart(2, "0");
+    const kind = document.createElement("span"); kind.className = "kind"; kind.textContent = k.label;
+    const wh = document.createElement("span"); wh.className = "where"; wh.textContent = it.kind === "handler" ? it.where : "in <" + it.where + ">";
+    top.append(num, kind, wh);
+    if (it.code && it.kind !== "handler") { const sz = document.createElement("span"); sz.className = "where"; sz.textContent = "· " + bytes(it.code); top.append(sz); }
+    c.append(top);
+
+    if (it.src) {
+      const s = document.createElement("div"); s.className = "src";
+      const a = document.createElement("a"); a.href = it.src; a.target = "_blank"; a.rel = "noopener noreferrer"; a.textContent = it.src;
+      s.append(a); c.append(s);
+      if (it.rawSrc && it.rawSrc !== it.src && !/^https?:/i.test(it.rawSrc)) {
+        const r = document.createElement("div"); r.className = "where"; r.textContent = "written as " + it.rawSrc + (pageUrl || isSample ? "" : " · add the page link to get full URLs"); c.append(r);
+      }
+    }
+    if (it.attrs.length) {
+      const at = document.createElement("div"); at.className = "attrs";
+      it.attrs.forEach((t) => { const x = document.createElement("span"); x.className = "attr"; x.textContent = t; at.append(x); });
+      c.append(at);
+    }
+    let pre = null;
+    if (it.code) {
+      pre = document.createElement("pre"); pre.textContent = it.code;
+      const lines = it.code.split("\n").length;
+      if (lines > 14 || it.code.length > 900) pre.hidden = true;
+      c.append(pre);
+    }
+    const act = document.createElement("div"); act.className = "actions";
+    if (it.src) { const b = document.createElement("button"); b.type = "button"; b.className = "small"; b.textContent = "Copy URL"; b.onclick = () => copy(it.src, "URL copied"); act.append(b); }
+    if (it.code) {
+      if (pre && pre.hidden) { const t = document.createElement("button"); t.type = "button"; t.className = "small"; t.textContent = "Show code (" + it.code.split("\n").length + " lines)"; t.onclick = () => { pre.hidden = !pre.hidden; t.textContent = pre.hidden ? "Show code (" + it.code.split("\n").length + " lines)" : "Hide code"; }; act.append(t); }
+      const b = document.createElement("button"); b.type = "button"; b.className = "small"; b.textContent = "Copy code"; b.onclick = () => copy(it.code, "Code copied"); act.append(b);
+    }
+    if (act.children.length) c.append(act);
+    return c;
+  }
+
+  function exportText() {
+    const lines = ["Scripts found" + (pageUrl ? " on " + pageUrl : ""), "Total: " + items.length, ""];
+    items.forEach((it, i) => {
+      lines.push("==== #" + (i + 1) + " " + KINDS[it.kind].label + " (" + it.where + ") ====");
+      if (it.src) lines.push("URL: " + it.src);
+      if (it.attrs.length) lines.push("Attributes: " + it.attrs.join(" "));
+      if (it.code) { lines.push(""); lines.push(it.code); }
+      lines.push("");
+    });
+    return lines.join("\n");
+  }
+
+  function run() {
+    const html = srcIn.value;
+    const err = $("err");
+    err.hidden = true;
+    if (!html.trim()) {
+      err.textContent = "Paste the page source first. Open the view-source: address in a new tab, select all, copy, and paste it here.";
+      err.hidden = false; return;
+    }
+    if (!/<[a-z!]/i.test(html)) {
+      err.textContent = "That doesn't look like HTML. Make sure you copied from the view-source: tab, not the normal page.";
+      err.hidden = false; return;
+    }
+    pageUrl = normalizeUrl(urlIn.value);
+    items = parse(html, pageUrl);
+    isSample = false; filter = "all";
+    render();
+    $("results").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+  }
+
+  function loadFile(f) {
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = () => { srcIn.value = String(r.result || ""); run(); };
+    r.readAsText(f);
+  }
+
+  urlIn.addEventListener("input", showViewSource);
+  $("copyVs").onclick = () => copy($("vsText").textContent, "Copied. Paste it into a new tab's address bar");
+  $("go").onclick = run;
+  $("clear").onclick = () => { urlIn.value = ""; srcIn.value = ""; $("file").value = ""; showViewSource(); $("err").hidden = true; srcIn.focus(); };
+  $("file").addEventListener("change", (e) => loadFile(e.target.files[0]));
+  const drop = $("drop");
+  ["dragenter", "dragover"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("over"); }));
+  ["dragleave", "drop"].forEach((ev) => drop.addEventListener(ev, () => drop.classList.remove("over")));
+  drop.addEventListener("drop", (e) => { e.preventDefault(); const f = e.dataTransfer && e.dataTransfer.files[0]; if (f) loadFile(f); });
+  urlIn.addEventListener("paste", () => setTimeout(() => { showViewSource(); }, 0));
+  urlIn.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); showViewSource(); srcIn.focus(); } });
+
+  $("copyAll").onclick = () => copy(exportText(), "All scripts copied");
+  $("copyUrls").onclick = () => {
+    const urls = [...new Set(items.filter((i) => i.src).map((i) => i.src))];
+    if (!urls.length) { toast("No script URLs on this page"); return; }
+    copy(urls.join("\n"), urls.length + " URLs copied");
+  };
+  $("saveAll").onclick = async () => {
+    if (!downloads) return;
+    const host = hostOf(pageUrl) || "page";
+    try { await downloads.save({ filename: "scripts-" + host.replace(/[^a-z0-9.-]/gi, "_") + ".txt", data: exportText() }); toast("Saved"); }
+    catch (e) {
+      if (e && e.code === "declined") return;
+      if (e && e.code === "rate_limited") { toast("A save prompt is already open"); return; }
+      $("saveAll").hidden = true; toast("Saving isn't available here. Use Copy all instead");
+    }
+  };
+
+  // initial example state
+  pageUrl = SAMPLE_URL; items = parse(SAMPLE, SAMPLE_URL); isSample = true;
+  render();
+
+  if (window.claude && typeof window.claude.use === "function") {
+    window.claude.use("downloads").then((d) => { if (d) { downloads = d; $("saveAll").hidden = false; } }).catch(() => {});
+  }
+})();
+</script>
+
+<script src="../assets/nav.js" defer></script>
+</body></html>
