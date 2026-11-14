@@ -61,7 +61,7 @@ def main():
     items = [(t, n) for t, n in KNOWN] + extra
 
     cards = "\n".join(
-        '      <li><a href="games/%s">%s</a></li>' % (html.escape(n, quote=True), html.escape(t))
+        '      <li><a href="games/%s"><img src="previews/%s.png" alt="" loading="lazy"><span>%s</span></a></li>' % (html.escape(n, quote=True), html.escape(n[:-5], quote=True), html.escape(t))
         for t, n in items
     )
     index = ROOT / "index.html"
