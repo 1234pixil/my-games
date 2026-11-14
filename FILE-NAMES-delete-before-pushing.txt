@@ -1,0 +1,33 @@
+FILE NAMES AND WHERE TO FIND EACH ONE
+(Delete this file before pushing to GitHub. The links only open for you.)
+
+Open each link in Claude, download or copy the page's HTML, and save it in games/ with the file name shown.
+
+GAMES
+stormline-royale.html      https://claude.ai/artifact/G4WQsUtPWJ4Xv5ds7Pn6De
+blockforge.html            https://claude.ai/artifact/JUdHDahhAsEnA2VRa9RQe4
+prism-rush.html            https://claude.ai/artifact/HtZxhrx2QT34kSWuNNgU8s
+gulp-pond.html             https://claude.ai/artifact/Rk6gEJHZaPGDHFjbaowvSt
+skybreak-siege.html        https://claude.ai/artifact/KDLNu6JugRfXUiWeqJroFo
+keeper-of-the-light.html   https://claude.ai/artifact/YbJk6Bg89txFe6SSfQP8mA
+blockville-obby.html       https://claude.ai/artifact/Y6mgA38whxDjALFmP6CddY
+button-dash-uk.html        https://claude.ai/artifact/7U4fw5kzNMsRqLHcAgWczj
+blockville-defense.html    https://claude.ai/artifact/DpuvhwSmSc2HdD2Ca9qM5F
+tidebreaker-seas.html      https://claude.ai/artifact/Xb2zUNAmC17cK7KwMjJC7Z
+blocklands.html            https://claude.ai/artifact/741K2oP8Aov5jHuw12hx6x
+static-fair.html           https://claude.ai/artifact/UBX21zMaz2mpXzBYdbx2Xf
+
+TOOLS
+ethical-hacking-kitchen.html  https://claude.ai/artifact/K6z9rWNhfrWrKC9FR6onKr
+discord-bot-maker.html        https://claude.ai/artifact/GiwPuQxAq6bSnnGmpTVyJr
+bot-invite-builder.html       https://claude.ai/artifact/BP7zxm3kbqRj9hppjgJwM2
+link-extractor.html           https://claude.ai/artifact/1h2atV7zc3pZ1ipkEsVr7A
+script-finder.html            https://claude.ai/artifact/7KBVC8eq1FkvKW1uAFSXGU
+snip-links.html               https://claude.ai/artifact/7gUGxYiXm6Zh2QGEkxsTDq
+vault-keys.html               https://claude.ai/artifact/REnvMMmqoKLoRbJ28pB3g7
+api-foundry.html              https://claude.ai/artifact/WfojRzRB9epA1ohCyqc2XS
+launchpad-publisher.html      https://claude.ai/artifact/7HKvapHaZoG3QfjbPpxxZk
+lanternfield-press.html       https://claude.ai/artifact/KcsNUnGLyBTASJ12VH7YWC
+
+Not included on purpose: school notes and staff timetable docs, and your stock backtest pages (Sector Pulse, Pullback Backtest Lab, F Score, Sector Basket Scorecard). They have personal or private details and aren't games.
+Codey's own games (Connect 4, 3D Tic-Tac-Toe, quiz) live in Downloads\CODEY\Codey-Updater, so copy those .html files into games/ too.
