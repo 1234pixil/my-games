@@ -1,0 +1,292 @@
+<!doctype html><html lang="en"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Bot Invite Builder</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one narrow column. Step 1 inputs, step 2 permissions, result link pinned below. */
+:root{
+  --bg:#f3f4f8; --panel:#ffffff; --fg:#14161f; --muted:#555b6e; --line:#d9dce6;
+  --accent:#4752c4; --accent-fg:#ffffff; --warn:#a14b00; --warn-bg:#fff1e0; --ok:#1d6b3a; --bad:#b3261e;
+  --code-bg:#eceef5;
+  --font:'Figtree',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12141c; --panel:#1b1e29; --fg:#eceef6; --muted:#a2a8bc; --line:#2d3142;
+  --accent:#8e99ff; --accent-fg:#0f1220; --warn:#ffb15c; --warn-bg:#3a2a14; --ok:#6fd592; --bad:#ff8a80;
+  --code-bg:#12141c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12141c; --panel:#1b1e29; --fg:#eceef6; --muted:#a2a8bc; --line:#2d3142;
+  --accent:#8e99ff; --accent-fg:#0f1220; --warn:#ffb15c; --warn-bg:#3a2a14; --ok:#6fd592; --bad:#ff8a80;
+  --code-bg:#12141c; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:16px;line-height:1.5;
+  padding-block:32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+h1{font-size:28px;line-height:1.2;margin:0;text-wrap:balance}
+h2{font-size:17px;margin:0 0 4px}
+p{margin:0}
+.lead{color:var(--muted)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:16px}
+label,.lbl{font-weight:500;font-size:14px;display:block;margin-bottom:6px}
+.hint{font-size:13px;color:var(--muted);margin-top:6px}
+input[type=text]{width:100%;font:inherit;font-family:var(--mono);font-size:15px;color:var(--fg);background:var(--bg);
+  border:1px solid var(--line);border-radius:6px;padding:10px 12px;min-height:44px}
+input[type=text]:focus-visible,button:focus-visible,a:focus-visible,summary:focus-visible,input[type=checkbox]:focus-visible,input[type=radio]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.status{font-size:13px;margin-top:6px;min-height:20px}
+.status.ok{color:var(--ok)} .status.bad{color:var(--bad)}
+fieldset{border:0;margin:0;padding:0;min-width:0}
+legend{font-weight:500;font-size:14px;padding:0;margin-bottom:8px}
+.presets{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+.preset{position:relative}
+.preset input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.preset span{display:block;border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-height:44px;background:var(--bg)}
+.preset b{display:block;font-size:14px}
+.preset small{color:var(--muted);font-size:12.5px}
+.preset input:checked + span{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.preset input:focus-visible + span{outline:2px solid var(--accent);outline-offset:2px}
+details{border-top:1px solid var(--line);padding-top:12px}
+summary{cursor:pointer;font-weight:500;font-size:14px;min-height:28px}
+.grp{border-top:1px solid var(--line);padding-top:12px;margin-top:4px}
+.grp h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;font-weight:700}
+.perms{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2px 16px}
+.perm{display:flex;gap:8px;align-items:center;min-height:36px;font-size:14px}
+.perm input{width:18px;height:18px;margin:0}
+.warn{background:var(--warn-bg);color:var(--warn);border-radius:8px;padding:10px 12px;font-size:14px}
+.result{display:flex;flex-direction:column;gap:12px}
+.url{font-family:var(--mono);font-size:13px;background:var(--code-bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;word-break:break-all;min-height:44px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:inherit;font-weight:700;border-radius:6px;min-height:44px;padding:0 18px;cursor:pointer;border:1px solid var(--accent);display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.btn.primary{background:var(--accent);color:var(--accent-fg)}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn[aria-disabled=true]{opacity:.45;pointer-events:none}
+.steps{margin:0;padding-left:20px;color:var(--muted);font-size:14px;display:flex;flex-direction:column;gap:4px}
+.steps li::marker{color:var(--muted)}
+.foot{font-size:13px;color:var(--muted)}
+</style>
+
+<main>
+  <header>
+    <h1>Bot Invite Builder</h1>
+    <p class="lead">Make the official link that adds a bot to a server, from its client ID. You approve it on Discord, so you need Manage Server on that server.</p>
+  </header>
+
+  <section class="card" aria-labelledby="s1">
+    <div><h2 id="s1">1. The bot and the server</h2></div>
+    <div>
+      <label for="cid">Bot client ID (Application ID)</label>
+      <input type="text" id="cid" inputmode="numeric" autocomplete="off" spellcheck="false" value="1568574812769624074">
+      <div class="hint">Developer Portal → your app → General Information → Application ID. Example filled in: Codey.</div>
+      <div class="status" id="cidStatus" role="status"></div>
+    </div>
+    <div>
+      <label for="inv">Server invite link (optional)</label>
+      <input type="text" id="inv" autocomplete="off" spellcheck="false" placeholder="https://discord.gg/yourcode">
+      <div class="hint">An invite link only lets people join. It can't add a bot, so this page just checks the link is valid and shows you which one you are working with. You pick the server on Discord's own screen.</div>
+      <div class="status" id="invStatus" role="status"></div>
+    </div>
+    <div>
+      <label for="gid">Server ID (optional)</label>
+      <input type="text" id="gid" inputmode="numeric" autocomplete="off" spellcheck="false" placeholder="Locks the link to one server">
+      <div class="hint">Discord Settings → Advanced → Developer Mode on, then right-click your server → Copy Server ID.</div>
+      <div class="status" id="gidStatus" role="status"></div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="s2">
+    <div><h2 id="s2">2. Permissions</h2></div>
+    <fieldset>
+      <legend>Preset</legend>
+      <div class="presets" id="presets"></div>
+    </fieldset>
+    <div class="row">
+      <button class="btn ghost" id="selAll" type="button">Select all</button>
+      <button class="btn ghost" id="clrAll" type="button">Clear all</button>
+    </div>
+    <div id="perms"></div>
+    <div class="warn" id="adminWarn" hidden>Administrator gives the bot full control and ignores every channel and role limit. If its token leaks, someone else controls your server. Prefer Chat bot unless you need more.</div>
+  </section>
+
+  <section class="card result" aria-labelledby="s3">
+    <div><h2 id="s3">3. Your invite link</h2></div>
+    <div class="url" id="out" aria-live="polite">Enter a valid client ID to build the link.</div>
+    <div class="row">
+      <button class="btn primary" id="copy" type="button">Copy link</button>
+      <a class="btn ghost" id="open" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">Open on Discord</a>
+    </div>
+    <div class="status" id="copyStatus" role="status"></div>
+    <ol class="steps">
+      <li>Open the link and sign in to Discord.</li>
+      <li>Choose your server in the dropdown, then press Continue.</li>
+      <li>Check the permissions and press Authorize.</li>
+    </ol>
+  </section>
+
+  <p class="foot">This page never asks for your password or a bot token. Do not paste a token anywhere here.</p>
+</main>
+
+<script>
+(function(){
+  var G_GEN='General',G_MEM='Membership',G_TXT='Text',G_VOI='Voice',G_EVT='Events and apps';
+  var PERMS=[
+    {g:G_GEN,k:'admin',n:'Administrator',v:1n<<3n},
+    {g:G_GEN,k:'audit',n:'View Audit Log',v:1n<<7n},
+    {g:G_GEN,k:'mguild',n:'Manage Server',v:1n<<5n},
+    {g:G_GEN,k:'mroles',n:'Manage Roles',v:1n<<28n},
+    {g:G_GEN,k:'mchan',n:'Manage Channels',v:1n<<4n},
+    {g:G_GEN,k:'mexpr',n:'Manage Expressions',v:1n<<30n},
+    {g:G_GEN,k:'cexpr',n:'Create Expressions',v:1n<<43n},
+    {g:G_GEN,k:'mhooks',n:'Manage Webhooks',v:1n<<29n},
+    {g:G_GEN,k:'insights',n:'View Server Insights',v:1n<<19n},
+    {g:G_GEN,k:'monet',n:'View Creator Analytics',v:1n<<41n},
+    {g:G_MEM,k:'invite',n:'Create Invite',v:1n<<0n},
+    {g:G_MEM,k:'nick',n:'Change Nickname',v:1n<<26n},
+    {g:G_MEM,k:'mnick',n:'Manage Nicknames',v:1n<<27n},
+    {g:G_MEM,k:'kick',n:'Kick Members',v:1n<<1n},
+    {g:G_MEM,k:'ban',n:'Ban Members',v:1n<<2n},
+    {g:G_MEM,k:'timeout',n:'Timeout Members',v:1n<<40n},
+    {g:G_TXT,k:'view',n:'View Channels',v:1n<<10n},
+    {g:G_TXT,k:'send',n:'Send Messages',v:1n<<11n},
+    {g:G_TXT,k:'thread',n:'Send Messages in Threads',v:1n<<38n},
+    {g:G_TXT,k:'cpub',n:'Create Public Threads',v:1n<<35n},
+    {g:G_TXT,k:'cpriv',n:'Create Private Threads',v:1n<<36n},
+    {g:G_TXT,k:'embed',n:'Embed Links',v:1n<<14n},
+    {g:G_TXT,k:'attach',n:'Attach Files',v:1n<<15n},
+    {g:G_TXT,k:'react',n:'Add Reactions',v:1n<<6n},
+    {g:G_TXT,k:'ext',n:'Use External Emoji',v:1n<<18n},
+    {g:G_TXT,k:'extstk',n:'Use External Stickers',v:1n<<37n},
+    {g:G_TXT,k:'everyone',n:'Mention @everyone, @here, All Roles',v:1n<<17n},
+    {g:G_TXT,k:'manmsg',n:'Manage Messages',v:1n<<13n},
+    {g:G_TXT,k:'mthreads',n:'Manage Threads',v:1n<<34n},
+    {g:G_TXT,k:'hist',n:'Read Message History',v:1n<<16n},
+    {g:G_TXT,k:'tts',n:'Send Text-to-Speech Messages',v:1n<<12n},
+    {g:G_TXT,k:'voicemsg',n:'Send Voice Messages',v:1n<<46n},
+    {g:G_TXT,k:'polls',n:'Create Polls',v:1n<<49n},
+    {g:G_VOI,k:'conn',n:'Connect',v:1n<<20n},
+    {g:G_VOI,k:'speak',n:'Speak',v:1n<<21n},
+    {g:G_VOI,k:'video',n:'Video',v:1n<<9n},
+    {g:G_VOI,k:'vad',n:'Use Voice Activity',v:1n<<25n},
+    {g:G_VOI,k:'prio',n:'Priority Speaker',v:1n<<8n},
+    {g:G_VOI,k:'mute',n:'Mute Members',v:1n<<22n},
+    {g:G_VOI,k:'deaf',n:'Deafen Members',v:1n<<23n},
+    {g:G_VOI,k:'move',n:'Move Members',v:1n<<24n},
+    {g:G_VOI,k:'sound',n:'Use Soundboard',v:1n<<42n},
+    {g:G_VOI,k:'extsound',n:'Use External Sounds',v:1n<<45n},
+    {g:G_VOI,k:'rts',n:'Request to Speak',v:1n<<32n},
+    {g:G_EVT,k:'slash',n:'Use Application Commands',v:1n<<31n},
+    {g:G_EVT,k:'activities',n:'Use Activities',v:1n<<39n},
+    {g:G_EVT,k:'extapps',n:'Use External Apps',v:1n<<50n},
+    {g:G_EVT,k:'cevents',n:'Create Events',v:1n<<44n},
+    {g:G_EVT,k:'mevents',n:'Manage Events',v:1n<<33n}
+  ];
+  var CHAT=['view','send','hist'];
+  var PRESETS=[
+    {id:'chat',n:'Chat bot',d:'Read and reply. Enough for Codey.',keys:CHAT},
+    {id:'rich',n:'Chat + extras',d:'Adds embeds, files, reactions, threads.',keys:CHAT.concat(['embed','attach','react','ext','thread'])},
+    {id:'mod',n:'Moderator',d:'Adds manage messages, kick, ban.',keys:CHAT.concat(['embed','manmsg','kick','ban'])},
+    {id:'admin',n:'Administrator',d:'Full control. Risky.',keys:['admin']}
+  ];
+  var $=function(i){return document.getElementById(i)};
+  var checked={};
+  var preset='chat';
+
+  var pEl=$('presets');
+  PRESETS.forEach(function(p){
+    var l=document.createElement('label');l.className='preset';
+    l.innerHTML='<input type="radio" name="preset" value="'+p.id+'"'+(p.id==='chat'?' checked':'')+'><span><b>'+p.n+'</b><small>'+p.d+'</small></span>';
+    l.querySelector('input').addEventListener('change',function(){setPreset(p.id)});
+    pEl.appendChild(l);
+  });
+  var permEl=$('perms');
+  function clearPresetRadios(){var r=document.querySelectorAll('input[name=preset]');for(var i=0;i<r.length;i++)r[i].checked=false}
+  var grpEls={};
+  PERMS.forEach(function(p){
+    if(!grpEls[p.g]){
+      var w=document.createElement('div');w.className='grp';
+      w.innerHTML='<h3>'+p.g+'</h3><div class="perms"></div>';
+      permEl.appendChild(w);grpEls[p.g]=w.querySelector('.perms');
+    }
+    var l=document.createElement('label');l.className='perm';
+    l.innerHTML='<input type="checkbox" data-k="'+p.k+'"><span>'+p.n+'</span>';
+    l.querySelector('input').addEventListener('change',function(e){
+      checked[p.k]=e.target.checked;clearPresetRadios();build();
+    });
+    grpEls[p.g].appendChild(l);
+  });
+  function setAll(on){
+    checked={};var boxes=permEl.querySelectorAll('input');
+    for(var i=0;i<boxes.length;i++){boxes[i].checked=on;if(on)checked[boxes[i].getAttribute('data-k')]=true}
+    clearPresetRadios();build();
+  }
+  $('selAll').addEventListener('click',function(){setAll(true)});
+  $('clrAll').addEventListener('click',function(){setAll(false)});
+  function setPreset(id){
+    preset=id;
+    var keys=PRESETS.filter(function(p){return p.id===id})[0].keys;
+    checked={};keys.forEach(function(k){checked[k]=true});
+    var boxes=permEl.querySelectorAll('input');
+    for(var i=0;i<boxes.length;i++)boxes[i].checked=!!checked[boxes[i].getAttribute('data-k')];
+    build();
+  }
+
+  function parseInvite(s){
+    s=s.trim();if(!s)return null;
+    var m=s.match(/^(?:https?:\/\/)?(?:www\.)?(?:discord\.gg|discord(?:app)?\.com\/invite)\/([A-Za-z0-9-]{2,32})\/?(?:\?.*)?$/i);
+    return m?m[1]:false;
+  }
+  function setStatus(el,txt,cls){el.textContent=txt;el.className='status'+(cls?' '+cls:'')}
+
+  var lastUrl='';
+  function build(){
+    var cid=$('cid').value.trim(), gid=$('gid').value.trim(), inv=$('inv').value;
+    var cidOk=/^\d{17,20}$/.test(cid), gidOk=/^\d{17,20}$/.test(gid);
+
+    if(!cid)setStatus($('cidStatus'),'');
+    else if(cidOk)setStatus($('cidStatus'),'Looks like a valid client ID.','ok');
+    else setStatus($('cidStatus'),'A client ID is 17 to 20 digits. Copy it from General Information, not the Public Key.','bad');
+
+    var code=parseInvite(inv);
+    if(code===null)setStatus($('invStatus'),'');
+    else if(code)setStatus($('invStatus'),'Valid invite format. Code: '+code+'. Pick this server in the dropdown on Discord.','ok');
+    else setStatus($('invStatus'),'That does not look like a Discord invite, for example https://discord.gg/abc123.','bad');
+
+    if(!gid)setStatus($('gidStatus'),'');
+    else if(gidOk)setStatus($('gidStatus'),'Link will be locked to this server.','ok');
+    else setStatus($('gidStatus'),'A server ID is 17 to 20 digits.','bad');
+
+    var bits=0n;PERMS.forEach(function(p){if(checked[p.k])bits|=p.v});
+    $('adminWarn').hidden=!checked.admin;
+
+    var open=$('open'),out=$('out');
+    if(!cidOk||(gid&&!gidOk)){
+      lastUrl='';out.textContent=cidOk?'Fix the server ID to build the link.':'Enter a valid client ID to build the link.';
+      open.setAttribute('aria-disabled','true');open.setAttribute('href','#');return;
+    }
+    var u='https://discord.com/oauth2/authorize?client_id='+cid+'&permissions='+bits.toString()+'&integration_type=0&scope=bot+applications.commands';
+    if(gid)u+='&guild_id='+gid+'&disable_guild_select=true';
+    lastUrl=u;out.textContent=u;
+    open.setAttribute('href',u);open.removeAttribute('aria-disabled');
+  }
+
+  $('cid').addEventListener('input',build);
+  $('inv').addEventListener('input',build);
+  $('gid').addEventListener('input',build);
+
+  $('copy').addEventListener('click',function(){
+    var s=$('copyStatus');
+    if(!lastUrl){setStatus(s,'Nothing to copy yet. Enter a valid client ID first.','bad');return}
+    function fallback(){
+      var r=document.createRange();r.selectNodeContents($('out'));
+      var sel=window.getSelection();sel.removeAllRanges();sel.addRange(r);
+      setStatus(s,'Link selected. Press Ctrl+C (or Cmd+C) to copy it.','');
+    }
+    try{
+      navigator.clipboard.writeText(lastUrl).then(function(){setStatus(s,'Copied.','ok')},fallback);
+    }catch(e){fallback()}
+  });
+
+  setPreset('chat');
+})();
+</script>
+
+<script src="../assets/nav.js" defer></script>
+</body></html>
