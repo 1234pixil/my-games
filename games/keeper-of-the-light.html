@@ -1,0 +1,588 @@
+<!doctype html><html lang="en"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Keeper of the Light</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=IM+Fell+English:ital@0;1&family=Courier+Prime:wght@400;700&display=swap">
+<style>
+/* Layout: full-bleed 3D night sea; keeper's logbook HUD pinned top, log bottom-left, title card as a paper slip. Single dark look by design. */
+:root {
+  --sea: #0b1620;
+  --ink: #e9dfc6;
+  --ink-dim: #9aa3a0;
+  --lamp: #ffcf6b;
+  --danger: #e2674d;
+  --paper: #e9dfc6;
+  --paper-ink: #1d2328;
+  --f-display: "IM Fell English SC", "Iowan Old Style", Georgia, serif;
+  --f-body: "IM Fell English", "Iowan Old Style", Georgia, serif;
+  --f-log: "Courier Prime", ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body { background: var(--sea); color: var(--ink); overflow: hidden; font-family: var(--f-body); }
+#sea { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: crosshair; }
+
+.hud {
+  position: fixed; top: 0; left: 0; right: 0;
+  padding-top: calc(12px + env(safe-area-inset-top, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+  pointer-events: none; font-family: var(--f-log); font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 6px rgba(0,0,0,.7);
+}
+.hud .cell { display: grid; gap: 2px; }
+.hud .lbl { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-dim); }
+.hud .val { font-size: 22px; color: var(--ink); }
+.hud .val.lamp { color: var(--lamp); }
+.lives { display: flex; gap: 6px; padding-top: 6px; }
+.lives i { width: 10px; height: 10px; border-radius: 50%; background: var(--lamp); box-shadow: 0 0 8px var(--lamp); }
+.lives i.out { background: transparent; box-shadow: none; outline: 1px solid var(--ink-dim); }
+
+.log {
+  position: fixed; left: 0; bottom: 0;
+  padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  font-family: var(--f-log); font-size: 12px; line-height: 1.6; color: var(--ink-dim);
+  pointer-events: none; display: grid; max-width: 100%;
+  text-shadow: 0 1px 6px rgba(0,0,0,.8);
+}
+.log div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.log div:last-child { color: var(--ink); }
+.log .bad { color: var(--danger); }
+
+.card {
+  position: fixed; inset: 0; display: grid; place-items: center;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.slip {
+  background: var(--paper); color: var(--paper-ink);
+  width: min(440px, 100%); padding: 28px 28px 24px;
+  box-shadow: 0 30px 80px rgba(0,0,0,.55);
+  transform: rotate(-1.2deg);
+  display: grid; gap: 14px;
+}
+.slip .eyebrow { font-family: var(--f-log); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; opacity: .7; }
+.slip h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(34px, 8vw, 46px); line-height: 1; margin: 0; text-wrap: balance; }
+.slip p { margin: 0; font-size: 17px; line-height: 1.45; }
+.slip ul { margin: 0; padding-left: 18px; font-size: 15px; line-height: 1.5; display: grid; gap: 2px; }
+.slip .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding-top: 4px; }
+.slip button {
+  font-family: var(--f-display); font-size: 20px; letter-spacing: .04em;
+  background: var(--paper-ink); color: var(--lamp); border: 0; padding: 10px 22px; cursor: pointer;
+}
+.slip button:hover { background: #2c353c; }
+.slip button:focus-visible { outline: 3px solid var(--lamp); outline-offset: 3px; }
+.slip .best { font-family: var(--f-log); font-size: 13px; opacity: .75; }
+</style>
+
+<canvas id="sea" aria-label="3D night sea around the lighthouse"></canvas>
+
+<div class="hud" aria-live="polite">
+  <div class="cell"><span class="lbl">Watch</span><span class="val" id="clock">21:00</span></div>
+  <div class="cell" style="text-align:center"><span class="lbl">Ships turned</span><span class="val lamp" id="score">0</span></div>
+  <div class="cell" style="justify-items:end"><span class="lbl">Hulls left</span><div class="lives" id="lives"></div></div>
+</div>
+
+<div class="log" id="log"></div>
+
+<div class="card" id="card">
+  <div class="slip">
+    <span class="eyebrow" id="cardEyebrow">Keeper's orders · Gull Rock Light</span>
+    <h1 id="cardTitle">Keeper of the Light</h1>
+    <p id="cardBody">Ships are running for the reef in the dark. Hold the beam on each one until its lantern turns green, and it will steer away. Keep the light from 21:00 until dawn at 05:00.</p>
+    <ul id="cardRules">
+      <li>Point with the mouse, drag a finger, or use ← → to swing the beam.</li>
+      <li>Freighters need a longer look than dinghies.</li>
+      <li>Three wrecks and the Board takes your keys.</li>
+    </ul>
+    <div class="row">
+      <button id="startBtn" type="button">Light the lamp</button>
+      <span class="best" id="best"></span>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const cv = $('sea');
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true });
+  } catch (e) {
+    $('cardBody').textContent = 'This device could not start 3D graphics, so the lamp cannot be lit here. Try a recent desktop or phone browser.';
+    $('cardRules').hidden = true; $('startBtn').hidden = true;
+    return;
+  }
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.1;
+
+  // ---------- world constants ----------
+  const R = 10;        // reef radius
+  const SPAWN = 72;    // where ships appear (in the fog)
+  const NIGHT = 480, MIN_PER_SEC = 2; // 21:00 → 05:00
+
+  const scene = new THREE.Scene();
+  const NIGHT_SKY = new THREE.Color('#06101a'), DAWN_SKY = new THREE.Color('#a98a86');
+  scene.background = NIGHT_SKY.clone();
+  scene.fog = new THREE.FogExp2(NIGHT_SKY.clone(), 0.011);
+
+  const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 500);
+  const camBase = new THREE.Vector3();
+
+  // ---------- lights ----------
+  const hemi = new THREE.HemisphereLight(0x3a5878, 0x05080c, 0.55);
+  scene.add(hemi);
+  const moon = new THREE.DirectionalLight(0x9fb6d6, 0.35);
+  moon.position.set(-40, 60, -30);
+  scene.add(moon);
+
+  // ---------- stars ----------
+  {
+    const g = new THREE.BufferGeometry(), n = 700, p = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * Math.PI * 2, e = 0.12 + Math.random() * 1.2, r = 300;
+      p[i*3] = Math.cos(a) * Math.cos(e) * r; p[i*3+1] = Math.sin(e) * r; p[i*3+2] = Math.sin(a) * Math.cos(e) * r;
+    }
+    g.setAttribute('position', new THREE.BufferAttribute(p, 3));
+    var stars = new THREE.Points(g, new THREE.PointsMaterial({ color: 0xe9dfc6, size: 1.4, sizeAttenuation: false, fog: false, transparent: true }));
+    scene.add(stars);
+  }
+
+  // ---------- water ----------
+  const waterGeo = new THREE.PlaneGeometry(320, 320, 96, 96);
+  waterGeo.rotateX(-Math.PI / 2);
+  const wPos = waterGeo.attributes.position;
+  const wBase = Float32Array.from(wPos.array);
+  const water = new THREE.Mesh(waterGeo, new THREE.MeshStandardMaterial({
+    color: 0x0e2a3d, roughness: 0.35, metalness: 0.25, flatShading: true,
+  }));
+  scene.add(water);
+  function waveY(x, z, t) {
+    return Math.sin(x * 0.14 + t * 0.9) * 0.28 + Math.cos(z * 0.11 + t * 0.7) * 0.24 + Math.sin((x + z) * 0.31 + t * 1.6) * 0.08;
+  }
+  function animateWater(t) {
+    const a = wPos.array;
+    for (let i = 0; i < a.length; i += 3) a[i + 1] = waveY(wBase[i], wBase[i + 2], t);
+    wPos.needsUpdate = true;
+    waterGeo.computeVertexNormals();
+  }
+
+  // range rings, 1 nm apart
+  for (let i = 1; i <= 4; i++) {
+    const rr = R + (SPAWN - R) * (i / 5);
+    const ring = new THREE.Mesh(new THREE.RingGeometry(rr - 0.08, rr + 0.08, 128),
+      new THREE.MeshBasicMaterial({ color: 0xe9dfc6, transparent: true, opacity: 0.08, depthWrite: false }));
+    ring.rotation.x = -Math.PI / 2; ring.position.y = 0.6;
+    scene.add(ring);
+  }
+
+  // ---------- island & lighthouse ----------
+  const rockMat = new THREE.MeshStandardMaterial({ color: 0x2b2f2d, roughness: 1, flatShading: true });
+  const island = new THREE.Mesh(new THREE.CylinderGeometry(4.2, 6.2, 2.4, 9), rockMat);
+  island.position.y = 0.4; scene.add(island);
+
+  const tower = new THREE.Group(); scene.add(tower);
+  const white = new THREE.MeshStandardMaterial({ color: 0xe9dfc6, roughness: 0.7 });
+  const red = new THREE.MeshStandardMaterial({ color: 0xa5402f, roughness: 0.7 });
+  const H = 11;
+  for (let i = 0; i < 4; i++) {
+    const h0 = 1.6 + i * (H / 4), r0 = 1.7 - i * 0.22, r1 = 1.7 - (i + 1) * 0.22;
+    const seg = new THREE.Mesh(new THREE.CylinderGeometry(r1, r0, H / 4, 20), i % 2 ? red : white);
+    seg.position.y = h0 + H / 8; tower.add(seg);
+  }
+  const TOP = 1.6 + H;
+  const gallery = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.35, 0.25, 20), new THREE.MeshStandardMaterial({ color: 0x1d2328 }));
+  gallery.position.y = TOP; tower.add(gallery);
+  const lampMat = new THREE.MeshBasicMaterial({ color: 0xffe2a0 });
+  const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.75, 20, 14), lampMat);
+  lamp.position.y = TOP + 0.9; tower.add(lamp);
+  const cap = new THREE.Mesh(new THREE.ConeGeometry(1.1, 1.1, 20), red);
+  cap.position.y = TOP + 2.1; tower.add(cap);
+  const lampLight = new THREE.PointLight(0xffcf6b, 1.4, 26, 2);
+  lampLight.position.y = TOP + 0.9; tower.add(lampLight);
+
+  // reef rocks
+  const reef = [];
+  {
+    let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    for (let i = 0; i < 30; i++) {
+      const a = (i / 30) * Math.PI * 2 + rnd() * 0.18, d = R * (0.92 + rnd() * 0.2);
+      const s = 0.8 + rnd() * 1.3;
+      const m = new THREE.Mesh(new THREE.DodecahedronGeometry(s, 0), rockMat);
+      m.position.set(Math.cos(a) * d, -0.1 + rnd() * 0.3, Math.sin(a) * d);
+      m.rotation.set(rnd() * 3, rnd() * 3, rnd() * 3);
+      m.scale.y = 0.7 + rnd() * 0.6;
+      scene.add(m);
+      const foam = new THREE.Mesh(new THREE.RingGeometry(s * 1.1, s * 1.6, 14),
+        new THREE.MeshBasicMaterial({ color: 0xcfe0e6, transparent: true, opacity: 0.18, depthWrite: false }));
+      foam.rotation.x = -Math.PI / 2; foam.position.set(m.position.x, 0.35, m.position.z);
+      foam.userData.k = rnd() * 6; scene.add(foam); reef.push(foam);
+    }
+  }
+
+  // ---------- beam ----------
+  const beamPivot = new THREE.Group(); beamPivot.position.y = TOP + 0.9; scene.add(beamPivot);
+  const beamTilt = new THREE.Group(); beamTilt.rotation.z = -0.13; beamPivot.add(beamTilt);
+  const coneGeo = new THREE.ConeGeometry(1, 1, 40, 1, true);
+  coneGeo.translate(0, -0.5, 0); coneGeo.rotateZ(Math.PI / 2); // apex at origin, opens along +X
+  const beamMat = new THREE.ShaderMaterial({
+    uniforms: { uColor: { value: new THREE.Color(0xffd27a) }, uDawn: { value: 0 } },
+    vertexShader: 'varying float vT; void main(){ vT = position.x; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
+    fragmentShader: 'uniform vec3 uColor; uniform float uDawn; varying float vT; void main(){ float a = pow(1.0 - clamp(vT,0.0,1.0), 1.6) * 0.32 * (1.0 - uDawn*0.6); gl_FragColor = vec4(uColor, a); }',
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+  });
+  const beamCone = new THREE.Mesh(coneGeo, beamMat);
+  beamTilt.add(beamCone);
+  const backCone = new THREE.Mesh(coneGeo, beamMat);
+  backCone.rotation.y = Math.PI; backCone.scale.set(16, 1.2, 1.2); beamPivot.add(backCone);
+
+  const spot = new THREE.SpotLight(0xffd27a, 4, 95, 0.3, 0.55, 1.2);
+  beamPivot.add(spot);
+  const spotTarget = new THREE.Object3D(); spotTarget.position.set(40, -TOP, 0); beamPivot.add(spotTarget);
+  spot.target = spotTarget;
+
+  function setBeam(angle, half) {
+    beamPivot.rotation.y = -angle;
+    const L = SPAWN + 10, r = Math.tan(half) * L;
+    beamCone.scale.set(L, r, r);
+    spot.angle = half * 1.05;
+  }
+
+  // ---------- ships ----------
+  const TYPES = [
+    { kind: 'dinghy', spd: 1.35, need: 0.35, w: 3 },
+    { kind: 'schooner', spd: 1.0, need: 0.55, w: 4 },
+    { kind: 'freighter', spd: 0.7, need: 0.95, w: 2 },
+  ];
+  const NAMES = ['Mary Ellen','Cormorant','Iron Duke','Brixham Lass','Sea Pink','Kestrel','Northern Star','Polly Ann','Gannet','Ruby Wren','Tamar','Endeavour','Bonny Kate','Harbinger','Peregrine','Saltash','Wavecrest','Merry Dawn'];
+  const hullMat = new THREE.MeshStandardMaterial({ color: 0x4a3a2a, roughness: 0.8, flatShading: true });
+  const deckMat = new THREE.MeshStandardMaterial({ color: 0x8a7458, roughness: 0.9 });
+  const sailMat = new THREE.MeshStandardMaterial({ color: 0xe6dcc4, roughness: 0.9, side: THREE.DoubleSide });
+  const steelMat = new THREE.MeshStandardMaterial({ color: 0x46545a, roughness: 0.6, flatShading: true });
+  const boxMats = [0x8c3b2e, 0x2e5e6e, 0xa5873b].map(c => new THREE.MeshStandardMaterial({ color: c, roughness: 0.8 }));
+
+  function hull(len, wid, ht) {
+    const sh = new THREE.Shape();
+    sh.moveTo(-len / 2, -wid / 2);
+    sh.lineTo(len * 0.2, -wid / 2);
+    sh.quadraticCurveTo(len * 0.45, -wid / 2, len / 2, 0);
+    sh.quadraticCurveTo(len * 0.45, wid / 2, len * 0.2, wid / 2);
+    sh.lineTo(-len / 2, wid / 2);
+    sh.closePath();
+    const g = new THREE.ExtrudeGeometry(sh, { depth: ht, bevelEnabled: false });
+    g.rotateX(-Math.PI / 2); g.translate(0, -ht * 0.35, 0);
+    return new THREE.Mesh(g, hullMat);
+  }
+
+  function buildShip(kind) {
+    const g = new THREE.Group();
+    let size;
+    if (kind === 'dinghy') {
+      g.add(hull(2.2, 0.9, 0.5)); size = 1.4;
+      const m = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.6), deckMat); m.position.set(0.2, 0.9, 0); g.add(m);
+      const sail = new THREE.Mesh(new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(0.2, 1.65, 0), new THREE.Vector3(0.2, 0.35, 0), new THREE.Vector3(-0.8, 0.35, 0)]), sailMat);
+      sail.geometry.computeVertexNormals(); g.add(sail);
+    } else if (kind === 'schooner') {
+      g.add(hull(4.2, 1.4, 0.8)); size = 2.4;
+      const deck = new THREE.Mesh(new THREE.BoxGeometry(3, 0.1, 1.1), deckMat); deck.position.y = 0.48; g.add(deck);
+      for (const [x, h] of [[0.7, 3.4], [-0.9, 2.8]]) {
+        const m = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, h), deckMat); m.position.set(x, 0.5 + h / 2, 0); g.add(m);
+        const sail = new THREE.Mesh(new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(x, 0.5 + h, 0), new THREE.Vector3(x, 0.8, 0), new THREE.Vector3(x - 1.3, 0.8, 0)]), sailMat);
+        sail.geometry.computeVertexNormals(); g.add(sail);
+      }
+    } else {
+      g.add(hull(7, 2, 1.1)); size = 4;
+      const deck = new THREE.Mesh(new THREE.BoxGeometry(5.6, 0.1, 1.8), steelMat); deck.position.y = 0.72; g.add(deck);
+      const bridge = new THREE.Mesh(new THREE.BoxGeometry(1, 1.4, 1.6), steelMat); bridge.position.set(-2.6, 1.45, 0); g.add(bridge);
+      const funnel = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.3, 0.9), boxMats[0]); funnel.position.set(-2.8, 2.5, 0); g.add(funnel);
+      for (let i = 0; i < 4; i++) for (let j = 0; j < 2; j++) {
+        const b = new THREE.Mesh(new THREE.BoxGeometry(1, 0.55, 0.75), boxMats[(i + j * 2) % 3]);
+        b.position.set(-1.5 + i * 1.1, 1.05 + (j ? 0 : 0), j ? 0.42 : -0.42); g.add(b);
+      }
+    }
+    // lantern + glow halo
+    const lantern = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 8), new THREE.MeshBasicMaterial({ color: 0xe2674d, fog: false }));
+    lantern.position.set(size * 0.45, 1.1 + (kind === 'freighter' ? 1.2 : 0), 0);
+    g.add(lantern);
+    const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: haloTex, color: 0xe2674d, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
+    halo.scale.set(1.6, 1.6, 1); halo.position.copy(lantern.position); g.add(halo);
+    // progress ring sits on the water around the ship
+    const ring = new THREE.Mesh(new THREE.RingGeometry(size, size + 0.25, 48, 1, 0, 0.001),
+      new THREE.MeshBasicMaterial({ color: 0xffcf6b, transparent: true, opacity: 0.9, depthWrite: false, side: THREE.DoubleSide, fog: false }));
+    ring.rotation.x = -Math.PI / 2; ring.position.y = 0.5;
+    return { g, lantern, halo, ring, size };
+  }
+
+  // soft round texture for halos
+  const haloTex = (() => {
+    const c = document.createElement('canvas'); c.width = c.height = 64;
+    const x = c.getContext('2d'), gr = x.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.3, 'rgba(255,255,255,.4)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+    x.fillStyle = gr; x.fillRect(0, 0, 64, 64);
+    return new THREE.CanvasTexture(c);
+  })();
+
+  // wreck ripples
+  function wreckRipple(x, z) {
+    const m = new THREE.Mesh(new THREE.RingGeometry(0.8, 1.1, 40),
+      new THREE.MeshBasicMaterial({ color: 0xe2674d, transparent: true, opacity: 1, depthWrite: false, fog: false }));
+    m.rotation.x = -Math.PI / 2; m.position.set(x, 0.6, z); scene.add(m);
+    return { m, t: 0 };
+  }
+
+  // ---------- state ----------
+  let st;
+  function clearShips() {
+    if (!st) return;
+    for (const s of st.ships) { scene.remove(s.g); scene.remove(s.ring); }
+    for (const w of st.wrecks) scene.remove(w.m);
+  }
+  function freshState(mode) {
+    clearShips();
+    return { mode, t: 0, score: 0, lives: 3, ships: [], wrecks: [], spawnIn: 1.2,
+      beam: Math.PI / 2, target: Math.PI / 2, keys: 0, shake: 0, flash: 0 };
+  }
+
+  function pickType(t) {
+    const p = Math.min(1, t / 200);
+    const ws = TYPES.map((ty, i) => ty.w + (i === 2 ? p * 3 : 0) + (i === 0 ? p * 2 : 0));
+    let r = Math.random() * ws.reduce((a, b) => a + b, 0);
+    for (let i = 0; i < ws.length; i++) if ((r -= ws[i]) < 0) return TYPES[i];
+    return TYPES[1];
+  }
+
+  function spawn(distFactor = 1) {
+    const ty = pickType(st.t);
+    const a = Math.random() * Math.PI * 2;
+    const x = Math.cos(a) * SPAWN * distFactor, z = Math.sin(a) * SPAWN * distFactor;
+    const aim = Math.atan2(-z, -x) + (Math.random() - 0.5) * 0.3;
+    const base = 4.2 + Math.min(5, st.t * 0.022);
+    const parts = buildShip(ty.kind);
+    scene.add(parts.g); scene.add(parts.ring);
+    st.ships.push({ ...parts, x, z, h: aim, ty, v: base * ty.spd, lit: 0, state: 'run', turnTo: 0, sink: 0, lastP: -1,
+      name: NAMES[(Math.random() * NAMES.length) | 0], bob: Math.random() * 6 });
+  }
+
+  const beamHalf = () => st.mode === 'play' ? Math.max(0.15, 0.3 - st.t * 0.0005) : 0.3;
+  function angDiff(a, b) { let d = a - b; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; return d; }
+  function clockStr(t) {
+    const m = 21 * 60 + Math.floor(t * MIN_PER_SEC);
+    return String(Math.floor(m / 60) % 24).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+  }
+  const capW = s => s[0].toUpperCase() + s.slice(1);
+
+  // ---------- log & hud ----------
+  const logEl = $('log');
+  function log(msg, bad) {
+    const d = document.createElement('div');
+    d.textContent = clockStr(st.t) + '  ' + msg;
+    if (bad) d.className = 'bad';
+    logEl.appendChild(d);
+    while (logEl.children.length > 4) logEl.firstChild.remove();
+  }
+  function renderLives() {
+    const el = $('lives'); el.innerHTML = '';
+    for (let i = 0; i < 3; i++) { const b = document.createElement('i'); if (i >= st.lives) b.className = 'out'; el.appendChild(b); }
+  }
+
+  // ---------- input ----------
+  const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit = new THREE.Vector3();
+  function aimAt(cx, cy) {
+    ndc.set((cx / innerWidth) * 2 - 1, -(cy / innerHeight) * 2 + 1);
+    ray.setFromCamera(ndc, camera);
+    if (ray.ray.intersectPlane(plane, hit)) st.target = Math.atan2(hit.z, hit.x);
+  }
+  cv.addEventListener('pointermove', e => { if (st.mode === 'play') aimAt(e.clientX, e.clientY); });
+  cv.addEventListener('pointerdown', e => { if (st.mode === 'play') aimAt(e.clientX, e.clientY); });
+  addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft' || e.key === 'a') { st.keys = -1; e.preventDefault(); }
+    if (e.key === 'ArrowRight' || e.key === 'd') { st.keys = 1; e.preventDefault(); }
+    if ((e.key === 'Enter' || e.key === ' ') && st.mode !== 'play') { e.preventDefault(); start(); }
+  });
+  addEventListener('keyup', e => { if (['ArrowLeft', 'ArrowRight', 'a', 'd'].includes(e.key)) st.keys = 0; });
+
+  // ---------- best ----------
+  function getBest() { try { return JSON.parse(localStorage.getItem('keeper-best') || 'null'); } catch { return null; } }
+  function setBest(b) { try { localStorage.setItem('keeper-best', JSON.stringify(b)); } catch {} }
+  function showBest() { const b = getBest(); $('best').textContent = b ? `Best watch: ${b.score} turned, held till ${b.clock}` : ''; }
+
+  // ---------- flow ----------
+  function start() {
+    st = freshState('play');
+    $('card').hidden = true;
+    logEl.innerHTML = '';
+    renderLives();
+    $('score').textContent = '0';
+    $('clock').textContent = '21:00';
+    log('Lamp lit. Wind SW 4, visibility poor.');
+  }
+  function end(won) {
+    st.mode = 'over';
+    const clock = clockStr(st.t), b = getBest();
+    if (!b || (won && !b.won) || (won === !!b.won && (st.t > b.t || st.score > b.score))) setBest({ score: st.score, clock, t: st.t, won });
+    $('cardEyebrow').textContent = won ? 'Logbook · Dawn' : 'Logbook · ' + clock;
+    $('cardTitle').textContent = won ? 'The light held' : 'Keys returned';
+    $('cardBody').textContent = won
+      ? `Dawn broke over Gull Rock with ${st.score} ships turned and ${st.lives} of 3 hulls spared. The Board sends its compliments.`
+      : `Three ships went onto the reef by ${clock}. You turned ${st.score} away before the Board took your keys.`;
+    $('cardRules').hidden = true;
+    $('startBtn').textContent = 'Keep another watch';
+    showBest();
+    $('card').hidden = false;
+    $('startBtn').focus();
+  }
+
+  // ---------- update ----------
+  function update(dt) {
+    const play = st.mode === 'play';
+    st.t += dt;
+    if (!play) st.target = st.beam + 0.5;
+    if (play && st.keys) st.target = st.beam + st.keys;
+    const d = angDiff(st.target, st.beam), rate = 3.2;
+    st.beam += Math.max(-rate * dt, Math.min(rate * dt, d));
+
+    st.spawnIn -= dt;
+    if (st.spawnIn <= 0) {
+      spawn();
+      const gap = play ? Math.max(0.75, 2.4 - st.t * 0.0075) : 2.4;
+      st.spawnIn = gap * (0.7 + Math.random() * 0.6);
+    }
+
+    const half = beamHalf();
+    for (const s of st.ships) {
+      s.bob += dt;
+      const dist = Math.hypot(s.x, s.z), a = Math.atan2(s.z, s.x);
+      if (s.state === 'run') {
+        const inBeam = Math.abs(angDiff(a, st.beam)) < half && dist < SPAWN + 4;
+        if (inBeam) s.lit += dt; else s.lit = Math.max(0, s.lit - dt * 0.5);
+        if (s.lit >= s.ty.need) {
+          s.state = 'turn';
+          const side = angDiff(s.h, a + Math.PI) > 0 ? 1 : -1;
+          s.turnTo = s.h + side * Math.PI * 0.8;
+          if (play) {
+            st.score++; $('score').textContent = st.score;
+            log(`${capW(s.ty.kind)} ${s.name} turned at ${Math.max(0.1, ((dist - R) / (SPAWN - R)) * 5).toFixed(1)} nm.`);
+          }
+        }
+        if (dist < R * 1.05 + s.size * 0.3) {
+          s.state = 'sink';
+          st.wrecks.push(wreckRipple(s.x, s.z));
+          if (play) {
+            st.lives--; renderLives();
+            st.shake = reduceMotion ? 0 : 0.8; st.flash = 1;
+            log(`${capW(s.ty.kind)} ${s.name} struck the reef.`, true);
+            if (st.lives <= 0) end(false);
+          }
+        }
+      } else if (s.state === 'turn') {
+        const dd = angDiff(s.turnTo, s.h);
+        s.h += Math.sign(dd) * Math.min(Math.abs(dd), 1.8 * dt);
+        s.v *= 1 + dt * 0.25;
+      } else if (s.state === 'sink') {
+        s.sink += dt; s.v *= 0.9;
+      }
+      s.x += Math.cos(s.h) * s.v * dt;
+      s.z += Math.sin(s.h) * s.v * dt;
+
+      // place model
+      const wy = waveY(s.x, s.z, st.t);
+      s.g.position.set(s.x, wy + 0.25 - s.sink * 1.3, s.z);
+      s.g.rotation.set(Math.sin(s.bob * 1.7) * 0.06 + s.sink * 0.5, -s.h, Math.sin(s.bob * 1.3) * 0.04 + s.sink * 0.35);
+      s.ring.position.set(s.x, 0.5, s.z);
+
+      // lantern colour: red → amber while lit → green when turned
+      const p = s.state === 'turn' ? 1 : Math.min(1, s.lit / s.ty.need);
+      const col = s.state === 'turn' ? 0x9fe0a9 : p > 0 ? 0xffcf6b : 0xe2674d;
+      s.lantern.material.color.setHex(col); s.halo.material.color.setHex(col);
+      const showRing = s.state === 'run' && p > 0.01;
+      s.ring.visible = showRing;
+      if (showRing && Math.abs(p - s.lastP) > 0.03) {
+        s.ring.geometry.dispose();
+        s.ring.geometry = new THREE.RingGeometry(s.size, s.size + 0.25, 48, 1, 0, p * Math.PI * 2);
+        s.lastP = p;
+      }
+    }
+    st.ships = st.ships.filter(s => {
+      const gone = (s.state === 'sink' && s.sink > 2.2) || Math.hypot(s.x, s.z) > SPAWN + 20;
+      if (gone) { scene.remove(s.g); scene.remove(s.ring); s.ring.geometry.dispose(); }
+      return !gone;
+    });
+    for (const w of st.wrecks) { w.t += dt; const k = w.t / 2.5; w.m.scale.setScalar(1 + k * 5); w.m.material.opacity = 1 - k; }
+    st.wrecks = st.wrecks.filter(w => { if (w.t > 2.5) { scene.remove(w.m); return false; } return true; });
+    st.shake = Math.max(0, st.shake - dt * 2);
+    st.flash = Math.max(0, st.flash - dt * 2);
+
+    if (play) {
+      $('clock').textContent = clockStr(st.t);
+      if (st.t * MIN_PER_SEC >= NIGHT) end(true);
+    }
+  }
+
+  // ---------- render ----------
+  const tmpCol = new THREE.Color();
+  function render() {
+    const play = st.mode === 'play';
+    const dawn = play ? Math.max(0, Math.min(1, (st.t * MIN_PER_SEC - (NIGHT - 90)) / 90)) : 0;
+    animateWater(st.t);
+    for (const f of reef) f.material.opacity = 0.12 + Math.sin(st.t * 2 + f.userData.k) * 0.08;
+
+    tmpCol.copy(NIGHT_SKY).lerp(DAWN_SKY, dawn);
+    scene.background.copy(tmpCol); scene.fog.color.copy(tmpCol);
+    hemi.intensity = 0.55 + dawn * 0.9;
+    moon.intensity = 0.35 + dawn * 0.5;
+    stars.material.opacity = 1 - dawn;
+    beamMat.uniforms.uDawn.value = dawn;
+
+    setBeam(st.beam, beamHalf());
+    lampMat.color.setHSL(0.11, 1, 0.78 + Math.sin(st.t * 6) * 0.04);
+
+    camera.position.copy(camBase);
+    if (st.shake) camera.position.add(new THREE.Vector3((Math.random() - 0.5) * st.shake, (Math.random() - 0.5) * st.shake, 0));
+    camera.lookAt(0, 0, 6);
+
+    renderer.toneMappingExposure = 1.1 + st.flash * 0.5;
+    renderer.render(scene, camera);
+  }
+
+  function resize() {
+    const w = innerWidth, h = innerHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    // pull back on narrow screens so the reef and approaches stay in view
+    const k = Math.max(1, 1.25 / camera.aspect);
+    camBase.set(0, 46 * k, 50 * k);
+    camera.updateProjectionMatrix();
+  }
+
+  // ---------- loop ----------
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    update(dt);
+    render();
+    requestAnimationFrame(frame);
+  }
+
+  addEventListener('resize', resize);
+  $('startBtn').addEventListener('click', start);
+  resize();
+  st = freshState('attract');
+  for (let i = 0; i < 4; i++) spawn(0.4 + i * 0.15);
+  renderLives();
+  showBest();
+  requestAnimationFrame(frame);
+})();
+</script>
+
+<script src="../assets/nav.js" defer></script>
+</body></html>
