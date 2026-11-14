@@ -1,0 +1,318 @@
+<!doctype html><html lang="en"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Link Extractor</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one centered work column. Input panel on top, results table below, controls between. */
+:root {
+  --bg: #eef1f6;
+  --surface: #ffffff;
+  --ink: #141a2b;
+  --muted: #5a6479;
+  --line: #d6dce8;
+  --accent: #2748d8;
+  --accent-ink: #ffffff;
+  --accent-soft: #e3e9ff;
+  --ok: #17794a;
+  --warn: #9a5b00;
+  --font-body: "Schibsted Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1424; --surface: #171e33; --ink: #e8ecf8; --muted: #939db8;
+    --line: #2a3452; --accent: #7b93ff; --accent-ink: #0b1230; --accent-soft: #232d57;
+    --ok: #55d192; --warn: #f0b04f; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1424; --surface: #171e33; --ink: #e8ecf8; --muted: #939db8;
+  --line: #2a3452; --accent: #7b93ff; --accent-ink: #0b1230; --accent-soft: #232d57;
+  --ok: #55d192; --warn: #f0b04f; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body);
+  font-size: 15px; line-height: 1.5;
+  padding-block: 28px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 920px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+header h1 { margin: 0; font-size: 28px; line-height: 1.15; letter-spacing: -0.02em; text-wrap: balance; }
+header p { margin: 6px 0 0; color: var(--muted); max-width: 62ch; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+label, .lbl { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+.field { display: flex; flex-direction: column; gap: 5px; flex: 1 1 200px; min-width: 0; }
+textarea, input[type="text"], input[type="search"], select {
+  font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line);
+  border-radius: 7px; padding: 9px 11px; width: 100%; min-width: 0;
+}
+textarea { font-family: var(--font-mono); font-size: 12.5px; line-height: 1.55; min-height: 190px; resize: vertical; }
+:is(textarea, input, select, button):focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button {
+  font: inherit; font-weight: 500; cursor: pointer; border-radius: 7px; padding: 9px 14px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+}
+button:hover { border-color: var(--accent); }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 700; }
+button.primary:hover { filter: brightness(1.08); }
+.hint { color: var(--muted); font-size: 13px; margin: 0; }
+.hint kbd { font-family: var(--font-mono); font-size: 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; }
+.check { display: flex; gap: 8px; align-items: center; font-size: 14px; text-transform: none; letter-spacing: 0; font-weight: 500; color: var(--ink); padding-bottom: 9px; }
+.check input { width: 16px; height: 16px; accent-color: var(--accent); }
+.stats { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip { font-family: var(--font-mono); font-size: 12.5px; background: var(--accent-soft); color: var(--accent); border-radius: 999px; padding: 3px 11px; font-variant-numeric: tabular-nums; }
+.toolbar { display: flex; gap: 8px; flex-wrap: wrap; justify-content: space-between; align-items: center; }
+.toolbar .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.tablebox { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+th { text-align: left; font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding: 9px 12px; border-bottom: 1px solid var(--line); background: var(--bg); white-space: nowrap; }
+td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+td.n { color: var(--muted); font-family: var(--font-mono); font-variant-numeric: tabular-nums; width: 1%; }
+td.u { font-family: var(--font-mono); font-size: 12.5px; word-break: break-all; min-width: 220px; }
+td.u a { color: var(--accent); text-decoration: none; }
+td.u a:hover { text-decoration: underline; }
+td.t { color: var(--muted); max-width: 220px; overflow-wrap: anywhere; }
+.pill { font-size: 11.5px; font-weight: 700; border-radius: 4px; padding: 2px 7px; white-space: nowrap; border: 1px solid var(--line); color: var(--muted); }
+.pill.internal { color: var(--ok); border-color: var(--ok); }
+.pill.external { color: var(--accent); border-color: var(--accent); }
+.pill.image, .pill.asset, .pill.contact, .pill.media, .pill.embed, .pill.form { color: var(--warn); border-color: var(--warn); }
+.pill.file { color: var(--ok); border-color: var(--ok); background: var(--accent-soft); }
+.pill.social { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+.empty { padding: 28px 16px; text-align: center; color: var(--muted); }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 9px 16px; border-radius: 7px; font-size: 14px; opacity: 0; pointer-events: none; transition: opacity .15s; }
+.toast.show { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Link Extractor</h1>
+    <p>Paste the HTML source of any web page to pull out its links, downloadable files, images, video, embeds, social profiles and form targets. Filter, remove duplicates and copy the list.</p>
+  </header>
+
+  <section class="panel" aria-label="Input">
+    <div class="field">
+      <label for="src">Page source (HTML)</label>
+      <textarea id="src" spellcheck="false" aria-describedby="srchint"></textarea>
+    </div>
+    <p class="hint" id="srchint">Sample page loaded. To use your own: open the page, press <kbd>Ctrl</kbd>+<kbd>U</kbd> (or <kbd>Cmd</kbd>+<kbd>Option</kbd>+<kbd>U</kbd> on Mac), select all, copy, and paste above. Or load a saved .html file below.</p>
+    <div class="row">
+      <div class="field">
+        <label for="base">Page address (to resolve relative links)</label>
+        <input type="text" id="base" value="https://example.com/blog/" inputmode="url" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="field" style="flex-basis:170px">
+        <label for="type">Link type</label>
+        <select id="type">
+          <option value="all">Everything</option>
+          <option value="internal">Internal links</option>
+          <option value="external">External links</option>
+          <option value="file">Files (PDF, Office, ZIP...)</option>
+          <option value="image">Images</option>
+          <option value="media">Video &amp; audio</option>
+          <option value="social">Social profiles</option>
+          <option value="embed">Embeds (iframes)</option>
+          <option value="form">Form actions</option>
+          <option value="asset">Scripts, styles &amp; feeds</option>
+          <option value="contact">Email &amp; phone</option>
+        </select>
+      </div>
+      <label class="check"><input type="checkbox" id="dedupe" checked> Remove duplicates</label>
+    </div>
+    <div class="row">
+      <button class="primary" id="go" type="button">Extract links</button>
+      <button id="fileBtn" type="button">Load .html file</button>
+      <button id="clear" type="button">Clear</button>
+      <input type="file" id="file" accept=".html,.htm,.txt,text/html" hidden>
+    </div>
+  </section>
+
+  <section class="panel" aria-label="Results" aria-live="polite">
+    <div class="toolbar">
+      <div class="stats" id="stats"></div>
+      <div class="actions">
+        <input type="search" id="q" placeholder="Filter results" aria-label="Filter results" style="width:170px">
+        <button id="copy" type="button">Copy links</button>
+      </div>
+    </div>
+    <div class="tablebox">
+      <table>
+        <thead><tr><th>#</th><th>URL</th><th>Link text</th><th>Type</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+var SAMPLE = '<!-- Sample page: replace with your own source -->\n<html><head>\n<title>Harbour Notes</title>\n<meta property="og:image" content="/img/share-card.png">\n<link rel="stylesheet" href="/assets/site.css">\n<link rel="alternate" type="application/rss+xml" href="/feed.xml">\n<script src="https://cdn.example.net/analytics.js"><\/script>\n</head><body>\n<nav>\n  <a href="/">Home</a>\n  <a href="/blog/">Blog</a>\n  <a href="/about">About</a>\n  <a href="/contact">Contact</a>\n</nav>\n<h1>Tide tables and tall ships</h1>\n<p>Read the <a href="/blog/2026/tide-guide">full tide guide</a> or see the <a href="https://www.metoffice.gov.uk/weather/maritime">Met Office forecast</a>.</p>\n<img src="/img/quay.jpg" srcset="/img/quay-800.jpg 800w, /img/quay-1600.jpg 1600w" alt="The quay at dawn">\n<p>Downloads: <a href="/files/tide-table-2026.pdf">Tide table 2026 (PDF)</a>, <a href="/files/harbour-map.zip">Harbour map pack</a>, <a href="/files/berth-prices.xlsx">Berth prices</a>.</p>\n<video src="/media/harbour-tour.mp4" controls></video>\n<iframe src="https://www.youtube.com/embed/abc123" title="Harbour tour"></iframe>\n<p>Follow us: <a href="https://www.instagram.com/harbournotes">Instagram</a> <a href="https://github.com/harbournotes">GitHub</a></p>\n<form action="/subscribe" method="post"><input name="email"></form>\n<p>Back to <a href="/">home</a>. Source data from <a href="https://www.gov.uk/guidance/tide-data">GOV.UK</a>.</p>\n<a href="https://en.wikipedia.org/wiki/Tide">Tide on Wikipedia</a>\n<a href="mailto:hello@example.com">hello@example.com</a>\n<a href="tel:+441452000000">Call the harbour office</a>\n<a href="#top">Back to top</a>\n</body></html>';
+
+var $ = function (id) { return document.getElementById(id); };
+var src = $('src'), base = $('base'), typeSel = $('type'), dedupe = $('dedupe'), q = $('q');
+var results = [];
+
+src.value = SAMPLE;
+
+function bare(h) { return h.replace(/^www\./, '').toLowerCase(); }
+
+function parseBase() {
+  try { return new URL(base.value.trim()); } catch (e) { return null; }
+}
+
+var FILE_EXT = /\.(pdf|docx?|xlsx?|pptx?|csv|txt|rtf|odt|ods|odp|zip|rar|7z|tar|gz|tgz|epub|mobi|apk|exe|dmg|msi|iso|json|xml|torrent)$/i;
+var MEDIA_EXT = /\.(mp4|webm|mov|mkv|avi|m4v|mp3|wav|ogg|m4a|flac|aac)$/i;
+var IMG_EXT = /\.(jpe?g|png|gif|webp|svg|avif|ico|bmp|tiff?)$/i;
+var SOCIAL_HOSTS = ['facebook.com','instagram.com','twitter.com','x.com','linkedin.com','youtube.com','youtu.be','tiktok.com','pinterest.com','github.com','gitlab.com','reddit.com','threads.net','discord.gg','discord.com','t.me','wa.me','snapchat.com','twitch.tv','mastodon.social','bsky.app'];
+
+function isSocial(host) {
+  host = bare(host);
+  return SOCIAL_HOSTS.some(function (h) { return host === h || host.slice(-(h.length + 1)) === '.' + h; });
+}
+
+function extract() {
+  var doc = new DOMParser().parseFromString(src.value, 'text/html');
+  var b = parseBase();
+  var out = [];
+  function add(raw, text, kind) {
+    if (!raw) return;
+    raw = raw.trim();
+    if (!raw || raw.charAt(0) === '#' || /^(javascript|data|blob):/i.test(raw)) return;
+    var type, url, ext = '';
+    if (/^mailto:|^tel:|^sms:/i.test(raw)) { type = 'contact'; url = raw; }
+    else {
+      var u;
+      try { u = b ? new URL(raw, b) : new URL(raw); } catch (e) { return; }
+      url = u.href;
+      var m = u.pathname.match(/\.([a-z0-9]{1,5})$/i);
+      if (m) ext = '.' + m[1].toLowerCase();
+      if (kind === 'a') {
+        if (FILE_EXT.test(u.pathname)) type = 'file';
+        else if (MEDIA_EXT.test(u.pathname)) type = 'media';
+        else if (IMG_EXT.test(u.pathname)) type = 'image';
+        else if (isSocial(u.hostname)) type = 'social';
+        else if (b) type = bare(u.hostname) === bare(b.hostname) ? 'internal' : 'external';
+        else type = 'external';
+      } else type = kind;
+    }
+    out.push({ url: url, text: (text || '').replace(/\s+/g, ' ').trim(), type: type, ext: type === 'file' ? ext : '' });
+  }
+  function srcset(v, alt) {
+    (v || '').split(',').forEach(function (part) { var t = part.trim().split(/\s+/)[0]; if (t) add(t, alt, 'image'); });
+  }
+  doc.querySelectorAll('a[href], area[href]').forEach(function (el) {
+    add(el.getAttribute('href'), el.textContent || el.getAttribute('alt') || el.getAttribute('title'), 'a');
+  });
+  doc.querySelectorAll('img').forEach(function (el) {
+    var alt = el.getAttribute('alt');
+    add(el.getAttribute('src') || el.getAttribute('data-src'), alt, 'image');
+    srcset(el.getAttribute('srcset'), alt);
+  });
+  doc.querySelectorAll('picture source[srcset]').forEach(function (el) { srcset(el.getAttribute('srcset'), 'picture'); });
+  doc.querySelectorAll('video[src], audio[src], video source[src], audio source[src]').forEach(function (el) { add(el.getAttribute('src'), el.tagName.toLowerCase(), 'media'); });
+  doc.querySelectorAll('video[poster]').forEach(function (el) { add(el.getAttribute('poster'), 'video poster', 'image'); });
+  doc.querySelectorAll('iframe[src], embed[src], object[data]').forEach(function (el) { add(el.getAttribute('src') || el.getAttribute('data'), el.getAttribute('title') || el.tagName.toLowerCase(), 'embed'); });
+  doc.querySelectorAll('form[action]').forEach(function (el) { add(el.getAttribute('action'), (el.getAttribute('method') || 'get').toUpperCase() + ' form', 'form'); });
+  doc.querySelectorAll('script[src]').forEach(function (el) { add(el.getAttribute('src'), 'script', 'asset'); });
+  doc.querySelectorAll('link[href]').forEach(function (el) { add(el.getAttribute('href'), el.getAttribute('rel'), 'asset'); });
+  doc.querySelectorAll('meta[property="og:image"], meta[name="twitter:image"], meta[property="og:video"], meta[property="og:url"]').forEach(function (el) {
+    var k = el.getAttribute('property') || el.getAttribute('name');
+    add(el.getAttribute('content'), k, k === 'og:video' ? 'media' : k === 'og:url' ? 'asset' : 'image');
+  });
+  return out;
+}
+
+function esc(s) { return s.replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+function safeHref(u) { return /^https?:/i.test(u) ? ' href="' + esc(u) + '" target="_blank" rel="noopener noreferrer"' : ''; }
+
+function visible() {
+  var t = typeSel.value, needle = q.value.trim().toLowerCase(), seen = {};
+  return results.filter(function (r) {
+    if (t !== 'all' && r.type !== t) return false;
+    if (needle && (r.url + ' ' + r.text).toLowerCase().indexOf(needle) < 0) return false;
+    if (dedupe.checked) { if (seen[r.url]) return false; seen[r.url] = 1; }
+    return true;
+  });
+}
+
+function render() {
+  var list = visible();
+  var uniq = {}; results.forEach(function (r) { uniq[r.url] = 1; });
+  var counts = { internal: 0, external: 0, file: 0, image: 0, media: 0 };
+  results.forEach(function (r) { if (counts[r.type] !== undefined) counts[r.type]++; });
+  $('stats').innerHTML =
+    '<span class="chip">' + list.length + ' shown</span>' +
+    '<span class="chip">' + results.length + ' found</span>' +
+    '<span class="chip">' + Object.keys(uniq).length + ' unique</span>' +
+    '<span class="chip">' + counts.internal + ' internal</span>' +
+    '<span class="chip">' + counts.external + ' external</span>' +
+    '<span class="chip">' + counts.file + ' files</span>' +
+    '<span class="chip">' + counts.image + ' images</span>' +
+    '<span class="chip">' + counts.media + ' media</span>';
+  if (!list.length) {
+    $('rows').innerHTML = '<tr><td colspan="4" class="empty">' +
+      (results.length ? 'No links match this filter.' : 'No links found. Paste page source above and press Extract links.') + '</td></tr>';
+    return;
+  }
+  $('rows').innerHTML = list.map(function (r, i) {
+    return '<tr><td class="n">' + (i + 1) + '</td>' +
+      '<td class="u"><a' + safeHref(r.url) + '>' + esc(r.url) + '</a></td>' +
+      '<td class="t">' + (r.text ? esc(r.text) : '<span style="opacity:.5">none</span>') + '</td>' +
+      '<td><span class="pill ' + r.type + '">' + (r.ext || r.type) + '</span></td></tr>';
+  }).join('');
+}
+
+function run() { results = extract(); render(); }
+
+var toastTimer;
+function toast(msg) {
+  var t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove('show'); }, 1800);
+}
+
+function fallbackCopy(text) {
+  var ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  var ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+  document.body.removeChild(ta); return ok;
+}
+
+$('copy').addEventListener('click', function () {
+  var list = visible();
+  if (!list.length) { toast('Nothing to copy'); return; }
+  var text = list.map(function (r) { return r.url; }).join('\n');
+  var done = function () { toast('Copied ' + list.length + ' links'); };
+  var fail = function () { fallbackCopy(text) ? done() : toast('Copy blocked. Use the file loader or select rows manually.'); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fail);
+  else fail();
+});
+
+$('go').addEventListener('click', run);
+$('clear').addEventListener('click', function () { src.value = ''; results = []; $('srchint').textContent = 'Paste the page source above.'; render(); src.focus(); });
+$('fileBtn').addEventListener('click', function () { $('file').click(); });
+$('file').addEventListener('change', function (e) {
+  var f = e.target.files[0]; if (!f) return;
+  var rd = new FileReader();
+  rd.onload = function () { src.value = String(rd.result); run(); toast('Loaded ' + f.name); };
+  rd.readAsText(f);
+});
+var tm;
+src.addEventListener('input', function () { clearTimeout(tm); tm = setTimeout(run, 300); });
+base.addEventListener('input', function () { clearTimeout(tm); tm = setTimeout(run, 300); });
+typeSel.addEventListener('change', render);
+dedupe.addEventListener('change', render);
+q.addEventListener('input', render);
+
+run();
+</script>
+
+<script src="../assets/nav.js" defer></script>
+</body></html>
