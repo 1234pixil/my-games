@@ -1,0 +1,284 @@
+<!doctype html><html lang="en"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Static Fair</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:wght@400;700;800&display=swap">
+<style>
+/* Layout: one centred player column. Stage on top, transport under it, episode shelf below. */
+:root{
+  --ink:#0d0a1f;      /* night */
+  --panel:#1a1436;    /* panel violet */
+  --line:#3a2f6b;
+  --text:#f6efff;
+  --mute:#a99bd6;
+  --pink:#ff3d8b;     /* bulb pink */
+  --gold:#ffc83d;     /* ticket gold */
+  --teal:#2fe0c8;
+  --display:'Bungee','Impact',sans-serif;
+  --body:'Nunito','Trebuchet MS',sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--ink);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.5;
+  padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 16px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(28px,6vw,46px);line-height:1;margin:0;letter-spacing:.02em;text-wrap:balance;
+  color:var(--gold);text-shadow:3px 3px 0 var(--pink)}
+.tag{color:var(--mute);font-size:14px;margin:0}
+.stage{position:relative;border:3px solid var(--line);border-radius:10px;overflow:hidden;background:#000;aspect-ratio:16/9;max-width:100%}
+canvas{display:block;width:100%;height:100%}
+.cap{position:absolute;left:0;right:0;bottom:0;padding:10px 14px 12px;background:linear-gradient(transparent,rgba(5,3,15,.88) 40%);
+  min-height:64px;pointer-events:none}
+.cap b{font-family:var(--display);font-weight:400;font-size:clamp(11px,2vw,15px);letter-spacing:.05em;margin-right:8px}
+.cap span{font-size:clamp(13px,2.4vw,19px);font-weight:700;text-wrap:pretty}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+button{font:inherit;font-weight:800;color:var(--ink);background:var(--gold);border:0;border-radius:6px;padding:9px 16px;cursor:pointer;min-height:40px}
+button.alt{background:var(--panel);color:var(--text);border:2px solid var(--line)}
+button:hover{filter:brightness(1.1)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+button[aria-pressed="false"].tog{opacity:.6}
+.scrub{flex:1 1 200px;min-width:0;accent-color:var(--pink);height:28px}
+.time{font-variant-numeric:tabular-nums;color:var(--mute);font-size:14px;min-width:92px;text-align:right}
+.shelf{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.ep{background:var(--panel);border:2px solid var(--line);border-radius:8px;padding:14px;text-align:left;color:var(--text);cursor:pointer;display:flex;flex-direction:column;gap:4px;min-width:0}
+.ep[aria-current="true"]{border-color:var(--pink)}
+.ep small{font-family:var(--display);color:var(--teal);letter-spacing:.08em;font-size:12px}
+.ep strong{font-size:18px;font-weight:800}
+.ep span{color:var(--mute);font-size:14px;font-weight:400}
+.cast{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:0;padding:0;list-style:none}
+.cast li{border-left:4px solid var(--c);padding:2px 0 2px 12px;min-width:0}
+.cast b{font-family:var(--display);font-weight:400;letter-spacing:.05em}
+.cast p{margin:0;color:var(--mute);font-size:14px}
+h2{font-family:var(--display);font-weight:400;font-size:18px;letter-spacing:.06em;margin:6px 0 0;color:var(--teal)}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+<div class="wrap">
+  <header>
+    <h1>Static Fair</h1>
+    <p class="tag">An original animated series in code. 3 episodes, about 3 minutes in total.</p>
+  </header>
+  <div class="stage"><canvas id="cv" width="960" height="540" aria-label="Animation stage"></canvas>
+    <div class="cap" aria-live="off"><b id="who"></b><span id="say"></span></div></div>
+  <div class="bar">
+    <button id="play">Play</button>
+    <input id="scrub" class="scrub" type="range" min="0" max="1000" value="0" aria-label="Seek within episode">
+    <span class="time" id="time">0:00 / 0:00</span>
+    <button id="snd" class="alt tog" aria-pressed="true">Sound on</button>
+  </div>
+  <h2>Episodes</h2>
+  <div class="shelf" id="shelf"></div>
+  <h2>Cast</h2>
+  <ul class="cast">
+    <li style="--c:#2fe0c8"><b>Juno</b><p>A button-eyed rag doll who wakes up at the front gate with no memory of buying a ticket.</p></li>
+    <li style="--c:#ff3d8b"><b>Mayor Tumble</b><p>The fair's floating host. Cheerful, rules-obsessed, and a little too glitchy to trust.</p></li>
+    <li style="--c:#ff9a3d"><b>Pip</b><p>A paper lantern who dims when afraid. Has lived at the fair longer than anyone remembers.</p></li>
+    <li style="--c:#4d8dff"><b>Rook</b><p>A talking arcade cabinet who answers every question with a high score.</p></li>
+  </ul>
+</div>
+<script>
+/* ---------- STORY DATA ----------
+ Scene: { d: seconds, bg: backdrop name, cast: { id: {a:[x,y], b:[x,y], f:face, flip:1|-1} }, lines: [[time, speakerId, text]], fx: optional }
+ Stage is 960x540. Ground line is about y=420. Speaker ids: j=Juno, t=Mayor Tumble, p=Pip, r=Rook, ''=narration. */
+const CHARS = {
+  j:{name:'JUNO', color:'#2fe0c8', pitch:520},
+  t:{name:'MAYOR TUMBLE', color:'#ff3d8b', pitch:340},
+  p:{name:'PIP', color:'#ff9a3d', pitch:700},
+  r:{name:'ROOK', color:'#4d8dff', pitch:180},
+  '':{name:'', color:'#a99bd6', pitch:260}
+};
+const EPISODES = [
+{ n:1, title:'Insert Coin', blurb:'Juno wakes up at the gate of a fair that never closes.',
+  scenes:[
+  { d:7, bg:'gate', cast:{ j:{a:[480,430],b:[480,430],f:'sleep',lie:1} },
+    lines:[[0.3,'','Somewhere between a screen and a dream, a fair switches on.'],[3.8,'j','Mm... where are my shoes?']] },
+  { d:8, bg:'gate', cast:{ j:{a:[300,420],b:[330,420],f:'worry'}, t:{a:[700,-60],b:[640,170],f:'grin'} },
+    lines:[[0.4,'t','WELCOME, NEW PLAYER! Ticket number one million and one!'],[4.2,'j','I did not buy a ticket.']] },
+  { d:9, bg:'gate', cast:{ j:{a:[330,420],b:[330,420],f:'worry'}, t:{a:[640,170],b:[600,190],f:'grin'} },
+    lines:[[0.3,'t','Rule one: smile. Rule two: collect tickets. Rule three does not exist. Please stop asking.'],[5.2,'j','What happens at the Last Ride?'],[7.2,'t','Excellent question! NEXT!']], fx:'glitchEnd' },
+  { d:8, bg:'midway', cast:{ j:{a:[250,420],b:[330,420],f:'worry'}, p:{a:[760,360],b:[620,360],f:'worry',dim:.5} },
+    lines:[[0.4,'p','Do not ask about the Last Ride. It makes the bulbs flicker.'],[4.6,'j','Who are you?'],[6.2,'p','Pip. I am the least brave lantern here.']] },
+  { d:8, bg:'midway', cast:{ j:{a:[300,420],b:[300,420],f:'smile'}, p:{a:[470,360],b:[470,360],f:'smile'}, r:{a:[1040,400],b:[740,400],f:'grin'} },
+    lines:[[0.5,'r','HIGH SCORE: ONE FRIEND. THAT IS YOU.'],[4.2,'p','He means hello.'],[6.0,'j','Hello, high score.']] },
+  { d:7, bg:'midway', cast:{ j:{a:[260,420],b:[260,420],f:'shock'}, p:{a:[430,360],b:[430,360],f:'shock'}, r:{a:[600,400],b:[600,400],f:'shock'}, t:{a:[800,40],b:[780,150],f:'grin'} },
+    lines:[[0.3,'t','Your first game is open! WHACK-A-GLITCH!'],[4.0,'r','I DO NOT LIKE THIS GAME.']] },
+  { d:9, bg:'tent', cast:{ j:{a:[300,420],b:[360,420],f:'grin'}, p:{a:[500,350],b:[520,330],f:'shock'}, r:{a:[700,400],b:[660,400],f:'shock'} },
+    lines:[[0.4,'j','Got one!'],[2.6,'j','Wait. It is whacking back!'],[5.4,'r','NEW HIGH SCORE: BRUISES.'],[7.2,'p','Smile! Smile through it!']], fx:'shake' },
+  { d:10, bg:'night', cast:{ j:{a:[420,420],b:[420,420],f:'worry',flip:1}, p:{a:[540,370],b:[540,370],f:'worry',dim:.6}, r:{a:[680,400],b:[680,400],f:'smile'} },
+    lines:[[0.4,'j','Look. A door-shaped hole in the stars.'],[3.6,'j','Is that an exit?'],[5.8,'p','Shh. Smile.'],[7.4,'t','I heard that.']], fx:'door', end:'Next: The Ring Toss' }
+  ]},
+{ n:2, title:'The Ring Toss', blurb:'Every ring thrown costs the thrower a memory.',
+  scenes:[
+  { d:7, bg:'midway', cast:{ j:{a:[260,420],b:[320,420],f:'smile'}, p:{a:[470,360],b:[470,360],f:'smile'}, r:{a:[640,400],b:[640,400],f:'smile'} },
+    lines:[[0.3,'','Morning at the fair. The sky is still painted on.'],[3.8,'j','I counted forty tickets. Is that a lot?'],[5.6,'r','FORTY IS A START.']] },
+  { d:8, bg:'midway', cast:{ j:{a:[320,420],b:[320,420],f:'smile'}, t:{a:[960,150],b:[640,150],f:'grin'}, p:{a:[470,360],b:[470,360],f:'worry'} },
+    lines:[[0.4,'t','Today only! The Ring Toss! Land a ring, win a prize!'],[4.4,'p','Nobody wins the Ring Toss, Juno.'],[6.2,'t','Pip, you are DIMMING the mood.']] },
+  { d:9, bg:'tent', cast:{ j:{a:[260,420],b:[320,420],f:'grin'}, p:{a:[470,360],b:[470,360],f:'worry',dim:.6}, r:{a:[640,400],b:[640,400],f:'smile'} },
+    lines:[[0.4,'j','Easy. Watch this.'],[2.4,'','The first ring floats up. It glows like a small moon.'],[5.8,'j','Hm. I forgot what I was going to say.']], fx:'ring' },
+  { d:9, bg:'tent', cast:{ j:{a:[320,420],b:[320,420],f:'worry'}, p:{a:[470,360],b:[470,360],f:'shock',dim:.4}, r:{a:[640,400],b:[640,400],f:'shock'} },
+    lines:[[0.4,'p','The rings eat memories. That is the entry fee.'],[4.0,'j','Then why does everyone play?'],[6.0,'r','THE PRIZE IS A WAY OUT. THEY SAY.']] },
+  { d:8, bg:'tent', cast:{ j:{a:[320,420],b:[330,420],f:'grin'}, p:{a:[470,360],b:[470,360],f:'worry',dim:.5}, r:{a:[640,400],b:[640,400],f:'smile'} },
+    lines:[[0.4,'j','So we throw a ring we do not mind losing.'],[3.8,'r','I AM WILLING TO LOSE MY FIRST DAY.'],[6.0,'p','You only had a first day for eight seconds.']] },
+  { d:9, bg:'tent', cast:{ j:{a:[320,420],b:[320,420],f:'shock'}, p:{a:[470,360],b:[470,360],f:'shock',dim:.2}, r:{a:[680,400],b:[640,400],f:'grin'} },
+    lines:[[0.3,'r','THROW.'],[1.6,'','Rook tosses. The ring wobbles, spins, lands on the prize post.'],[5.2,'p','It... it landed.'],[7.0,'j','The post is smiling.']], fx:'win' },
+  { d:9, bg:'tent', cast:{ j:{a:[320,420],b:[320,420],f:'shock'}, t:{a:[760,60],b:[600,200],f:'glitch'}, p:{a:[470,360],b:[470,360],f:'shock'}, r:{a:[680,400],b:[680,400],f:'shock'} },
+    lines:[[0.4,'t','CONGRATULATIONS! You have won... a bigger game.'],[4.6,'j','That is not a way out.'],[6.4,'t','It is a way FORWARD.']], fx:'glitchEnd' },
+  { d:10, bg:'night', cast:{ j:{a:[400,420],b:[400,420],f:'worry'}, p:{a:[540,370],b:[540,370],f:'sad',dim:.3}, r:{a:[690,400],b:[690,400],f:'sad'} },
+    lines:[[0.5,'p','I used to know why I was afraid of the dark.'],[4.2,'j','We will remember it for you.'],[7.0,'','Behind them, the stars begin to blink.']], end:'Next: Lights Out' }
+  ]},
+{ n:3, title:'Lights Out', blurb:'The power fails, and the fair shows what is behind its paint.',
+  scenes:[
+  { d:7, bg:'night', cast:{ j:{a:[330,420],b:[330,420],f:'worry'}, p:{a:[470,360],b:[470,360],f:'worry',dim:.4}, r:{a:[650,400],b:[650,400],f:'worry'} },
+    lines:[[0.3,'','Every bulb on the midway hums at once.'],[3.6,'r','POWER LEVEL: SUSPICIOUS.']], fx:'flicker' },
+  { d:8, bg:'midway', cast:{ j:{a:[330,420],b:[330,420],f:'shock'}, p:{a:[470,360],b:[470,360],f:'shock',dim:.2}, r:{a:[650,400],b:[650,400],f:'shock'}, t:{a:[800,170],b:[780,170],f:'glitch'} },
+    lines:[[0.4,'t','Everyone stay calm. This is a FEATURE.'],[4.0,'j','Your face is coming apart.'],[6.0,'t','It is a very clever face.']], fx:'flicker' },
+  { d:9, bg:'tent', cast:{ j:{a:[320,420],b:[320,420],f:'worry'}, p:{a:[470,360],b:[470,360],f:'worry',dim:.3}, r:{a:[650,400],b:[650,400],f:'worry'}, t:{a:[800,-60],b:[800,90],f:'glitch'} },
+    lines:[[0.3,'p','Juno, the paint is peeling off the tent.'],[3.2,'j','There is a hallway behind it.'],[5.6,'r','LEVEL SELECT. I CAN SEE LEVEL SELECT.']], fx:'peel' },
+  { d:9, bg:'hall', cast:{ j:{a:[220,420],b:[300,420],f:'worry'}, p:{a:[400,360],b:[440,360],f:'worry',dim:.5}, r:{a:[560,400],b:[600,400],f:'shock'} },
+    lines:[[0.4,'','Past the paint, the fair is a long grey corridor of closed doors.'],[4.8,'j','Every door has a name on it.'],[6.8,'p','There is one with mine.']] },
+  { d:9, bg:'hall', cast:{ j:{a:[300,420],b:[300,420],f:'shock'}, p:{a:[440,360],b:[440,360],f:'shock',dim:.7}, r:{a:[600,400],b:[600,400],f:'sad'} },
+    lines:[[0.4,'j','There is one with MY name on it.'],[3.0,'j','And a ticket stub taped to the knob.'],[5.6,'r','HIGH SCORE: YOU, ALREADY HERE.']] },
+  { d:9, bg:'hall', cast:{ j:{a:[300,420],b:[300,420],f:'worry'}, p:{a:[440,360],b:[440,360],f:'smile',dim:1}, r:{a:[600,400],b:[600,400],f:'smile'}, t:{a:[900,170],b:[780,170],f:'grin'} },
+    lines:[[0.3,'t','Oh, you found the back. Marvelous!'],[3.4,'p','You said the Last Ride was a story.'],[5.8,'t','I said it was a RIDE.']] },
+  { d:10, bg:'hall', cast:{ j:{a:[300,420],b:[360,420],f:'grin'}, p:{a:[440,360],b:[470,360],f:'grin',dim:1}, r:{a:[600,400],b:[640,400],f:'grin'}, t:{a:[780,170],b:[800,170],f:'shock'} },
+    lines:[[0.4,'j','Pip. Rook. On three, we open the door.'],[3.4,'p','And we smile?'],[5.0,'j','No. This time we do not smile.'],[7.4,'t','NO, WAIT, THAT IS NOT IN THE RULES.']] , fx:'doorOpen' },
+  { d:9, bg:'night', cast:{ j:{a:[480,420],b:[480,420],f:'smile'} },
+    lines:[[0.6,'','The door opens onto a bright, quiet field.'],[4.0,'','Season one ends here. The fair is still open.']], end:'To be continued' }
+  ]}
+];
+/* ---------- ENGINE ---------- */
+const cv=document.getElementById('cv'),g=cv.getContext('2d');
+const $=id=>document.getElementById(id);
+const TITLE=3, CALM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let ep=0,t=1.4,playing=false,last=0,snd=true,actx=null,lastBlip=0,T=0,TALK=false;
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const ease=x=>x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;
+const hash=i=>{const x=Math.sin(i*127.1)*43758.5453;return x-Math.floor(x)};
+const epDur=e=>TITLE+e.scenes.reduce((s,x)=>s+x.d,0);
+function locate(e,time){let u=time-TITLE;if(u<0)return null;for(const s of e.scenes){if(u<s.d)return{s,u};u-=s.d}const s=e.scenes[e.scenes.length-1];return{s,u:s.d-.001}}
+const mmss=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
+
+/* ----- drawing helpers ----- */
+function rr(x,y,w,h,r){g.beginPath();g.roundRect(x,y,w,h,r)}
+function grad(c1,c2,y0=0,y1=540){const gr=g.createLinearGradient(0,y0,0,y1);gr.addColorStop(0,c1);gr.addColorStop(1,c2);g.fillStyle=gr;g.fillRect(0,y0,960,y1-y0)}
+function stars(n,alpha){g.fillStyle='#fff';for(let i=0;i<n;i++){g.globalAlpha=alpha*(.4+.6*Math.sin(T*2+i));g.fillRect(hash(i)*960,hash(i+99)*320,2,2)}g.globalAlpha=1}
+function wheel(cx,cy,R,col){g.save();g.translate(cx,cy);g.strokeStyle=col;g.fillStyle=col;g.lineWidth=3;g.beginPath();g.arc(0,0,R,0,7);g.stroke();g.beginPath();g.arc(0,0,R*.6,0,7);g.stroke();g.rotate(T*.12);for(let i=0;i<8;i++){g.rotate(Math.PI/4);g.beginPath();g.moveTo(0,0);g.lineTo(R,0);g.stroke();g.beginPath();g.arc(R,0,7,0,7);g.fill()}g.restore();g.beginPath();g.moveTo(cx,cy);g.lineTo(cx-R*.55,420);g.moveTo(cx,cy);g.lineTo(cx+R*.55,420);g.stroke()}
+function bulbs(y,flick){const cols=['#ff3d8b','#ffc83d','#2fe0c8'];for(let x=0;x<=960;x+=36){const sy=y+Math.sin(x/960*Math.PI)*34;g.globalAlpha=flick?(hash(x+Math.floor(T*12))>.5?.2:1):.65+.35*Math.sin(T*3+x);g.fillStyle=cols[(x/36)%3];g.beginPath();g.arc(x,sy,5,0,7);g.fill()}g.globalAlpha=1}
+function ground(c1,c2){grad(c1,c2,420,540)}
+
+/* ----- backdrops ----- */
+function drawBG(name,flick){
+  if(name==='gate'){grad('#2a1457','#c2417a',0,420);stars(50,.8);wheel(780,280,110,'#1c0d3c');ground('#1a0b30','#0d0618');
+    g.fillStyle='#1c0d3c';g.fillRect(190,170,40,250);g.fillRect(730,170,40,250);rr(170,120,620,70,10);g.fill();
+    g.fillStyle='#ffc83d';g.font='40px Bungee, Impact, sans-serif';g.textAlign='center';g.fillText('STATIC FAIR',480,172);bulbs(110,flick)}
+  else if(name==='midway'){grad('#150c3b','#5a1f6e',0,420);stars(60,.7);wheel(200,270,125,'#10082b');ground('#1c0f3a','#0c0620');
+    const aw=['#ff3d8b','#2fe0c8','#ffc83d'];for(let i=0;i<4;i++){const x=40+i*250;g.fillStyle='#0f0a26';g.fillRect(x,300,160,120);g.fillStyle=aw[i%3];for(let k=0;k<8;k++){if(k%2)continue;g.fillRect(x+k*20,280,20,28)}}
+    bulbs(70,flick)}
+  else if(name==='tent'){g.fillStyle='#3a0c26';g.fillRect(0,0,960,540);for(let i=0;i<24;i++){g.fillStyle=i%2?'#b3264f':'#e9cfa6';g.fillRect(i*40,0,40,420)}
+    g.fillStyle='rgba(10,3,20,.42)';g.fillRect(0,0,960,420);for(let i=0;i<12;i++){g.fillStyle=i%2?'#ff3d8b':'#ffc83d';g.beginPath();g.arc(40+i*80,0,40,0,Math.PI);g.fill()}
+    ground('#2b0b24','#13040f');g.fillStyle='#e9cfa6';for(const x of[640,740,840]){g.fillRect(x-4,330,8,90)}bulbs(60,flick)}
+  else if(name==='night'){grad('#02010a','#140a33',0,420);stars(110,1);ground('#0b1a2a','#050b14');g.fillStyle='rgba(47,224,200,.12)';g.fillRect(0,420,960,3)}
+  else if(name==='hall'){grad('#2b2b38','#14141c',0,420);ground('#1b1b24','#0b0b10');
+    for(let i=0;i<7;i++){const x=60+i*130;g.fillStyle='#3a3a4a';rr(x,200,76,220,4);g.fill();g.fillStyle='#c9c4e8';g.fillRect(x+60,320,6,10);g.fillStyle='#14141c';g.fillRect(x+16,228,44,14)}
+    g.strokeStyle='rgba(255,255,255,.06)';for(let i=0;i<9;i++){g.beginPath();g.moveTo(480,260);g.lineTo(i*120,540);g.stroke()}}
+}
+
+/* ----- face parts ----- */
+function eyes(cx,cy,sp,f,fill,sq){const r=f==='shock'?11:f==='grin'?7:9;g.fillStyle=fill;g.strokeStyle=fill;g.lineWidth=3;g.lineCap='round';
+  for(const s of[-1,1]){const x=cx+s*sp;
+    if(f==='sleep'){g.beginPath();g.moveTo(x-8,cy);g.lineTo(x+8,cy);g.stroke();continue}
+    if(f==='glitch'&&Math.floor(T*10)%3===0){g.fillRect(x-r,cy-2,r*2,4);continue}
+    if(sq)g.fillRect(x-r*.8,cy-r*.8,r*1.6,r*1.6);else{g.beginPath();g.arc(x,cy,r,0,7);g.fill()}
+    if(f==='worry'||f==='sad'){g.beginPath();g.moveTo(x+s*10,cy-r-3);g.lineTo(x-s*10,cy-r-12);g.stroke()}}}
+function mouth(cx,cy,w,f,col){g.strokeStyle=col;g.fillStyle=col;g.lineWidth=3;g.lineCap='round';g.beginPath();
+  if(TALK){const o=.25+.75*Math.abs(Math.sin(T*13));g.ellipse(cx,cy,w*.33,w*.3*o+2,0,0,7);g.fill();return}
+  if(f==='smile'){g.arc(cx,cy-w*.2,w*.45,.15*Math.PI,.85*Math.PI);g.stroke()}
+  else if(f==='grin'){g.arc(cx,cy-w*.15,w*.5,0,Math.PI);g.fill()}
+  else if(f==='shock'){g.ellipse(cx,cy+2,w*.2,w*.28,0,0,7);g.fill()}
+  else if(f==='worry'){g.moveTo(cx-w*.4,cy);g.quadraticCurveTo(cx-w*.2,cy-6,cx,cy);g.quadraticCurveTo(cx+w*.2,cy+6,cx+w*.4,cy);g.stroke()}
+  else if(f==='sad'){g.arc(cx,cy+w*.35,w*.4,1.15*Math.PI,1.85*Math.PI);g.stroke()}
+  else if(f==='glitch'){g.moveTo(cx-w*.5,cy);for(let i=1;i<=6;i++)g.lineTo(cx-w*.5+i*w/6,cy+(i%2?-7:7));g.stroke()}
+  else{g.moveTo(cx-w*.2,cy);g.lineTo(cx+w*.2,cy);g.stroke()}}
+
+/* ----- characters ----- */
+function shadow(x,y,w){g.fillStyle='rgba(0,0,0,.35)';g.beginPath();g.ellipse(x,y+2,w,8,0,0,7);g.fill()}
+function juno(x,y,f,o){shadow(o.lie?x:x,y,o.lie?90:42);g.save();
+  const bob=o.lie?Math.sin(T*1.6)*2:Math.abs(Math.sin(T*(TALK?6:2)))*(TALK?5:2);
+  if(o.lie){g.translate(x+84,y-20);g.rotate(-Math.PI/2)}else g.translate(x,y-bob);
+  g.fillStyle='#e0b3c8';g.fillRect(-20,-26,14,26);g.fillRect(6,-26,14,26);g.fillStyle='#2a1a3d';g.fillRect(-22,-6,18,6);g.fillRect(4,-6,18,6);
+  g.fillStyle='#2fe0c8';rr(-30,-94,60,72,14);g.fill();g.fillStyle='#ffc83d';g.beginPath();g.arc(8,-60,9,0,7);g.fill();
+  const sw=Math.sin(T*3)*(TALK?10:4);g.strokeStyle='#2fe0c8';g.lineWidth=11;g.lineCap='round';g.beginPath();g.moveTo(-30,-82);g.lineTo(-46,-54+sw);g.moveTo(30,-82);g.lineTo(46,-54-sw);g.stroke();
+  g.fillStyle='#f6d9b8';g.beginPath();g.arc(0,-124,36,0,7);g.fill();
+  g.fillStyle='#ff3d8b';g.beginPath();g.arc(0,-130,37,Math.PI,2*Math.PI);g.fill();g.fillRect(-40,-132,80,7);
+  g.strokeStyle='#c46b7c';g.lineWidth=2;for(const s of[-1,1]){g.beginPath();g.moveTo(s*24-4,-114);g.lineTo(s*24+4,-108);g.moveTo(s*24+4,-114);g.lineTo(s*24-4,-108);g.stroke()}
+  eyes(0,-122,14,f,'#2b1d14');mouth(0,-104,22,f,'#7a2e4a');g.restore();
+  if(o.lie){g.fillStyle='#a99bd6';g.font='22px Bungee, sans-serif';g.textAlign='left';for(let i=0;i<3;i++){const p=(T*.5+i/3)%1;g.globalAlpha=1-p;g.fillText('z',x-10+i*16,y-150-p*50)}g.globalAlpha=1}}
+function tumble(x,y,f){const by=y+Math.sin(T*1.8)*8;g.save();g.translate(x,by);
+  g.fillStyle='rgba(255,61,139,.18)';g.beginPath();g.arc(0,0,78,0,7);g.fill();
+  const gr=g.createRadialGradient(-14,-16,6,0,0,54);gr.addColorStop(0,'#ffe27a');gr.addColorStop(1,'#ff3d8b');g.fillStyle=gr;g.beginPath();g.arc(0,0,54,0,7);g.fill();
+  g.fillStyle='#120a22';g.beginPath();g.ellipse(0,-46,52,10,0,0,7);g.fill();rr(-30,-100,60,56,6);g.fill();g.fillStyle='#ffc83d';g.fillRect(-30,-62,60,10);
+  eyes(0,-6,20,f==='glitch'?'glitch':f,'#120a22');mouth(0,24,56,f==='grin'?'grin':f,'#120a22');
+  if(f==='glitch'){for(let i=0;i<5;i++){g.fillStyle=['#2fe0c8','#ff3d8b','#fff'][i%3];g.globalAlpha=.8;g.fillRect(-70+hash(i+Math.floor(T*8))*120,-60+hash(i*7+Math.floor(T*8))*110,30+hash(i)*30,5)}g.globalAlpha=1}
+  g.restore()}
+function pip(x,y,f,o){const dim=o.dim===undefined?1:o.dim,by=y+Math.sin(T*2.2)*6;g.save();g.translate(x,by);
+  const gl=g.createRadialGradient(0,0,10,0,0,150*dim+20);gl.addColorStop(0,`rgba(255,170,70,${.55*dim})`);gl.addColorStop(1,'rgba(255,170,70,0)');g.fillStyle=gl;g.fillRect(-190,-190,380,380);
+  g.strokeStyle='#f4d6a0';g.lineWidth=2;g.beginPath();g.moveTo(0,-62);g.lineTo(0,-110);g.stroke();
+  g.fillStyle='#3a2515';g.fillRect(-18,-60,36,10);g.fillRect(-14,40,28,8);
+  g.fillStyle=`hsl(28,100%,${30+dim*34}%)`;g.beginPath();g.ellipse(0,-6,36,46,0,0,7);g.fill();
+  g.strokeStyle='rgba(120,40,0,.45)';g.lineWidth=2;for(const k of[-.55,0,.55]){g.beginPath();g.ellipse(0,-6,36*Math.abs(k)+1,46,0,0,7);g.stroke()}
+  g.strokeStyle='#ffd09a';g.beginPath();g.moveTo(0,48);g.lineTo(-6,70);g.moveTo(0,48);g.lineTo(6,72);g.stroke();
+  eyes(0,-8,12,f,'#3a1a08');mouth(0,14,22,f,'#3a1a08');g.restore()}
+function rook(x,y,f){shadow(x,y,48);g.save();g.translate(x,y-Math.abs(Math.sin(T*(TALK?7:1.6)))*(TALK?4:1));
+  g.fillStyle='#17306b';g.fillRect(-36,-8,12,8);g.fillRect(24,-8,12,8);g.fillStyle='#4d8dff';rr(-42,-158,84,152,6);g.fill();
+  g.fillStyle='#2f64c8';g.fillRect(34,-152,8,140);g.fillStyle='#050a18';rr(-32,-146,64,56,4);g.fill();
+  eyes(0,-124,14,f,'#7dffb0',true);mouth(0,-104,22,f,'#7dffb0');
+  g.fillStyle='#2a4fa8';g.fillRect(-42,-80,84,18);g.fillStyle='#ff3d8b';g.beginPath();g.arc(-18,-71,5,0,7);g.fill();g.fillStyle='#ffc83d';g.beginPath();g.arc(8,-71,4,0,7);g.arc(22,-71,4,0,7);g.fill();
+  g.fillStyle='#0a1330';g.fillRect(-14,-46,28,26);g.fillStyle='#ffc83d';g.fillRect(-4,-40,8,12);g.restore()}
+const DRAW={t:(x,y,f)=>tumble(x,y,f),p:pip,r:(x,y,f)=>rook(x,y,f),j:juno};
+
+/* ----- effects ----- */
+function fxBefore(s,u){if(s.fx==='shake'&&!CALM&&u>3&&u<5.6)g.translate((Math.random()-.5)*8,(Math.random()-.5)*8);
+  if(s.fx==='door'&&u>.2){const p=.6+.4*Math.sin(T*2);g.fillStyle=`rgba(255,248,210,${.55*p})`;g.fillRect(772,60,86,140);g.fillStyle='#fff7d6';g.beginPath();g.moveTo(780,190);g.lineTo(780,110);g.arc(815,110,35,Math.PI,0);g.lineTo(850,190);g.fill()}
+  if(s.fx==='peel'){const w=760*ease(clamp(u/5.5,0,1));g.fillStyle='#2b2b38';g.fillRect(480-w/2,40,w,380);g.fillStyle='rgba(0,0,0,.35)';g.fillRect(480-w/2-10,40,10,380);g.fillRect(480+w/2,40,10,380)}
+  if(s.fx==='doorOpen'){g.fillStyle='#14141c';rr(790,190,90,230,4);g.fill()}}
+function fxAfter(s,u){
+  if(s.fx==='ring'&&u>2.4&&u<6.6){const q=clamp((u-2.4)/3,0,1),x=380+q*340,y=300-Math.sin(q*Math.PI)*120;g.strokeStyle='#ffc83d';g.lineWidth=7;g.shadowColor='#ffc83d';g.shadowBlur=22;g.beginPath();g.ellipse(x,y,34,12,0,0,7);g.stroke();g.shadowBlur=0}
+  if(s.fx==='win'&&u>3.2){for(let i=0;i<70;i++){const p=(u-3.2)*.35+hash(i);g.fillStyle=['#ff3d8b','#ffc83d','#2fe0c8','#fff'][i%4];g.fillRect(hash(i+5)*960,((p*300+hash(i)*540)%540),7,7)}}
+  if(s.fx==='flicker'&&u<5&&!CALM){const on=hash(Math.floor(T*12)+3)>.55;g.fillStyle=`rgba(0,0,0,${on?.72:0})`;g.fillRect(0,0,960,540)}
+  if(s.fx==='doorOpen'&&u>5){const q=ease(clamp((u-5)/4,0,1));const gr=g.createRadialGradient(835,300,10,835,300,700*q+30);gr.addColorStop(0,'rgba(255,250,220,1)');gr.addColorStop(1,'rgba(255,250,220,0)');g.fillStyle=gr;g.fillRect(0,0,960,540);if(u>8){g.fillStyle=`rgba(255,250,220,${clamp((u-8)/1.4,0,1)})`;g.fillRect(0,0,960,540)}}
+  if(s.fx==='glitchEnd'&&u>s.d-1.4&&!CALM){for(let i=0;i<7;i++){const y=hash(i+Math.floor(T*10))*500,h=14+hash(i*3)*40,off=(hash(i*5+Math.floor(T*10))-.5)*70;g.drawImage(cv,0,y,960,h,off,y,960,h)}g.fillStyle='rgba(255,61,139,.14)';g.fillRect(0,0,960,540)}}
+
+/* ----- frame ----- */
+function activeLine(s,u){let a=null;for(const l of s.lines)if(l[0]<=u)a=l;if(a&&u-a[0]>Math.max(2.6,a[2].length*.075))return null;return a}
+function draw(){const e=EPISODES[ep];T=t;g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,960,540);g.textAlign='center';
+  const loc=locate(e,t);let line=null;TALK=false;
+  if(loc){const{s,u}=loc;line=activeLine(s,u);g.save();
+    if(s.fx==='shake'&&!CALM&&u>3&&u<5.6)g.translate((Math.random()-.5)*8,(Math.random()-.5)*8);
+    drawBG(s.bg,s.fx==='flicker');fxBefore({fx:s.fx==='shake'?'':s.fx},u);
+    const k=ease(clamp(u/3,0,1));
+    for(const id of['t','p','r','j']){const c=s.cast[id];if(!c)continue;const x=c.a[0]+(c.b[0]-c.a[0])*k,y=c.a[1]+(c.b[1]-c.a[1])*k;TALK=!!(line&&line[1]===id&&u-line[0]<line[2].length*.075);DRAW[id](x,y,c.f,c)}
+    TALK=false;g.restore();fxAfter(s,u);
+    if(s.end&&u>s.d-3.2){const a=clamp((u-(s.d-3.2))/1,0,1);g.fillStyle=`rgba(5,3,15,${.82*a})`;g.fillRect(0,0,960,540);g.globalAlpha=a;g.fillStyle='#ffc83d';g.font='44px Bungee, Impact, sans-serif';g.fillText(s.end.toUpperCase(),480,285);g.globalAlpha=1}}
+  else{const a=t>TITLE-.6?clamp((TITLE-t)/.6,0,1):clamp(t/.5,0,1);g.fillStyle='#0d0a1f';g.fillRect(0,0,960,540);g.globalAlpha=a;
+    g.fillStyle='#2fe0c8';g.font='22px Bungee, Impact, sans-serif';g.fillText('EPISODE '+e.n,480,215);
+    g.fillStyle='#ff3d8b';g.font='64px Bungee, Impact, sans-serif';g.fillText(e.title.toUpperCase(),484,299);g.fillStyle='#ffc83d';g.fillText(e.title.toUpperCase(),480,295);
+    g.fillStyle='#a99bd6';g.font='700 20px Nunito, sans-serif';g.fillText(e.blurb,480,350);g.globalAlpha=1}
+  const w=$('who'),sy=$('say');if(line){const c=CHARS[line[1]];w.textContent=c.name;w.style.color=c.color;sy.textContent=line[2]}else{w.textContent='';sy.textContent=''}
+  $('scrub').value=Math.round(t/epDur(e)*1000);$('time').textContent=mmss(t)+' / '+mmss(epDur(e));
+  if(playing&&line&&line[1]&&TALKNOW(line,loc.u)){const now=performance.now();if(now-lastBlip>85){lastBlip=now;blip(line[1])}}}
+const TALKNOW=(l,u)=>u-l[0]<l[2].length*.075;
+function blip(id){if(!snd||!actx)return;const o=actx.createOscillator(),v=actx.createGain(),n=actx.currentTime;o.type=id==='r'?'square':'triangle';o.frequency.value=CHARS[id].pitch*(.8+Math.random()*.5);v.gain.setValueAtTime(.04,n);v.gain.exponentialRampToValueAtTime(.0001,n+.07);o.connect(v);v.connect(actx.destination);o.start();o.stop(n+.08)}
+
+/* ----- transport ----- */
+function tick(ts){if(playing){const dt=Math.min(.1,(ts-last)/1000);t+=dt;if(t>=epDur(EPISODES[ep])){if(ep<EPISODES.length-1)load(ep+1,true);else{playing=false;t=epDur(EPISODES[ep])-.01;$('play').textContent='Replay'}}}last=ts;draw();requestAnimationFrame(tick)}
+function load(i,go){ep=i;t=go?0:1.4;playing=!!go;$('play').textContent=playing?'Pause':'Play';[...$('shelf').children].forEach((b,k)=>b.setAttribute('aria-current',k===i?'true':'false'))}
+$('play').onclick=()=>{if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(_){}}
+  if(t>=epDur(EPISODES[ep])-.05){load(0,true);return}playing=!playing;if(t<1.5&&playing)t=0;$('play').textContent=playing?'Pause':'Play'};
+$('scrub').oninput=ev=>{t=ev.target.value/1000*epDur(EPISODES[ep])};
+$('snd').onclick=()=>{snd=!snd;$('snd').setAttribute('aria-pressed',snd);$('snd').textContent=snd?'Sound on':'Sound off'};
+EPISODES.forEach((e,i)=>{const b=document.createElement('button');b.className='ep';b.innerHTML='<small>EPISODE '+e.n+' · '+mmss(epDur(e))+'</small><strong>'+e.title+'</strong><span>'+e.blurb+'</span>';
+  b.onclick=()=>{if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(_){}}load(i,true)};$('shelf').appendChild(b)});
+load(0,false);requestAnimationFrame(tick);
+</script>
+
+<script src="../assets/nav.js" defer></script>
+</body></html>
