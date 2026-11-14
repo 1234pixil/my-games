@@ -1,0 +1,1853 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Discord Bot Maker</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a workbench. Settings rail on the left, live file editor on the right (stacked on phones). */
+:root {
+  --bg: #F2F3F8;
+  --surface: #FFFFFF;
+  --surface-2: #F6F7FC;
+  --ink: #161830;
+  --muted: #585D78;
+  --line: #D9DCEA;
+  --accent: #4752C4;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #E7E9FB;
+  --warn: #9A5B00;
+  --warn-bg: #FFF4DB;
+  --ok: #17784A;
+  --code-bg: #13152B;
+  --code-fg: #E4E6F5;
+  --code-muted: #9094B8;
+  --code-line: #272B4C;
+  --font-display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0C0D1A; --surface: #14162A; --surface-2: #1A1C35; --ink: #E7E9F7; --muted: #9DA2C3;
+    --line: #282B4B; --accent: #8089F7; --accent-ink: #0C0D1A; --accent-soft: #242850;
+    --warn: #F2B14F; --warn-bg: #2D2412; --ok: #4ED08F;
+    --code-bg: #0A0B17; --code-fg: #E4E6F5; --code-muted: #8E93B6; --code-line: #23264A;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0C0D1A; --surface: #14162A; --surface-2: #1A1C35; --ink: #E7E9F7; --muted: #9DA2C3;
+  --line: #282B4B; --accent: #8089F7; --accent-ink: #0C0D1A; --accent-soft: #242850;
+  --warn: #F2B14F; --warn-bg: #2D2412; --ok: #4ED08F;
+  --code-bg: #0A0B17; --code-fg: #E4E6F5; --code-muted: #8E93B6; --code-line: #23264A;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  padding-block: 20px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.top, .bench { max-width: 1280px; margin-inline: auto; }
+.top {
+  display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between;
+  gap: 12px 24px; margin-bottom: 20px;
+}
+h1 {
+  font-family: var(--font-display); font-weight: 700; font-size: clamp(28px, 5vw, 40px);
+  letter-spacing: -0.025em; line-height: 1.05; margin: 0; text-wrap: balance;
+}
+.lede { margin: 8px 0 0; color: var(--muted); max-width: 52ch; }
+.promise {
+  display: flex; align-items: center; gap: 10px; margin: 0; padding: 9px 12px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+  font-size: 13px; color: var(--muted); max-width: 44ch;
+}
+.promise strong { color: var(--ink); font-weight: 600; }
+.dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); }
+
+.bench { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (min-width: 920px) {
+  .bench { grid-template-columns: minmax(0, 420px) minmax(0, 1fr); }
+  .stage { position: sticky; top: 16px; }
+  .jump { display: none; }
+}
+
+/* Settings rail */
+.rail { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; min-width: 0; }
+.sec { padding: 18px 18px 20px; }
+.sec + .sec { border-top: 1px solid var(--line); }
+h2 { font-family: var(--font-display); font-size: 17px; font-weight: 650; letter-spacing: -0.01em; margin: 0 0 12px; }
+.grp {
+  margin: 14px 0 4px; font-size: 11px; font-weight: 600; letter-spacing: 0.09em;
+  text-transform: uppercase; color: var(--muted);
+}
+.fields { display: grid; gap: 12px; }
+.field { display: grid; gap: 5px; font-size: 13px; color: var(--muted); min-width: 0; }
+.field > span { font-weight: 500; }
+input[type="text"], select, textarea {
+  font: inherit; font-size: 14px; color: var(--ink); background: var(--surface-2);
+  border: 1px solid var(--line); border-radius: 7px; padding: 8px 10px; width: 100%; min-width: 0;
+}
+textarea { resize: vertical; min-height: 64px; line-height: 1.45; }
+input.mono { font-family: var(--font-mono); font-size: 13px; }
+.hint { margin: 0; font-size: 12px; color: var(--muted); }
+.err { color: var(--warn); }
+.row2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 130px); gap: 10px; }
+
+.seg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface-2); }
+.seg-opt { position: relative; display: block; }
+.seg-opt input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.seg-opt span { display: block; padding: 8px 10px; text-align: center; font-size: 14px; font-weight: 500; color: var(--ink); }
+.seg-opt small { display: block; font-size: 11px; font-weight: 400; opacity: 0.75; }
+.seg-opt input:checked + span { background: var(--accent); color: var(--accent-ink); }
+.seg-opt input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: -4px; }
+
+.btn {
+  font: inherit; font-size: 13px; font-weight: 500; color: var(--ink); background: var(--surface-2);
+  border: 1px solid var(--line); border-radius: 7px; padding: 6px 11px; cursor: pointer;
+}
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; font-weight: 600; padding: 8px 14px; }
+.btn.primary:disabled { opacity: 0.5; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.presets { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 4px; }
+.presets .lbl { font-size: 12px; color: var(--muted); margin-right: 2px; }
+
+.cmd {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start;
+  padding: 7px 8px; margin-inline: -8px; border-radius: 7px; cursor: pointer;
+}
+.cmd:hover { background: var(--surface-2); }
+.cmd input { margin: 3px 0 0; width: 16px; height: 16px; accent-color: var(--accent); }
+.cmd-main { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; min-width: 0; }
+.cmd-main code { font-family: var(--font-mono); font-size: 13px; font-weight: 500; }
+.cmd-desc { font-size: 13px; color: var(--muted); }
+.chip {
+  font-size: 11px; font-weight: 500; color: var(--warn); background: var(--warn-bg);
+  border-radius: 999px; padding: 1px 8px; white-space: nowrap;
+}
+
+.toggle { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; cursor: pointer; }
+.toggle input { margin: 3px 0 0; width: 16px; height: 16px; accent-color: var(--accent); }
+.toggle b { font-weight: 600; font-size: 14px; display: block; }
+.toggle small { font-size: 13px; color: var(--muted); }
+.sub { margin: 10px 0 0 26px; }
+.stack { display: grid; gap: 14px; }
+
+.custom { display: grid; gap: 6px; padding: 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; }
+.custom-top { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+.slash { font-family: var(--font-mono); color: var(--muted); }
+.customs { display: grid; gap: 10px; margin-bottom: 10px; }
+
+/* Output stage */
+.stage { display: grid; gap: 12px; min-width: 0; }
+.notice {
+  margin: 0; padding: 11px 14px; border: 1px solid var(--warn); background: var(--warn-bg);
+  border-radius: 10px; font-size: 13px;
+}
+.notice ul { margin: 0; padding-left: 18px; display: grid; gap: 3px; }
+.out { background: var(--code-bg); border: 1px solid var(--code-line); border-radius: 12px; overflow: hidden; min-width: 0; }
+.out-head {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 8px 12px; padding: 8px 10px; border-bottom: 1px solid var(--code-line);
+}
+.tabs { display: flex; gap: 2px; overflow-x: auto; min-width: 0; max-width: 100%; }
+.tab {
+  font: 500 13px var(--font-mono); color: var(--code-muted); background: none; border: 0;
+  padding: 7px 10px; border-radius: 6px; cursor: pointer; white-space: nowrap;
+}
+.tab:hover { color: var(--code-fg); }
+.tab[aria-selected="true"] { color: var(--code-fg); background: var(--code-line); }
+.actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.btn-code {
+  font: 500 13px var(--font-body); color: var(--code-fg); background: transparent;
+  border: 1px solid var(--code-line); border-radius: 7px; padding: 6px 11px; cursor: pointer;
+}
+.btn-code:hover { border-color: var(--accent); }
+.btn-code.main { background: var(--accent); color: var(--accent-ink); border-color: transparent; font-weight: 600; }
+pre.code {
+  margin: 0; padding: 14px 16px; overflow: auto; max-height: 64vh; min-height: 260px;
+  font: 13px/1.6 var(--font-mono); color: var(--code-fg); tab-size: 2;
+}
+.out-foot { padding: 9px 12px; border-top: 1px solid var(--code-line); font-size: 12px; color: var(--code-muted); }
+
+.invite { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 8px; }
+.invite-head { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
+.invite-head strong { font-family: var(--font-display); font-size: 15px; font-weight: 650; }
+.invite-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+
+.ai-opts { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: flex-end; margin: 10px 0 12px; }
+.ai-opts .field { grid-template-columns: auto auto; align-items: center; gap: 8px; }
+.ai-opts select { width: auto; }
+.ai-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+#aiStatus { margin-top: 10px; min-height: 1.4em; }
+#aiStatus.err { color: var(--warn); }
+.sec[inert] { opacity: 0.5; }
+.seg.off { opacity: 0.55; }
+.seg-opt input:disabled { cursor: not-allowed; }
+.ai-sec { background: var(--accent-soft); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+</style>
+
+<header class="top">
+  <div>
+    <h1>Discord Bot Maker</h1>
+    <p class="lede">Describe the bot you want and Claude writes the whole project, or pick commands from a menu. Either way you get files you can run.</p>
+  </div>
+  <p class="promise"><span class="dot" aria-hidden="true"></span><span><strong>AI builds it. The bot has no AI and no third-party APIs.</strong> What you run talks to Discord and nothing else.</span></p>
+</header>
+
+<main class="bench">
+  <aside class="rail" aria-label="Bot settings">
+    <section class="sec">
+      <h2>Your bot</h2>
+      <div class="fields">
+        <label class="field"><span>Bot name</span>
+          <input type="text" id="name" maxlength="40" value="Pixel" autocomplete="off">
+        </label>
+        <div class="field" role="group" aria-label="Language"><span>Language</span>
+          <div class="seg" id="langSeg">
+            <label class="seg-opt"><input type="radio" name="lang" value="js" checked><span>discord.js<small>Node.js 18+</small></span></label>
+            <label class="seg-opt"><input type="radio" name="lang" value="py"><span>discord.py<small>Python 3.9+</small></span></label>
+          </div>
+        </div>
+        <div class="row2">
+          <label class="field"><span>Status text</span>
+            <input type="text" id="statusText" maxlength="100" value="with /help" autocomplete="off">
+          </label>
+          <label class="field"><span>Shown as</span>
+            <select id="statusType">
+              <option>Playing</option><option>Listening</option><option>Watching</option><option>Competing</option>
+            </select>
+          </label>
+        </div>
+        <label class="field"><span>Application ID (optional)</span>
+          <input type="text" id="appId" class="mono" inputmode="numeric" maxlength="20" placeholder="Developer Portal, General Information" autocomplete="off">
+          <p class="hint">Only used to build your invite link below the code.</p>
+        </label>
+      </div>
+    </section>
+
+    <section class="sec ai-sec" aria-label="Build with AI">
+      <h2>Build with AI</h2>
+      <p class="hint" style="margin-bottom:10px">Uses the name, language and status from above. Claude writes the code, dependency file, .env.example and setup README.</p>
+      <label class="field"><span id="aiLabel">What should it do?</span>
+        <textarea id="aiPrompt" maxlength="2000" rows="5"></textarea>
+      </label>
+      <div class="ai-opts">
+        <label class="toggle" id="aiBaseWrap"><input type="checkbox" id="aiBase"><span><small>Start from my picks below</small></span></label>
+        <label class="field"><span>Quality</span>
+          <select id="aiTier"><option value="default">Balanced</option><option value="complex">Most capable (slower)</option></select>
+        </label>
+      </div>
+      <div class="ai-actions">
+        <button type="button" class="btn primary" id="aiGo" disabled>Build with AI</button>
+        <button type="button" class="btn" id="aiStop" hidden>Stop</button>
+        <button type="button" class="btn" id="aiReset" hidden>Start over</button>
+      </div>
+      <p class="hint" id="aiStatus" role="status"></p>
+      <p class="hint" id="aiPaused" hidden>The menu below is paused while an AI project is open. Start over to use it again.</p>
+    </section>
+
+    <section class="sec tmpl">
+      <h2>Commands</h2>
+      <p class="hint" style="margin-bottom:10px">The menu builds a ready-made bot without AI.</p>
+      <div class="presets" role="group" aria-label="Presets">
+        <span class="lbl">Start from</span>
+        <button type="button" class="btn" data-preset="starter">Starter</button>
+        <button type="button" class="btn" data-preset="community">Community</button>
+        <button type="button" class="btn" data-preset="moderation">Moderation</button>
+        <button type="button" class="btn" data-preset="all">All</button>
+        <button type="button" class="btn" data-preset="none">None</button>
+      </div>
+      <div id="cmdList"></div>
+    </section>
+
+    <section class="sec tmpl">
+      <h2>New members</h2>
+      <div class="stack">
+        <div>
+          <label class="toggle"><input type="checkbox" id="welcome"><span><b>Welcome message</b><small>Greets people in a channel when they join.</small></span></label>
+          <div class="sub" id="welcomeBox" hidden>
+            <label class="field"><span>Message ({user} and {server} are filled in)</span>
+              <textarea id="welcomeText" maxlength="500"></textarea>
+            </label>
+          </div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="autorole"><span><b>Auto role</b><small>Gives every new member a role you choose.</small></span></label>
+      </div>
+    </section>
+
+    <section class="sec tmpl">
+      <h2>Custom replies</h2>
+      <p class="hint" style="margin-bottom:10px">Turn any text into a slash command, like /rules or /discord-link.</p>
+      <div class="customs" id="customs"></div>
+      <button type="button" class="btn" id="addCustom">Add a custom reply</button>
+    </section>
+  </aside>
+
+  <div class="stage" id="stage">
+    <div class="notice" id="notice" hidden><ul id="noticeList"></ul></div>
+
+    <section class="out" aria-label="Generated project">
+      <div class="out-head">
+        <div class="tabs" id="tabs" role="tablist" aria-label="Project files"></div>
+        <div class="actions">
+          <button type="button" class="btn-code main" id="copyFile">Copy file</button>
+          <button type="button" class="btn-code" id="copyShell" title="One paste in a terminal creates every file (macOS and Linux)">Copy as shell script</button>
+        </div>
+      </div>
+      <pre class="code" tabindex="0" id="codePre"><code id="code"></code></pre>
+      <div class="out-foot" id="meta"></div>
+    </section>
+
+    <section class="invite" aria-label="Invite link">
+      <div class="invite-head">
+        <strong>Invite link</strong>
+        <span class="hint" id="inviteHint">Add your Application ID on the left to build it.</span>
+      </div>
+      <div class="invite-row">
+        <input type="text" id="invite" class="mono" readonly placeholder="https://discord.com/oauth2/authorize?...">
+        <button type="button" class="btn" id="copyInvite" disabled>Copy</button>
+      </div>
+    </section>
+  </div>
+</main>
+<p class="sr" id="live" aria-live="polite"></p>
+
+<!-- ============ Code templates (inert text, read by the generator) ============ -->
+<script type="text/plain" data-tpl="js:main">
+const {
+__IMPORTS__
+} = require('discord.js');
+require('dotenv').config();
+
+const client = new Client({
+  intents: [
+__INTENTS__
+  ],
+});
+
+__START__
+// Every command is a slash command: a definition plus a function that runs it.
+const commands = [
+__COMMANDS__
+];
+
+client.commands = new Map(commands.map((cmd) => [cmd.data.name, cmd]));
+
+client.once(Events.ClientReady, async (c) => {
+  console.log(`Logged in as ${c.user.tag}`);
+__PRESENCE__
+  const body = commands.map((cmd) => cmd.data.toJSON());
+  const guildId = process.env.GUILD_ID;
+  if (guildId) {
+    await c.application.commands.set(body, guildId);
+    console.log(`Registered ${body.length} commands in server ${guildId}.`);
+  } else {
+    await c.application.commands.set(body);
+    console.log(`Registered ${body.length} global commands. They can take up to an hour to appear.`);
+  }
+});
+
+client.on(Events.InteractionCreate, async (interaction) => {
+  if (!interaction.isChatInputCommand()) return;
+  const command = client.commands.get(interaction.commandName);
+  if (!command) return;
+  try {
+    await command.execute(interaction);
+  } catch (err) {
+    console.error(err);
+    const reply = { content: 'Something went wrong running that command.', flags: MessageFlags.Ephemeral };
+    if (interaction.replied || interaction.deferred) await interaction.followUp(reply);
+    else await interaction.reply(reply);
+  }
+});
+__EVENTS__
+if (!process.env.DISCORD_TOKEN) {
+  console.error('Set DISCORD_TOKEN in your .env file first.');
+  process.exit(1);
+}
+
+client.login(process.env.DISCORD_TOKEN);
+</script>
+
+<script type="text/plain" data-tpl="js:welcome">
+client.on(Events.GuildMemberAdd, async (member) => {
+  const channelId = process.env.WELCOME_CHANNEL_ID;
+  const channel = channelId ? member.guild.channels.cache.get(channelId) : member.guild.systemChannel;
+  if (!channel || !channel.isTextBased()) return;
+  const text = __WELCOME__
+    .replaceAll('{user}', `<@${member.id}>`)
+    .replaceAll('{server}', member.guild.name);
+  try {
+    await channel.send({ content: text, allowedMentions: { users: [member.id] } });
+  } catch (err) {
+    console.error('Could not send the welcome message:', err.message);
+  }
+});
+</script>
+
+<script type="text/plain" data-tpl="js:autorole">
+client.on(Events.GuildMemberAdd, async (member) => {
+  const roleId = process.env.AUTOROLE_ID;
+  if (!roleId) return;
+  try {
+    await member.roles.add(roleId, 'Auto role');
+  } catch (err) {
+    console.error('Could not assign the auto role:', err.message);
+  }
+});
+</script>
+
+<script type="text/plain" data-tpl="js:ping">
+{
+  data: new SlashCommandBuilder().setName('ping').setDescription('Check how fast the bot responds'),
+  async execute(interaction) {
+    await interaction.reply('Pinging...');
+    const sent = await interaction.fetchReply();
+    const roundTrip = sent.createdTimestamp - interaction.createdTimestamp;
+    await interaction.editReply(`Pong! Round trip ${roundTrip}ms, websocket ${Math.round(interaction.client.ws.ping)}ms.`);
+  },
+},
+</script>
+
+<script type="text/plain" data-tpl="js:help">
+{
+  data: new SlashCommandBuilder().setName('help').setDescription('List everything this bot can do'),
+  async execute(interaction) {
+    const lines = [...interaction.client.commands.values()].map(
+      (cmd) => `/${cmd.data.name} - ${cmd.data.description}`,
+    );
+    await interaction.reply({ content: lines.join('\n'), flags: MessageFlags.Ephemeral });
+  },
+},
+</script>
+
+<script type="text/plain" data-tpl="js:uptime">
+{
+  data: new SlashCommandBuilder().setName('uptime').setDescription('How long the bot has been running'),
+  async execute(interaction) {
+    const total = Math.floor((Date.now() - startedAt) / 1000);
+    const days = Math.floor(total / 86400);
+    const hours = Math.floor((total % 86400) / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    await interaction.reply(`Up for ${days}d ${hours}h ${minutes}m ${total % 60}s`);
+  },
+},
+</script>
+
+<script type="text/plain" data-tpl="js:avatar">
+{
+  data: new SlashCommandBuilder()
+    .setName('avatar')
+    .setDescription("Show someone's avatar")
+    .addUserOption((o) => o.setName('user').setDescription('Whose avatar (default: you)')),
+  async execute(interaction) {
+    const user = interaction.options.getUser('user') ?? interaction.user;
+    const embed = new EmbedBuilder()
+      .setTitle(`${user.username}'s avatar`)
+      .setImage(user.displayAvatarURL({ size: 1024 }))
+      .setColor(0x5865f2);
+    await interaction.reply({ embeds: [embed] });
+  },
+},
+</script>
+
+<script type="text/plain" data-tpl="js:userinfo">
+{
+  data: new SlashCommandBuilder()
+    .setName('userinfo')
+    .setDescription('Show info about a member')
+    .setDMPermission(false)
+    .addUserOption((o) => o.setName('user').setDescription('Who to look up (default: you)')),
+  async execute(interaction) {
+    const user = interaction.options.getUser('user') ?? interaction.user;
+    const member = await interaction.guild.members.fetch(user.id).catch(() => null);
+    const created = `<t:${Math.floor(user.createdTimestamp / 1000)}:R>`;
+    const joined = member?.joinedTimestamp ? `<t:${Math.floor(member.joinedTimestamp / 1000)}:R>` : 'Not in this server';
+    const embed = new EmbedBuilder()
+      .setTitle(user.username)
+      .setThumbnail(user.displayAvatarURL({ size: 256 }))
+      .setColor(0x5865f2)
+      .addFields(
+        { name: 'ID', value: user.id, inline: true },
+        { name: 'Account created', value: created, inline: true },
+        { name: 'Joined this server', value: joined, inline: true },
+      );
+    await interaction.reply({ embeds: [embed] });
+  },
+},
+</script>
+
+<script type="text/plain" data-tpl="js:serverinfo">
+{
+  data: new SlashCommandBuilder()
+    .setName('serverinfo')
+    .setDescription('Show info about this server')
+    .setDMPermission(false),
+  async execute(interaction) {
+    const guild = interaction.guild;
+    const embed = new EmbedBuilder()
+      .setTitle(guild.name)
+      .setThumbnail(guild.iconURL())
+      .setColor(0x5865f2)
+      .addFields(
+        { name: 'Members', value: String(guild.memberCount), inline: true },
+        { name: 'Created', value: `<t:${Math.floor(guild.createdTimestamp / 1000)}:R>`, inline: true },
+        { name: 'Owner', value: `<@${guild.ownerId}>`, inline: true },
+      );
+    await interaction.reply({ embeds: [embed] });
+  },
+},
+</script>
+
+<script type="text/plain" data-tpl="js:coinflip">
+{
+  data: new SlashCommandBuilder().setName('coinflip').setDescription('Flip a coin'),
+  async execute(interaction) {
+    await interaction.reply(Math.random() < 0.5 ? 'Heads' : 'Tails');
+  },
+},
+</script>
+
+<script type="text/plain" data-tpl="js:roll">
+{
+  data: new SlashCommandBuilder()
+    .setName('roll')
+    .setDescription('Roll a die')
+    .addIntegerOption((o) =>
+      o.setName('sides').setDescription('Number of sides (default 6)').setMinValue(2).setMaxValue(1000),
+    ),
+  async execute(interaction) {
+    const sides = interaction.options.getInteger('sides') ?? 6;
+    const result = Math.floor(Math.random() * sides) + 1;
+    await interaction.reply(`You rolled **${result}** (d${sides})`);
+  },
+},
+</script>
+
+<script type="text/plain" data-tpl="js:8ball">
+{
+  data: new SlashCommandBuilder()
+    .setName('8ball')
+    .setDescription('Ask the magic 8-ball a question')
+    .addStringOption((o) => o.setName('question').setDescription('Your yes or no question').setRequired(true)),
+  async execute(interaction) {
+    const answers = [
+      "It is certain.",
+      "Without a doubt.",
+      "Yes, definitely.",
+      "Most likely.",
+      "Signs point to yes.",
+      "Reply hazy, try again.",
+      "Ask again later.",
+      "Cannot predict now.",
+      "Don't count on it.",
+      "My sources say no.",
+      "Very doubtful.",
+      "Outlook not so good.",
+    ];
+    const answer = answers[Math.floor(Math.random() * answers.length)];
+    await interaction.reply({
+      content: `**${interaction.options.getString('question')}**\n${answer}`,
+      allowedMentions: { parse: [] },
+    });
+  },
+},
+</script>
+
+<script type="text/plain" data-tpl="js:choose">
+{
+  data: new SlashCommandBuilder()
+    .setName('choose')
+    .setDescription('Pick one option at random')
+    .addStringOption((o) =>
+      o.setName('options').setDescription('Options separated by commas, like pizza, tacos, sushi').setRequired(true),
+    ),
+  async execute(interaction) {
+    const choices = interaction.options
+      .getString('options')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (choices.length < 2) {
+      return interaction.reply({ content: 'Give me at least two options separated by commas.', flags: MessageFlags.Ephemeral });
+    }
+    const pick = choices[Math.floor(Math.random() * choices.length)];
+    await interaction.reply({ content: `I choose **${pick}**`, allowedMentions: { parse: [] } });
+  },
+},
+</script>
+
+<script type="text/plain" data-tpl="js:joke">
+{
+  data: new SlashCommandBuilder().setName('joke').setDescription('Tell a programmer joke'),
+  async execute(interaction) {
+    const jokes = [
+      "Why do programmers prefer dark mode? Because light attracts bugs.",
+      "I would tell you a UDP joke, but you might not get it.",
+      "There are 10 kinds of people: those who understand binary and those who don't.",
+      "A SQL query walks into a bar, walks up to two tables and asks: can I join you?",
+      "Why did the developer go broke? He used up all his cache.",
+      "To understand recursion, you must first understand recursion.",
+    ];
+    await interaction.reply(jokes[Math.floor(Math.random() * jokes.length)]);
+  },
+},
+</script>
+
+<script type="text/plain" data-tpl="js:poll">
+{
+  data: new SlashCommandBuilder()
+    .setName('poll')
+    .setDescription('Start a quick reaction poll')
+    .setDMPermission(false)
+    .addStringOption((o) => o.setName('question').setDescription('What are you asking?').setRequired(true).setMaxLength(200))
+    .addStringOption((o) => o.setName('option1').setDescription('First choice').setRequired(true).setMaxLength(100))
+    .addStringOption((o) => o.setName('option2').setDescription('Second choice').setRequired(true).setMaxLength(100))
+    .addStringOption((o) => o.setName('option3').setDescription('Third choice').setMaxLength(100))
+    .addStringOption((o) => o.setName('option4').setDescription('Fourth choice').setMaxLength(100)),
+  async execute(interaction) {
+    const emojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣'];
+    const choices = ['option1', 'option2', 'option3', 'option4']
+      .map((name) => interaction.options.getString(name))
+      .filter(Boolean);
+    const embed = new EmbedBuilder()
+      .setTitle(interaction.options.getString('question'))
+      .setDescription(choices.map((choice, i) => `${emojis[i]} ${choice}`).join('\n'))
+      .setColor(0x5865f2)
+      .setFooter({ text: `Poll by ${interaction.user.username}` });
+    await interaction.reply({ embeds: [embed] });
+    const message = await interaction.fetchReply();
+    for (let i = 0; i < choices.length; i++) await message.react(emojis[i]);
+  },
+},
+</script>
+
+<script type="text/plain" data-tpl="js:say">
+{
+  data: new SlashCommandBuilder()
+    .setName('say')
+    .setDescription('Make the bot send a message')
+    .setDMPermission(false)
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
+    .addStringOption((o) => o.setName('message').setDescription('What the bot should say').setRequired(true)),
+  async execute(interaction) {
+    if (!interaction.memberPermissions.has(PermissionFlagsBits.ManageMessages)) {
+      return interaction.reply({ content: 'You need the Manage Messages permission.', flags: MessageFlags.Ephemeral });
+    }
+    await interaction.reply({ content: 'Sent.', flags: MessageFlags.Ephemeral });
+    await interaction.channel.send({
+      content: interaction.options.getString('message'),
+      allowedMentions: { parse: [] },
+    });
+  },
+},
+</script>
+
+<script type="text/plain" data-tpl="js:clear">
+{
+  data: new SlashCommandBuilder()
+    .setName('clear')
+    .setDescription('Delete recent messages in this channel')
+    .setDMPermission(false)
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
+    .addIntegerOption((o) =>
+      o.setName('amount').setDescription('How many messages (1 to 100)').setMinValue(1).setMaxValue(100).setRequired(true),
+    ),
+  async execute(interaction) {
+    if (!interaction.memberPermissions.has(PermissionFlagsBits.ManageMessages)) {
+      return interaction.reply({ content: 'You need the Manage Messages permission.', flags: MessageFlags.Ephemeral });
+    }
+    const amount = interaction.options.getInteger('amount');
+    const deleted = await interaction.channel.bulkDelete(amount, true);
+    await interaction.reply({
+      content: `Deleted ${deleted.size} message(s). Discord cannot bulk delete messages older than 14 days.`,
+      flags: MessageFlags.Ephemeral,
+    });
+  },
+},
+</script>
+
+<script type="text/plain" data-tpl="js:kick">
+{
+  data: new SlashCommandBuilder()
+    .setName('kick')
+    .setDescription('Kick a member from the server')
+    .setDMPermission(false)
+    .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)
+    .addUserOption((o) => o.setName('member').setDescription('Who to kick').setRequired(true))
+    .addStringOption((o) => o.setName('reason').setDescription('Why (shown in the audit log)')),
+  async execute(interaction) {
+    if (!interaction.memberPermissions.has(PermissionFlagsBits.KickMembers)) {
+      return interaction.reply({ content: 'You need the Kick Members permission.', flags: MessageFlags.Ephemeral });
+    }
+    const member = interaction.options.getMember('member');
+    const reason = interaction.options.getString('reason') ?? 'No reason given';
+    if (!member) {
+      return interaction.reply({ content: 'That user is not in this server.', flags: MessageFlags.Ephemeral });
+    }
+    if (!member.kickable) {
+      return interaction.reply({
+        content: 'I cannot kick that member. Their top role may be above mine.',
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+    await member.kick(`${reason} (by ${interaction.user.username})`);
+    await interaction.reply({
+      content: `Kicked **${member.user.username}**. Reason: ${reason}`,
+      allowedMentions: { parse: [] },
+    });
+  },
+},
+</script>
+
+<script type="text/plain" data-tpl="js:ban">
+{
+  data: new SlashCommandBuilder()
+    .setName('ban')
+    .setDescription('Ban a user from the server')
+    .setDMPermission(false)
+    .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers)
+    .addUserOption((o) => o.setName('user').setDescription('Who to ban').setRequired(true))
+    .addStringOption((o) => o.setName('reason').setDescription('Why (shown in the audit log)')),
+  async execute(interaction) {
+    if (!interaction.memberPermissions.has(PermissionFlagsBits.BanMembers)) {
+      return interaction.reply({ content: 'You need the Ban Members permission.', flags: MessageFlags.Ephemeral });
+    }
+    const user = interaction.options.getUser('user');
+    const member = interaction.options.getMember('user');
+    const reason = interaction.options.getString('reason') ?? 'No reason given';
+    if (member && !member.bannable) {
+      return interaction.reply({
+        content: 'I cannot ban that member. Their top role may be above mine.',
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+    await interaction.guild.members.ban(user, { reason: `${reason} (by ${interaction.user.username})` });
+    await interaction.reply({
+      content: `Banned **${user.username}**. Reason: ${reason}`,
+      allowedMentions: { parse: [] },
+    });
+  },
+},
+</script>
+
+<script type="text/plain" data-tpl="js:timeout">
+{
+  data: new SlashCommandBuilder()
+    .setName('timeout')
+    .setDescription('Mute a member for a while')
+    .setDMPermission(false)
+    .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
+    .addUserOption((o) => o.setName('member').setDescription('Who to time out').setRequired(true))
+    .addIntegerOption((o) =>
+      o.setName('minutes').setDescription('How long (1 to 40320 minutes)').setMinValue(1).setMaxValue(40320).setRequired(true),
+    )
+    .addStringOption((o) => o.setName('reason').setDescription('Why (shown in the audit log)')),
+  async execute(interaction) {
+    if (!interaction.memberPermissions.has(PermissionFlagsBits.ModerateMembers)) {
+      return interaction.reply({ content: 'You need the Moderate Members permission.', flags: MessageFlags.Ephemeral });
+    }
+    const member = interaction.options.getMember('member');
+    const minutes = interaction.options.getInteger('minutes');
+    const reason = interaction.options.getString('reason') ?? 'No reason given';
+    if (!member) {
+      return interaction.reply({ content: 'That user is not in this server.', flags: MessageFlags.Ephemeral });
+    }
+    if (!member.moderatable) {
+      return interaction.reply({
+        content: 'I cannot time out that member. Their top role may be above mine.',
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+    await member.timeout(minutes * 60 * 1000, `${reason} (by ${interaction.user.username})`);
+    await interaction.reply({
+      content: `Timed out **${member.user.username}** for ${minutes} minute(s).`,
+      allowedMentions: { parse: [] },
+    });
+  },
+},
+</script>
+
+<script type="text/plain" data-tpl="py:main">
+__IMPORTS__
+
+import discord
+from discord import app_commands
+from dotenv import load_dotenv
+
+load_dotenv()
+
+TOKEN = os.getenv("DISCORD_TOKEN")
+GUILD_ID = os.getenv("GUILD_ID")
+
+__INTENTS__
+
+__START__
+
+
+class Bot(discord.Client):
+    def __init__(self):
+        super().__init__(
+            intents=intents,
+__ACTIVITY__
+        )
+        self.tree = app_commands.CommandTree(self)
+
+    async def setup_hook(self):
+        if GUILD_ID:
+            guild = discord.Object(id=int(GUILD_ID))
+            self.tree.copy_global_to(guild=guild)
+            await self.tree.sync(guild=guild)
+            print(f"Synced commands to server {GUILD_ID}.")
+        else:
+            await self.tree.sync()
+            print("Synced global commands. They can take up to an hour to appear.")
+
+
+bot = Bot()
+tree = bot.tree
+
+
+@bot.event
+async def on_ready():
+    print(f"Logged in as {bot.user}")
+
+
+@tree.error
+async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+    if isinstance(error, app_commands.MissingPermissions):
+        message = "You do not have permission to use this command."
+    elif isinstance(error, app_commands.BotMissingPermissions):
+        message = "I am missing permissions for that. Check my role in Server Settings."
+    else:
+        message = "Something went wrong running that command."
+        print(f"Command error: {error!r}")
+    if interaction.response.is_done():
+        await interaction.followup.send(message, ephemeral=True)
+    else:
+        await interaction.response.send_message(message, ephemeral=True)
+
+
+__COMMANDS__
+
+
+__EVENTS__
+if not TOKEN:
+    raise SystemExit("Set DISCORD_TOKEN in your .env file first.")
+
+bot.run(TOKEN)
+</script>
+
+<script type="text/plain" data-tpl="py:autorole">
+role_id = os.getenv("AUTOROLE_ID")
+if role_id:
+    role = member.guild.get_role(int(role_id))
+    if role is not None:
+        try:
+            await member.add_roles(role, reason="Auto role")
+        except discord.HTTPException as err:
+            print(f"Could not assign the auto role: {err}")
+</script>
+
+<script type="text/plain" data-tpl="py:welcome">
+channel_id = os.getenv("WELCOME_CHANNEL_ID")
+channel = member.guild.get_channel(int(channel_id)) if channel_id else member.guild.system_channel
+if channel is not None:
+    text = __WELCOME__.replace("{user}", member.mention).replace("{server}", member.guild.name)
+    try:
+        await channel.send(text, allowed_mentions=discord.AllowedMentions(users=[member]))
+    except discord.HTTPException as err:
+        print(f"Could not send the welcome message: {err}")
+</script>
+
+<script type="text/plain" data-tpl="py:ping">
+@tree.command(name="ping", description="Check how fast the bot responds")
+async def ping(interaction: discord.Interaction):
+    await interaction.response.send_message(f"Pong! {round(bot.latency * 1000)}ms")
+</script>
+
+<script type="text/plain" data-tpl="py:help">
+@tree.command(name="help", description="List everything this bot can do")
+async def help_command(interaction: discord.Interaction):
+    lines = [f"/{cmd.name} - {cmd.description}" for cmd in tree.get_commands()]
+    await interaction.response.send_message("\n".join(lines), ephemeral=True)
+</script>
+
+<script type="text/plain" data-tpl="py:uptime">
+@tree.command(name="uptime", description="How long the bot has been running")
+async def uptime(interaction: discord.Interaction):
+    seconds = int(time.time() - START_TIME)
+    days, rest = divmod(seconds, 86400)
+    hours, rest = divmod(rest, 3600)
+    minutes, seconds = divmod(rest, 60)
+    await interaction.response.send_message(f"Up for {days}d {hours}h {minutes}m {seconds}s")
+</script>
+
+<script type="text/plain" data-tpl="py:avatar">
+@tree.command(name="avatar", description="Show someone's avatar")
+@app_commands.describe(user="Whose avatar (default: you)")
+async def avatar(interaction: discord.Interaction, user: Optional[discord.User] = None):
+    user = user or interaction.user
+    embed = discord.Embed(title=f"{user.display_name}'s avatar", color=discord.Color.blurple())
+    embed.set_image(url=user.display_avatar.with_size(1024).url)
+    await interaction.response.send_message(embed=embed)
+</script>
+
+<script type="text/plain" data-tpl="py:userinfo">
+@tree.command(name="userinfo", description="Show info about a member")
+@app_commands.describe(member="Who to look up (default: you)")
+@app_commands.guild_only()
+async def userinfo(interaction: discord.Interaction, member: Optional[discord.Member] = None):
+    member = member or interaction.user
+    joined = discord.utils.format_dt(member.joined_at, "R") if member.joined_at else "Unknown"
+    embed = discord.Embed(title=member.display_name, color=discord.Color.blurple())
+    embed.set_thumbnail(url=member.display_avatar.url)
+    embed.add_field(name="ID", value=str(member.id))
+    embed.add_field(name="Account created", value=discord.utils.format_dt(member.created_at, "R"))
+    embed.add_field(name="Joined this server", value=joined)
+    await interaction.response.send_message(embed=embed)
+</script>
+
+<script type="text/plain" data-tpl="py:serverinfo">
+@tree.command(name="serverinfo", description="Show info about this server")
+@app_commands.guild_only()
+async def serverinfo(interaction: discord.Interaction):
+    guild = interaction.guild
+    embed = discord.Embed(title=guild.name, color=discord.Color.blurple())
+    if guild.icon:
+        embed.set_thumbnail(url=guild.icon.url)
+    embed.add_field(name="Members", value=str(guild.member_count))
+    embed.add_field(name="Created", value=discord.utils.format_dt(guild.created_at, "R"))
+    embed.add_field(name="Owner", value=f"<@{guild.owner_id}>")
+    await interaction.response.send_message(embed=embed)
+</script>
+
+<script type="text/plain" data-tpl="py:coinflip">
+@tree.command(name="coinflip", description="Flip a coin")
+async def coinflip(interaction: discord.Interaction):
+    await interaction.response.send_message(random.choice(["Heads", "Tails"]))
+</script>
+
+<script type="text/plain" data-tpl="py:roll">
+@tree.command(name="roll", description="Roll a die")
+@app_commands.describe(sides="Number of sides (default 6)")
+async def roll(interaction: discord.Interaction, sides: app_commands.Range[int, 2, 1000] = 6):
+    await interaction.response.send_message(f"You rolled **{random.randint(1, sides)}** (d{sides})")
+</script>
+
+<script type="text/plain" data-tpl="py:8ball">
+@tree.command(name="8ball", description="Ask the magic 8-ball a question")
+@app_commands.describe(question="Your yes or no question")
+async def eight_ball(interaction: discord.Interaction, question: str):
+    answers = [
+        "It is certain.",
+        "Without a doubt.",
+        "Yes, definitely.",
+        "Most likely.",
+        "Signs point to yes.",
+        "Reply hazy, try again.",
+        "Ask again later.",
+        "Cannot predict now.",
+        "Don't count on it.",
+        "My sources say no.",
+        "Very doubtful.",
+        "Outlook not so good.",
+    ]
+    await interaction.response.send_message(
+        f"**{question}**\n{random.choice(answers)}",
+        allowed_mentions=discord.AllowedMentions.none(),
+    )
+</script>
+
+<script type="text/plain" data-tpl="py:choose">
+@tree.command(name="choose", description="Pick one option at random")
+@app_commands.describe(options="Options separated by commas, like pizza, tacos, sushi")
+async def choose(interaction: discord.Interaction, options: str):
+    choices = [item.strip() for item in options.split(",") if item.strip()]
+    if len(choices) < 2:
+        await interaction.response.send_message("Give me at least two options separated by commas.", ephemeral=True)
+        return
+    await interaction.response.send_message(
+        f"I choose **{random.choice(choices)}**",
+        allowed_mentions=discord.AllowedMentions.none(),
+    )
+</script>
+
+<script type="text/plain" data-tpl="py:joke">
+@tree.command(name="joke", description="Tell a programmer joke")
+async def joke(interaction: discord.Interaction):
+    jokes = [
+        "Why do programmers prefer dark mode? Because light attracts bugs.",
+        "I would tell you a UDP joke, but you might not get it.",
+        "There are 10 kinds of people: those who understand binary and those who don't.",
+        "A SQL query walks into a bar, walks up to two tables and asks: can I join you?",
+        "Why did the developer go broke? He used up all his cache.",
+        "To understand recursion, you must first understand recursion.",
+    ]
+    await interaction.response.send_message(random.choice(jokes))
+</script>
+
+<script type="text/plain" data-tpl="py:poll">
+@tree.command(name="poll", description="Start a quick reaction poll")
+@app_commands.describe(
+    question="What are you asking?",
+    option1="First choice",
+    option2="Second choice",
+    option3="Third choice",
+    option4="Fourth choice",
+)
+@app_commands.guild_only()
+async def poll(
+    interaction: discord.Interaction,
+    question: str,
+    option1: str,
+    option2: str,
+    option3: Optional[str] = None,
+    option4: Optional[str] = None,
+):
+    emojis = ["1️⃣", "2️⃣", "3️⃣", "4️⃣"]
+    choices = [choice[:100] for choice in (option1, option2, option3, option4) if choice]
+    description = "\n".join(f"{emojis[i]} {choice}" for i, choice in enumerate(choices))
+    embed = discord.Embed(title=question[:256], description=description, color=discord.Color.blurple())
+    embed.set_footer(text=f"Poll by {interaction.user.display_name}")
+    await interaction.response.send_message(embed=embed)
+    message = await interaction.original_response()
+    for emoji in emojis[: len(choices)]:
+        await message.add_reaction(emoji)
+</script>
+
+<script type="text/plain" data-tpl="py:say">
+@tree.command(name="say", description="Make the bot send a message")
+@app_commands.describe(message="What the bot should say")
+@app_commands.guild_only()
+@app_commands.default_permissions(manage_messages=True)
+@app_commands.checks.has_permissions(manage_messages=True)
+async def say(interaction: discord.Interaction, message: str):
+    await interaction.response.send_message("Sent.", ephemeral=True)
+    await interaction.channel.send(message, allowed_mentions=discord.AllowedMentions.none())
+</script>
+
+<script type="text/plain" data-tpl="py:clear">
+@tree.command(name="clear", description="Delete recent messages in this channel")
+@app_commands.describe(amount="How many messages (1 to 100)")
+@app_commands.guild_only()
+@app_commands.default_permissions(manage_messages=True)
+@app_commands.checks.has_permissions(manage_messages=True)
+@app_commands.checks.bot_has_permissions(manage_messages=True)
+async def clear(interaction: discord.Interaction, amount: app_commands.Range[int, 1, 100]):
+    await interaction.response.defer(ephemeral=True)
+    deleted = await interaction.channel.purge(limit=amount)
+    await interaction.followup.send(
+        f"Deleted {len(deleted)} message(s). Discord cannot bulk delete messages older than 14 days.",
+        ephemeral=True,
+    )
+</script>
+
+<script type="text/plain" data-tpl="py:kick">
+@tree.command(name="kick", description="Kick a member from the server")
+@app_commands.describe(member="Who to kick", reason="Why (shown in the audit log)")
+@app_commands.guild_only()
+@app_commands.default_permissions(kick_members=True)
+@app_commands.checks.has_permissions(kick_members=True)
+@app_commands.checks.bot_has_permissions(kick_members=True)
+async def kick(interaction: discord.Interaction, member: discord.Member, reason: Optional[str] = None):
+    try:
+        await member.kick(reason=reason)
+    except discord.Forbidden:
+        await interaction.response.send_message(
+            "I cannot kick that member. Their top role may be above mine.", ephemeral=True
+        )
+        return
+    await interaction.response.send_message(
+        f"Kicked **{member.display_name}**. Reason: {reason or 'No reason given'}",
+        allowed_mentions=discord.AllowedMentions.none(),
+    )
+</script>
+
+<script type="text/plain" data-tpl="py:ban">
+@tree.command(name="ban", description="Ban a user from the server")
+@app_commands.describe(user="Who to ban", reason="Why (shown in the audit log)")
+@app_commands.guild_only()
+@app_commands.default_permissions(ban_members=True)
+@app_commands.checks.has_permissions(ban_members=True)
+@app_commands.checks.bot_has_permissions(ban_members=True)
+async def ban(interaction: discord.Interaction, user: discord.User, reason: Optional[str] = None):
+    try:
+        await interaction.guild.ban(user, reason=reason)
+    except discord.Forbidden:
+        await interaction.response.send_message(
+            "I cannot ban that user. Their top role may be above mine.", ephemeral=True
+        )
+        return
+    await interaction.response.send_message(
+        f"Banned **{user.display_name}**. Reason: {reason or 'No reason given'}",
+        allowed_mentions=discord.AllowedMentions.none(),
+    )
+</script>
+
+<script type="text/plain" data-tpl="py:timeout">
+@tree.command(name="timeout", description="Mute a member for a while")
+@app_commands.describe(member="Who to time out", minutes="How long (1 to 40320 minutes)", reason="Why (shown in the audit log)")
+@app_commands.guild_only()
+@app_commands.default_permissions(moderate_members=True)
+@app_commands.checks.has_permissions(moderate_members=True)
+@app_commands.checks.bot_has_permissions(moderate_members=True)
+async def timeout_member(
+    interaction: discord.Interaction,
+    member: discord.Member,
+    minutes: app_commands.Range[int, 1, 40320],
+    reason: Optional[str] = None,
+):
+    try:
+        await member.timeout(datetime.timedelta(minutes=minutes), reason=reason)
+    except discord.Forbidden:
+        await interaction.response.send_message(
+            "I cannot time out that member. Their top role may be above mine.", ephemeral=True
+        )
+        return
+    await interaction.response.send_message(
+        f"Timed out **{member.display_name}** for {minutes} minute(s).",
+        allowed_mentions=discord.AllowedMentions.none(),
+    )
+</script>
+
+<!-- ============ Generator (pure logic, no page access except the templates) ============ -->
+<script>
+(function () {
+  'use strict';
+
+  var P = {
+    AddReactions: 1n << 6n, KickMembers: 1n << 1n, BanMembers: 1n << 2n, ManageMessages: 1n << 13n,
+    ViewChannel: 1n << 10n, SendMessages: 1n << 11n, EmbedLinks: 1n << 14n, ReadMessageHistory: 1n << 16n,
+    ManageRoles: 1n << 28n, ModerateMembers: 1n << 40n,
+    AttachFiles: 1n << 15n, ManageChannels: 1n << 4n, ManageNicknames: 1n << 27n
+  };
+
+  // id doubles as the template key. name is the slash command name Discord shows.
+  var CMDS = [
+    { id: 'ping', name: 'ping', group: 'Utility', blurb: 'Check how fast the bot responds', py: [], js: [] },
+    { id: 'help', name: 'help', group: 'Utility', blurb: 'List every command', py: [], js: [] },
+    { id: 'uptime', name: 'uptime', group: 'Utility', blurb: 'How long the bot has been running', py: ['time'], js: ['start'] },
+    { id: 'avatar', name: 'avatar', group: 'Utility', blurb: "Show someone's avatar", py: ['Optional'], js: ['EmbedBuilder'] },
+    { id: 'userinfo', name: 'userinfo', group: 'Utility', blurb: 'ID, account age, join date', py: ['Optional'], js: ['EmbedBuilder'] },
+    { id: 'serverinfo', name: 'serverinfo', group: 'Utility', blurb: 'Members, age and owner of the server', py: [], js: ['EmbedBuilder'] },
+    { id: 'coinflip', name: 'coinflip', group: 'Fun', blurb: 'Heads or tails', py: ['random'], js: [] },
+    { id: 'roll', name: 'roll', group: 'Fun', blurb: 'Roll a die with up to 1000 sides', py: ['random'], js: [] },
+    { id: '8ball', name: '8ball', group: 'Fun', blurb: 'Ask the magic 8-ball', py: ['random'], js: [] },
+    { id: 'choose', name: 'choose', group: 'Fun', blurb: 'Pick one item from a comma list', py: ['random'], js: [] },
+    { id: 'joke', name: 'joke', group: 'Fun', blurb: 'Programmer jokes from a built-in list', py: ['random'], js: [] },
+    { id: 'poll', name: 'poll', group: 'Fun', blurb: 'Reaction poll with up to 4 choices', py: ['Optional'], js: ['EmbedBuilder'], bits: ['AddReactions', 'ReadMessageHistory'] },
+    { id: 'say', name: 'say', group: 'Moderation', blurb: 'Send a message as the bot', mod: 'Manage Messages', py: [], js: ['PermissionFlagsBits'] },
+    { id: 'clear', name: 'clear', group: 'Moderation', blurb: 'Delete the last 1 to 100 messages', mod: 'Manage Messages', py: [], js: ['PermissionFlagsBits'], bits: ['ManageMessages', 'ReadMessageHistory'] },
+    { id: 'kick', name: 'kick', group: 'Moderation', blurb: 'Remove a member (they can rejoin)', mod: 'Kick Members', py: ['Optional'], js: ['PermissionFlagsBits'], bits: ['KickMembers'] },
+    { id: 'ban', name: 'ban', group: 'Moderation', blurb: 'Ban a user from the server', mod: 'Ban Members', py: ['Optional'], js: ['PermissionFlagsBits'], bits: ['BanMembers'] },
+    { id: 'timeout', name: 'timeout', group: 'Moderation', blurb: 'Mute a member for 1 minute to 28 days', mod: 'Moderate Members', py: ['datetime', 'Optional'], js: ['PermissionFlagsBits'], bits: ['ModerateMembers'] }
+  ];
+
+  var NAME_RE = /^[a-z0-9_-]{1,32}$/;
+
+  function tpl(key) {
+    var el = document.querySelector('script[data-tpl="' + key + '"]');
+    return el ? el.textContent.replace(/^\n/, '').replace(/\s+$/, '') : '';
+  }
+  function indent(text, n) {
+    var pad = new Array(n + 1).join(' ');
+    return text.split('\n').map(function (l) { return l ? pad + l : l; }).join('\n');
+  }
+  function fill(t, map) {
+    Object.keys(map).forEach(function (k) {
+      var tok = '__' + k + '__', v = map[k];
+      var lineRe = new RegExp('^' + tok + '\\n', 'm');
+      if (v === '' && lineRe.test(t)) t = t.replace(lineRe, '');
+      else t = t.split(tok).join(v);
+    });
+    return t;
+  }
+  function slugify(n) {
+    return (n || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'discord-bot';
+  }
+  function normName(s) { return (s || '').toLowerCase().trim().replace(/^\//, '').replace(/\s+/g, '-'); }
+  function selected(state) { return CMDS.filter(function (c) { return state.cmds.indexOf(c.id) !== -1; }); }
+
+  // One entry per custom row: { ok, skip, error, name, reply }
+  function checkCustoms(state) {
+    var used = {};
+    selected(state).forEach(function (c) { used[c.name] = true; });
+    return state.customs.map(function (row) {
+      var name = normName(row.name), reply = row.reply || '';
+      if (!name && !reply.trim()) return { ok: false, skip: true, error: '' };
+      if (!name) return { ok: false, error: 'Add a command name.' };
+      if (!NAME_RE.test(name)) return { ok: false, error: 'Use letters, numbers, - and _ only (32 max).' };
+      if (used[name]) return { ok: false, error: '/' + name + ' is already taken by another command.' };
+      if (!reply.trim()) return { ok: false, error: 'Add the text the bot should reply with.' };
+      if (reply.length > 2000) return { ok: false, error: 'Replies are limited to 2000 characters.' };
+      used[name] = true;
+      return { ok: true, name: name, reply: reply, error: '' };
+    });
+  }
+
+  function statusType(state) {
+    return ['Playing', 'Listening', 'Watching', 'Competing'].indexOf(state.statusType) !== -1 ? state.statusType : 'Playing';
+  }
+
+  function buildJS(state, sel, customs) {
+    var uses = { Client: 1, Events: 1, GatewayIntentBits: 1, SlashCommandBuilder: 1, MessageFlags: 1 };
+    sel.forEach(function (c) { c.js.forEach(function (u) { uses[u] = 1; }); });
+    var status = (state.statusText || '').trim();
+    if (status) uses.ActivityType = 1;
+    var imports = ['ActivityType', 'Client', 'EmbedBuilder', 'Events', 'GatewayIntentBits', 'MessageFlags', 'PermissionFlagsBits', 'SlashCommandBuilder']
+      .filter(function (n) { return uses[n]; }).map(function (n) { return '  ' + n + ','; }).join('\n');
+
+    var needMembers = state.welcome || state.autorole;
+    var intents = '    GatewayIntentBits.Guilds,';
+    if (needMembers) intents += '\n    GatewayIntentBits.GuildMembers, // privileged: switch on Server Members Intent in the Developer Portal';
+
+    var blocks = sel.map(function (c) { return indent(tpl('js:' + c.id), 2); });
+    customs.forEach(function (c) {
+      blocks.push(indent(
+        '{\n' +
+        '  data: new SlashCommandBuilder().setName(' + JSON.stringify(c.name) + ').setDescription(\'Custom reply\'),\n' +
+        '  async execute(interaction) {\n' +
+        '    await interaction.reply({ content: ' + JSON.stringify(c.reply) + ', allowedMentions: { parse: [] } });\n' +
+        '  },\n},', 2));
+    });
+    var commands = blocks.length ? blocks.join('\n') : '  // Pick some commands in the maker to fill this list.';
+
+    var events = [];
+    if (state.autorole) events.push(tpl('js:autorole'));
+    if (state.welcome) events.push(fill(tpl('js:welcome'), { WELCOME: JSON.stringify(state.welcomeText || '') }));
+
+    var presence = status
+      ? '  c.user.setPresence({\n    activities: [{ name: ' + JSON.stringify(status) + ', type: ActivityType.' + statusType(state) + ' }],\n  });'
+      : '';
+
+    var out = fill(tpl('js:main'), {
+      IMPORTS: imports,
+      INTENTS: intents,
+      START: uses.start ? 'const startedAt = Date.now();\n' : '',
+      COMMANDS: commands,
+      PRESENCE: presence,
+      EVENTS: events.length ? '\n' + events.join('\n\n') + '\n' : ''
+    });
+    return out.replace(/\n{3,}/g, '\n\n').replace(/\s+$/, '') + '\n';
+  }
+
+  function buildPY(state, sel, customs) {
+    var uses = {};
+    sel.forEach(function (c) { c.py.forEach(function (u) { uses[u] = 1; }); });
+    var std = [];
+    if (uses.datetime) std.push('import datetime');
+    std.push('import os');
+    if (uses.random) std.push('import random');
+    if (uses.time) std.push('import time');
+    if (uses.Optional) std.push('from typing import Optional');
+
+    var needMembers = state.welcome || state.autorole;
+    var intents = 'intents = discord.Intents.default()' +
+      (needMembers ? '\nintents.members = True  # privileged: switch on Server Members Intent in the Developer Portal' : '');
+
+    var status = (state.statusText || '').trim();
+    var activity = status
+      ? '            activity=discord.Activity(type=discord.ActivityType.' + statusType(state).toLowerCase() + ', name=' + JSON.stringify(status) + '),'
+      : '';
+
+    var blocks = sel.map(function (c) { return tpl('py:' + c.id); });
+    customs.forEach(function (c) {
+      var fn = 'custom_' + c.name.replace(/-/g, '_');
+      blocks.push(
+        '@tree.command(name=' + JSON.stringify(c.name) + ', description="Custom reply")\n' +
+        'async def ' + fn + '(interaction: discord.Interaction):\n' +
+        '    await interaction.response.send_message(' + JSON.stringify(c.reply) + ', allowed_mentions=discord.AllowedMentions.none())');
+    });
+    var commands = blocks.length ? blocks.join('\n\n\n') : '# Pick some commands in the maker to fill this part.';
+
+    var events = '';
+    if (needMembers) {
+      var body = [];
+      if (state.autorole) body.push(tpl('py:autorole'));
+      if (state.welcome) body.push(fill(tpl('py:welcome'), { WELCOME: JSON.stringify(state.welcomeText || '') }));
+      events = '@bot.event\nasync def on_member_join(member: discord.Member):\n' + indent(body.join('\n\n'), 4) + '\n\n';
+    }
+
+    var out = fill(tpl('py:main'), {
+      IMPORTS: std.join('\n'),
+      INTENTS: intents,
+      START: uses.time ? 'START_TIME = time.time()' : '',
+      ACTIVITY: activity,
+      COMMANDS: commands,
+      EVENTS: events
+    });
+    return out.replace(/\n{4,}/g, '\n\n\n').replace(/\s+$/, '') + '\n';
+  }
+
+  function permBits(state, sel) {
+    var b = P.ViewChannel | P.SendMessages | P.EmbedLinks;
+    sel.forEach(function (c) { (c.bits || []).forEach(function (k) { b |= P[k]; }); });
+    if (state.autorole) b |= P.ManageRoles;
+    return b;
+  }
+
+  function buildEnv(state) {
+    var l = [
+      '# Bot token: Developer Portal > your app > Bot > Reset Token. Never share it or commit it.',
+      'DISCORD_TOKEN=', '',
+      '# Optional: your server ID. Commands then update instantly instead of taking up to an hour.',
+      'GUILD_ID='
+    ];
+    if (state.welcome) l.push('', '# Channel ID for welcome messages. Leave empty to use the server system channel.', 'WELCOME_CHANNEL_ID=');
+    if (state.autorole) l.push('', '# ID of the role new members receive. The bot role must sit above it.', 'AUTOROLE_ID=');
+    return l.join('\n') + '\n';
+  }
+
+  function buildReadme(state, sel, customs, invite, bits) {
+    var js = state.lang === 'js';
+    var name = (state.name || '').trim() || 'My Discord Bot';
+    var l = [];
+    l.push('# ' + name, '');
+    l.push('A Discord bot built with ' + (js ? 'discord.js (Node.js)' : 'discord.py (Python)') + '.');
+    l.push('It calls no AI APIs and no third-party APIs. It only talks to Discord.', '');
+    l.push('## Commands', '');
+    sel.forEach(function (c) { l.push('- `/' + c.name + '` ' + c.blurb + (c.mod ? ' (needs ' + c.mod + ')' : '')); });
+    customs.forEach(function (c) { l.push('- `/' + c.name + '` custom reply'); });
+    if (!sel.length && !customs.length) l.push('- (none yet)');
+    if (state.welcome) l.push('', 'New members get a welcome message.');
+    if (state.autorole) l.push('New members get an auto role.');
+    l.push('', '## Setup', '');
+    l.push('1. Go to https://discord.com/developers/applications, create an application, open the Bot tab and copy the token (Reset Token).');
+    var n = 2;
+    if (state.welcome || state.autorole) l.push((n++) + '. On the same Bot tab, switch on "Server Members Intent" under Privileged Gateway Intents.');
+    if (invite) l.push((n++) + '. Invite the bot with this link: ' + invite);
+    else l.push((n++) + '. Open OAuth2 > URL Generator, tick the scopes `bot` and `applications.commands`, set the permissions below, and open the link it gives you. (Permission number: ' + bits + ')');
+    if (js) {
+      l.push((n++) + '. Install: `npm install`');
+      l.push((n++) + '. Copy `.env.example` to `.env` and paste your token (add GUILD_ID for instant command updates).');
+      l.push((n++) + '. Start: `npm start`');
+    } else {
+      l.push((n++) + '. Install: `python -m venv .venv`, activate it (`source .venv/bin/activate`, or `.venv\\Scripts\\activate` on Windows), then `pip install -r requirements.txt`');
+      l.push((n++) + '. Copy `.env.example` to `.env` and paste your token (add GUILD_ID for instant command updates).');
+      l.push((n++) + '. Start: `python bot.py`');
+    }
+    l.push('', '## Notes', '');
+    l.push('- Without GUILD_ID, commands are global and can take up to an hour to show up. With it, they appear right away in that server.');
+    l.push('- Keep `.env` private. If the token leaks, reset it in the Developer Portal.');
+    if (state.autorole) l.push('- In Server Settings > Roles, drag the bot role above the auto role, or Discord will refuse to assign it.');
+    return l.join('\n') + '\n';
+  }
+
+  function build(state) {
+    var js = state.lang === 'js';
+    var sel = selected(state);
+    var checks = checkCustoms(state);
+    var customs = checks.filter(function (c) { return c.ok; });
+    var skipped = checks.filter(function (c) { return !c.ok && !c.skip; }).length;
+    var bits = permBits(state, sel).toString();
+    var id = (state.appId || '').trim();
+    var invite = /^\d{17,20}$/.test(id)
+      ? 'https://discord.com/oauth2/authorize?client_id=' + id + '&permissions=' + bits + '&scope=bot%20applications.commands'
+      : '';
+    var name = (state.name || '').trim() || 'My Discord Bot';
+    var slug = slugify(name);
+
+    var files = js ? [
+      { name: 'index.js', body: buildJS(state, sel, customs) },
+      { name: 'package.json', body: JSON.stringify({
+          name: slug, version: '1.0.0', description: name + ', a Discord bot', main: 'index.js',
+          scripts: { start: 'node index.js' },
+          dependencies: { 'discord.js': '^14.16.3', dotenv: '^16.4.5' },
+          engines: { node: '>=18' }
+        }, null, 2) + '\n' },
+      { name: '.env.example', body: buildEnv(state) },
+      { name: '.gitignore', body: 'node_modules/\n.env\n' },
+      { name: 'README.md', body: buildReadme(state, sel, customs, invite, bits) }
+    ] : [
+      { name: 'bot.py', body: buildPY(state, sel, customs) },
+      { name: 'requirements.txt', body: 'discord.py>=2.4\npython-dotenv>=1.0\n' },
+      { name: '.env.example', body: buildEnv(state) },
+      { name: '.gitignore', body: '.env\n.venv/\n__pycache__/\n' },
+      { name: 'README.md', body: buildReadme(state, sel, customs, invite, bits) }
+    ];
+
+    var notices = [];
+    if (state.welcome || state.autorole) notices.push('Switch on Server Members Intent: Developer Portal, your app, Bot, Privileged Gateway Intents. The bot will not start without it.');
+    if (state.autorole) notices.push('Put the bot role above the auto role in Server Settings, Roles.');
+    if (!sel.length && !customs.length) notices.push('No commands yet. Pick a few on the left.');
+    if (skipped) notices.push(skipped + ' custom ' + (skipped === 1 ? 'reply is' : 'replies are') + ' left out until you fix ' + (skipped === 1 ? 'it' : 'them') + '.');
+
+    var shell = 'mkdir -p ' + slug + ' && cd ' + slug + '\n' + files.map(function (f) {
+      return "cat > " + f.name + " <<'BOT_FILE_EOF'\n" + f.body.replace(/\n$/, '') + '\nBOT_FILE_EOF\n';
+    }).join('') + 'echo "Created ' + slug + '/. Next: open README.md for the setup steps."\n';
+
+    return { files: files, notices: notices, invite: invite, shell: shell, commandCount: sel.length + customs.length, checks: checks, slug: slug };
+  }
+
+  // Invite link for a bot whose needed permissions are known by name (used for AI builds).
+  function inviteFor(appId, names) {
+    var id = (appId || '').trim();
+    if (!/^\d{17,20}$/.test(id)) return '';
+    var b = P.ViewChannel | P.SendMessages | P.EmbedLinks;
+    (names || []).forEach(function (n) { if (Object.prototype.hasOwnProperty.call(P, n)) b |= P[n]; });
+    return 'https://discord.com/oauth2/authorize?client_id=' + id + '&permissions=' + b.toString() + '&scope=bot%20applications.commands';
+  }
+  function permNames() { return Object.keys(P); }
+
+  window.BotGen = { build: build, checkCustoms: checkCustoms, CMDS: CMDS, inviteFor: inviteFor, permNames: permNames, slugify: slugify };
+})();
+</script>
+
+<!-- ============ Page behaviour ============ -->
+<script>
+(function () {
+  'use strict';
+  var G = window.BotGen;
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+
+  var state = {
+    name: 'Pixel', lang: 'js', appId: '', statusText: 'with /help', statusType: 'Playing',
+    cmds: new Set(['ping', 'help', 'coinflip', 'roll', '8ball', 'avatar', 'userinfo', 'serverinfo', 'poll']),
+    welcome: false, welcomeText: 'Welcome to {server}, {user}! Say hi and read the rules.',
+    autorole: false,
+    customs: [{ name: 'rules', reply: '1. Be kind.\n2. No spam.\n3. Keep chats on topic.' }],
+    file: 0
+  };
+  var PRESETS = {
+    starter: ['ping', 'help', 'coinflip', 'roll', '8ball', 'avatar'],
+    community: ['ping', 'help', 'uptime', 'avatar', 'userinfo', 'serverinfo', 'coinflip', 'roll', '8ball', 'choose', 'joke', 'poll'],
+    moderation: ['ping', 'help', 'userinfo', 'serverinfo', 'say', 'clear', 'kick', 'ban', 'timeout'],
+    all: G.CMDS.map(function (c) { return c.id; }),
+    none: []
+  };
+  var current = null;
+  // AI build: files = parsed project (null until a build finishes), partial = text streaming in now
+  var ai = { files: null, perms: [], streaming: false, partial: '', ctl: null, sample: null };
+
+  function genState() {
+    return {
+      name: state.name, lang: state.lang, appId: state.appId, statusText: state.statusText, statusType: state.statusType,
+      cmds: Array.from(state.cmds), welcome: state.welcome, welcomeText: state.welcomeText,
+      autorole: state.autorole, customs: state.customs
+    };
+  }
+
+  /* ---------- command list ---------- */
+  function renderCommands() {
+    var wrap = $('#cmdList');
+    ['Utility', 'Fun', 'Moderation'].forEach(function (g) {
+      wrap.append(el('h3', 'grp', g));
+      G.CMDS.filter(function (c) { return c.group === g; }).forEach(function (c) {
+        var lab = el('label', 'cmd');
+        var cb = document.createElement('input');
+        cb.type = 'checkbox'; cb.id = 'cmd-' + c.id; cb.checked = state.cmds.has(c.id);
+        cb.addEventListener('change', function () {
+          if (cb.checked) state.cmds.add(c.id); else state.cmds.delete(c.id);
+          update();
+        });
+        var main = el('span', 'cmd-main');
+        main.append(el('code', '', '/' + c.name), el('span', 'cmd-desc', c.blurb));
+        if (c.mod) main.append(el('span', 'chip', c.mod));
+        lab.append(cb, main);
+        wrap.append(lab);
+      });
+    });
+  }
+  function syncChecks() {
+    G.CMDS.forEach(function (c) { $('#cmd-' + c.id).checked = state.cmds.has(c.id); });
+  }
+
+  /* ---------- custom replies ---------- */
+  var hintEls = [];
+  function renderCustoms() {
+    var box = $('#customs');
+    box.textContent = '';
+    hintEls = [];
+    state.customs.forEach(function (row, i) {
+      var item = el('div', 'custom');
+      var top = el('div', 'custom-top');
+      var nameIn = document.createElement('input');
+      nameIn.type = 'text'; nameIn.id = 'custom-name-' + i; nameIn.className = 'mono';
+      nameIn.maxLength = 40; nameIn.value = row.name; nameIn.placeholder = 'command-name';
+      nameIn.setAttribute('aria-label', 'Custom command name');
+      nameIn.autocomplete = 'off';
+      nameIn.addEventListener('input', function () { row.name = nameIn.value; update(); });
+      var rm = el('button', 'btn', 'Remove');
+      rm.type = 'button';
+      rm.addEventListener('click', function () { state.customs.splice(i, 1); renderCustoms(); update(); });
+      top.append(el('span', 'slash', '/'), nameIn, rm);
+      var ta = document.createElement('textarea');
+      ta.id = 'custom-reply-' + i; ta.maxLength = 2000; ta.value = row.reply;
+      ta.placeholder = 'What the bot replies with';
+      ta.setAttribute('aria-label', 'Custom reply text');
+      ta.addEventListener('input', function () { row.reply = ta.value; update(); });
+      var hint = el('p', 'hint err');
+      hintEls.push(hint);
+      item.append(top, ta, hint);
+      box.append(item);
+    });
+    $('#addCustom').disabled = state.customs.length >= 10;
+  }
+
+  /* ---------- tabs ---------- */
+  function renderTabs(files) {
+    var tabs = $('#tabs');
+    tabs.textContent = '';
+    files.forEach(function (f, i) {
+      var b = el('button', 'tab', f.name);
+      b.type = 'button'; b.id = 'tab-' + i;
+      b.setAttribute('role', 'tab');
+      b.addEventListener('click', function () { state.file = i; $('#codePre').scrollTop = 0; update(); });
+      b.addEventListener('keydown', function (e) {
+        var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+        if (!d) return;
+        e.preventDefault();
+        state.file = (i + d + files.length) % files.length;
+        $('#codePre').scrollTop = 0;
+        update();
+        $('#tab-' + state.file).focus();
+      });
+      tabs.append(b);
+    });
+  }
+
+  /* ---------- AI build ---------- */
+  var RULES = [
+    'You write complete, working Discord bot projects for a bot maker. Follow these rules exactly.',
+    '',
+    'OUTPUT FORMAT',
+    '- Reply with files only. No commentary, no Markdown code fences.',
+    '- Each file starts with a header on its own line: === FILE: <name> ===',
+    '- discord.js projects need: index.js, package.json, .env.example, README.md. discord.py projects need: bot.py, requirements.txt, .env.example, README.md. You may add extra files if the bot really needs them.',
+    '- After the last file add one line: === PERMISSIONS: Name1, Name2 === listing the Discord permissions the bot needs, using only these names: ' + G.permNames().join(', ') + '.',
+    '- If the request is abusive (spam, raids, mass DMs, token or account theft, selfbots, scraping private data, harassment), reply with only the line === REFUSED === followed by one friendly sentence saying what you cannot build and what you could build instead.',
+    '',
+    'HARD CONSTRAINTS',
+    '- The bot must call NO AI APIs and NO third-party or external web APIs. It may only talk to Discord through its library. Use only the Discord library, dotenv, and the standard library of the language. If the request needs an outside service (weather, memes, AI chat, music streaming, translation, and so on), build the closest local version (built-in lists, maths, in-memory data or a local JSON file) and say plainly in README.md, under a Limits heading, what was left out and why.',
+    '- Tech: discord.js v14 with CommonJS require, or discord.py 2.x with app_commands. Slash commands only; do not rely on the message content intent.',
+    '- The token comes from DISCORD_TOKEN in .env. An optional GUILD_ID registers commands instantly in one server; without it register globally. Register commands when the bot is ready (discord.js: client.application.commands.set, discord.py: tree.sync in setup_hook). Never hardcode secrets.',
+    '- Use the fewest gateway intents possible. If a privileged intent is needed, comment it in the code and explain how to switch it on in README.md.',
+    '- Data that must survive a restart goes in a local JSON file next to the code, read and written safely. README.md must say that hosts with temporary disks lose it.',
+    '- Check permissions for moderation actions in the code itself (not only default member permissions), answer errors with a short ephemeral reply, and never let echoed user text ping people (allowedMentions with parse: [] in discord.js, AllowedMentions.none() in discord.py).',
+    '- The code must be complete and runnable exactly as written: no placeholders, no TODO, no omitted sections. Keep it readable with short comments.',
+    '- README.md covers: what the bot does, every command, step-by-step setup (create the app and token in the Developer Portal, invite with scopes bot and applications.commands, install, copy .env.example to .env, run), and a Limits section if anything was left out.'
+  ].join('\n');
+
+  function serialize(files) {
+    return files.map(function (f) { return '=== FILE: ' + f.name + ' ===\n' + f.body.replace(/\n$/, ''); }).join('\n\n');
+  }
+  function buildPrompt(userText) {
+    var js = state.lang === 'js';
+    var p = [RULES, '',
+      'BOT NAME: ' + ((state.name || '').trim() || 'My Discord Bot'),
+      'LANGUAGE: ' + (js ? 'discord.js v14 (Node.js)' : 'discord.py 2.x (Python)')];
+    var st = (state.statusText || '').trim();
+    if (st) p.push('STATUS TEXT: ' + st + ' (shown as "' + state.statusType + '")');
+    if (ai.files) {
+      p.push('', 'CURRENT PROJECT. Apply the requested change and return the complete updated project, every file in full:', serialize(ai.files));
+    } else if ($('#aiBase').checked) {
+      p.push('', 'STARTING POINT. The user picked features in the maker and this template project was built from them. Extend and adapt it to the request instead of starting over:', serialize(G.build(genState()).files));
+    }
+    p.push('', 'REQUEST FROM THE USER:', userText);
+    return p.join('\n');
+  }
+
+  function cleanBody(b) {
+    b = b.replace(/^\s*\n/, '');
+    if (/^```[A-Za-z]*\n/.test(b)) b = b.replace(/^```[A-Za-z]*\n/, '').replace(/\n```\s*$/, '');
+    return b.replace(/\s+$/, '') + '\n';
+  }
+  function parseAI(text) {
+    var re = /^=== (FILE: [^\n]+?|PERMISSIONS:[^\n]*?|REFUSED) ===[ \t]*$/gm, marks = [], m;
+    while ((m = re.exec(text))) marks.push({ head: m[1], start: m.index, end: re.lastIndex });
+    var out = { files: [], perms: [], refused: '', complete: false }, seen = {};
+    marks.forEach(function (mk, i) {
+      var body = text.slice(mk.end, i + 1 < marks.length ? marks[i + 1].start : text.length);
+      if (mk.head === 'REFUSED') { out.refused = body.trim(); return; }
+      if (mk.head.indexOf('PERMISSIONS:') === 0) {
+        out.complete = true;
+        out.perms = mk.head.slice(12).split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+        return;
+      }
+      var name = mk.head.slice(5).trim();
+      // names go into a shell command later, so only plain file names are accepted
+      if (!/^[A-Za-z0-9._][A-Za-z0-9._-]{0,59}$/.test(name) || name.indexOf('..') !== -1 || seen[name]) return;
+      seen[name] = true;
+      out.files.push({ name: name, body: cleanBody(body) });
+    });
+    return out;
+  }
+  function assemble(parsed) {
+    var js = state.lang === 'js';
+    var mainName = js ? 'index.js' : 'bot.py', depName = js ? 'package.json' : 'requirements.txt';
+    var base = {};
+    G.build(genState()).files.forEach(function (f) { base[f.name] = f; });
+    var by = {};
+    parsed.files.forEach(function (f) { by[f.name] = f; });
+    if (!by[mainName]) return null;
+    var slugName = (state.name || '').trim() || 'My Discord Bot';
+    var ordered = [by[mainName], by[depName] || base[depName], by['.env.example'] || base['.env.example']];
+    parsed.files.forEach(function (f) {
+      if (['.gitignore', 'README.md', mainName, depName, '.env.example'].indexOf(f.name) === -1) ordered.push(f);
+    });
+    ordered.push(by['.gitignore'] || base['.gitignore']);
+    ordered.push(by['README.md'] || { name: 'README.md', body: '# ' + slugName + '\n\nBuilt with Discord Bot Maker. See the comments in ' + mainName + '.\n' });
+    return ordered;
+  }
+  function shellFor(files) {
+    var slug = G.slugify(state.name);
+    var s = 'mkdir -p ' + slug + ' && cd ' + slug + '\n';
+    files.forEach(function (f) {
+      var d = 'BOT_FILE_EOF';
+      while (f.body.indexOf(d) !== -1) d += '_X';
+      s += 'cat > ' + f.name + " <<'" + d + "'\n" + f.body.replace(/\n$/, '') + '\n' + d + '\n';
+    });
+    return s + 'echo "Created ' + slug + '/. Next: open README.md for the setup steps."\n';
+  }
+  function aiOut() {
+    var all = ai.files.map(function (f) { return f.body; }).join('\n');
+    var notices = ['Built by Claude from your description. Read the code before you run it, and check README.md for anything that was left out.'];
+    if (/GuildMembers|GuildPresences|MessageContent|intents\.members|intents\.presences|intents\.message_content/.test(all)) {
+      notices.push('This bot uses a privileged intent. Switch it on in the Developer Portal: your app, Bot, Privileged Gateway Intents.');
+    }
+    return { files: ai.files, notices: notices, invite: G.inviteFor(state.appId, ai.perms), shell: shellFor(ai.files), ai: true };
+  }
+
+  function setStatus(msg, isErr) {
+    var s = $('#aiStatus');
+    s.textContent = msg;
+    s.classList.toggle('err', !!isErr);
+  }
+  function errorCopy(e) {
+    switch (e && e.code) {
+      case 'not_granted': return 'Claude access was declined for this page. Reload it and allow it to build with AI.';
+      case 'sampling_disabled': case 'not_declared': case 'capability_disabled': case 'capability_removed':
+        return 'AI building is not available for this account or view.';
+      case 'rate_limited': return 'Too many requests, or your Claude usage limit is reached. Try again a bit later.';
+      case 'session_expired': return 'Sign in to Claude again, then retry.';
+      case 'refused': return 'Claude declined that request. Try describing the bot differently.';
+      case 'prompt_too_large': return 'That is too much to send. Shorten the request or untick "Start from my picks".';
+      case 'cancelled': return 'Stopped.';
+      default: return 'The build was interrupted. Your last result is still here. Try again.';
+    }
+  }
+  function syncAiUi() {
+    var has = !!ai.files, busy = ai.streaming;
+    $('#aiLabel').textContent = has ? 'What should change?' : 'What should it do?';
+    $('#aiGo').textContent = has ? 'Update bot' : 'Build with AI';
+    $('#aiGo').disabled = busy || !ai.sample;
+    $('#aiStop').hidden = !busy;
+    $('#aiReset').hidden = !has || busy;
+    $('#aiBaseWrap').hidden = has;
+    $('#aiPrompt').disabled = busy;
+    $('#aiPrompt').placeholder = has
+      ? 'e.g. Add a /warn command that keeps a warning count per member and times them out at 3.'
+      : 'e.g. A moderation bot for my gaming server. /warn keeps a warning count in a file, 3 warnings means an automatic 1 hour timeout, mod actions are logged to a #mod-log channel, and new members get greeted.';
+    $('#aiPaused').hidden = !has;
+    document.querySelectorAll('.tmpl').forEach(function (s) { s.inert = has || busy; });
+    document.querySelectorAll('input[name="lang"]').forEach(function (r) { r.disabled = has || busy; });
+    $('#langSeg').classList.toggle('off', has || busy);
+  }
+
+  async function runAI() {
+    var text = $('#aiPrompt').value.trim();
+    if (!text) { setStatus('Describe what the bot should do first.', true); $('#aiPrompt').focus(); return; }
+    if (!ai.sample || ai.streaming) return;
+    var prompt = buildPrompt(text);
+    ai.streaming = true; ai.partial = ''; ai.ctl = new AbortController();
+    setStatus('Thinking...');
+    update();
+    try {
+      var res = await ai.sample(prompt, {
+        modelTier: $('#aiTier').value, cache: false, signal: ai.ctl.signal,
+        onText: function (u) {
+          ai.partial = u.text;
+          $('#code').textContent = u.text;
+          var pre = $('#codePre'); pre.scrollTop = pre.scrollHeight;
+          setStatus('Writing... ' + u.text.split('\n').length + ' lines');
+        }
+      });
+      var parsed = parseAI(res.text);
+      if (parsed.refused) { setStatus(parsed.refused, true); return; }
+      if (res.truncated && !parsed.complete) { setStatus('The reply was cut off before it finished. Ask for fewer features at once.', true); return; }
+      var files = assemble(parsed);
+      if (!files) { setStatus('Claude\'s reply did not contain a bot. Try again, or describe it a little differently.', true); return; }
+      var wasRefine = !!ai.files;
+      ai.files = files;
+      ai.perms = parsed.perms;
+      state.file = 0;
+      $('#aiPrompt').value = '';
+      setStatus(wasRefine ? 'Updated. Review the changes in the files on the right.' : 'Done. Look through the files on the right, then copy them.');
+    } catch (e) {
+      setStatus(errorCopy(e), !e || e.code !== 'cancelled');
+    } finally {
+      ai.streaming = false; ai.ctl = null; ai.partial = '';
+      update();
+    }
+  }
+
+  /* ---------- render ---------- */
+  function update() {
+    var out = ai.files ? aiOut() : G.build(genState());
+    current = out;
+    G.checkCustoms(genState()).forEach(function (c, i) { if (hintEls[i]) hintEls[i].textContent = c.error || ''; });
+    renderOutput(out);
+    syncAiUi();
+  }
+  function renderOutput(out) {
+    var tabs = $('#tabs');
+    $('#copyFile').disabled = ai.streaming;
+    $('#copyShell').disabled = ai.streaming;
+    if (ai.streaming) {
+      tabs.hidden = true;
+      $('#code').textContent = ai.partial || 'Claude is thinking about your bot...';
+      $('#meta').textContent = 'Claude is writing your bot. This can take a minute.';
+      $('#notice').hidden = true;
+      return;
+    }
+    tabs.hidden = false;
+    var names = out.files.map(function (f) { return f.name; }).join('|');
+    if (tabs.dataset.names !== names) { renderTabs(out.files); tabs.dataset.names = names; }
+    if (state.file >= out.files.length) state.file = 0;
+    Array.prototype.forEach.call(tabs.children, function (b, i) {
+      var on = i === state.file;
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+      b.tabIndex = on ? 0 : -1;
+    });
+    var f = out.files[state.file];
+    $('#code').textContent = f.body;
+    var lines = f.body.replace(/\n$/, '').split('\n').length;
+    $('#meta').textContent = out.ai
+      ? 'Built by Claude · ' + lines + ' lines in ' + f.name + ' · ' + out.files.length + ' files'
+      : out.commandCount + (out.commandCount === 1 ? ' command' : ' commands') + ' · ' + lines + ' lines in ' + f.name + ' · ' + out.files.length + ' files';
+
+    var list = $('#noticeList');
+    list.textContent = '';
+    out.notices.forEach(function (n) { list.append(el('li', '', n)); });
+    $('#notice').hidden = !out.notices.length;
+
+    $('#invite').value = out.invite;
+    $('#copyInvite').disabled = !out.invite;
+    $('#inviteHint').textContent = out.invite
+      ? 'Open it, pick your server, and approve. It asks only for the permissions this bot needs.'
+      : 'Add your Application ID on the left to build it.';
+  }
+
+  /* ---------- copy ---------- */
+  function flash(btn, msg) {
+    if (!btn.dataset.label) btn.dataset.label = btn.textContent;
+    btn.textContent = msg;
+    $('#live').textContent = msg;
+    clearTimeout(btn._t);
+    btn._t = setTimeout(function () { btn.textContent = btn.dataset.label; }, 1700);
+  }
+  function legacyCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+    document.body.append(ta); ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    ta.remove();
+    return ok;
+  }
+  function selectCode() {
+    var r = document.createRange();
+    r.selectNodeContents($('#code'));
+    var s = window.getSelection();
+    s.removeAllRanges(); s.addRange(r);
+  }
+  function copy(text, btn, canSelect) {
+    var done = function () { flash(btn, 'Copied'); };
+    var fail = function () {
+      if (legacyCopy(text)) return done();
+      if (canSelect) { selectCode(); flash(btn, 'Selected. Press Ctrl+C'); }
+      else flash(btn, 'Copy blocked here');
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fail);
+    else fail();
+  }
+
+  /* ---------- wiring ---------- */
+  $('#name').addEventListener('input', function (e) { state.name = e.target.value; update(); });
+  document.querySelectorAll('input[name="lang"]').forEach(function (r) {
+    r.addEventListener('change', function () { if (r.checked) { state.lang = r.value; state.file = 0; update(); } });
+  });
+  $('#statusText').addEventListener('input', function (e) { state.statusText = e.target.value; update(); });
+  $('#statusType').addEventListener('change', function (e) { state.statusType = e.target.value; update(); });
+  $('#appId').addEventListener('input', function (e) {
+    var v = e.target.value.replace(/\D/g, '');
+    if (v !== e.target.value) e.target.value = v;
+    state.appId = v; update();
+  });
+  document.querySelectorAll('[data-preset]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      state.cmds = new Set(PRESETS[b.dataset.preset]);
+      syncChecks(); update();
+    });
+  });
+  $('#welcome').addEventListener('change', function (e) {
+    state.welcome = e.target.checked; $('#welcomeBox').hidden = !state.welcome; update();
+  });
+  $('#welcomeText').value = state.welcomeText;
+  $('#welcomeText').addEventListener('input', function (e) { state.welcomeText = e.target.value; update(); });
+  $('#autorole').addEventListener('change', function (e) { state.autorole = e.target.checked; update(); });
+  $('#addCustom').addEventListener('click', function () {
+    if (state.customs.length >= 10) return;
+    state.customs.push({ name: '', reply: '' });
+    renderCustoms(); update();
+    var last = $('#custom-name-' + (state.customs.length - 1));
+    if (last) last.focus();
+  });
+  $('#copyFile').addEventListener('click', function (e) { copy(current.files[state.file].body, e.currentTarget, true); });
+  $('#copyShell').addEventListener('click', function (e) { copy(current.shell, e.currentTarget, false); });
+  $('#copyInvite').addEventListener('click', function (e) { copy($('#invite').value, e.currentTarget, false); });
+
+  $('#aiGo').addEventListener('click', runAI);
+  $('#aiStop').addEventListener('click', function () { if (ai.ctl) ai.ctl.abort(); });
+  $('#aiReset').addEventListener('click', function () {
+    ai.files = null; ai.perms = []; state.file = 0;
+    setStatus('');
+    update();
+  });
+
+  function aiUnavailable() {
+    ai.sample = null;
+    setStatus('AI building works when this page is open inside Claude. The menu below still works everywhere.', true);
+    syncAiUi();
+  }
+  setStatus('Connecting to Claude...');
+  if (window.claude && window.claude.use) {
+    window.claude.use('sample').then(function (s) {
+      if (!s) return aiUnavailable();
+      ai.sample = s;
+      setStatus('Ready. The first build asks you to allow Claude. It uses your own Claude usage.');
+      syncAiUi();
+    }, aiUnavailable);
+  } else {
+    aiUnavailable();
+  }
+
+  renderCommands();
+  renderCustoms();
+  update();
+})();
+</script>
+
+<script src="../assets/nav.js" defer></script>
+</body></html>
