@@ -1,0 +1,389 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Launchpad Publisher</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style id="app-style">
+:root {
+  --bg: #f1f3ef; --surface: #ffffff; --surface-2: #e8ece6; --ink: #15201b; --muted: #58675f;
+  --line: #d3dad3; --accent: #0d7152; --accent-ink: #ffffff; --live: #139b67; --live-soft: #dcf2e7;
+  --warn: #a8501c; --warn-soft: #fbe9dd; --frame: #dde2dc;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0e1311; --surface: #151c19; --surface-2: #1c2521; --ink: #e4ebe7; --muted: #92a29a;
+    --line: #2a3530; --accent: #3cc497; --accent-ink: #06231a; --live: #45d19f; --live-soft: #173228;
+    --warn: #f0a070; --warn-soft: #3a2418; --frame: #0a0e0c;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0e1311; --surface: #151c19; --surface-2: #1c2521; --ink: #e4ebe7; --muted: #92a29a;
+  --line: #2a3530; --accent: #3cc497; --accent-ink: #06231a; --live: #45d19f; --live-soft: #173228;
+  --warn: #f0a070; --warn-soft: #3a2418; --frame: #0a0e0c;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.55 'IBM Plex Sans', system-ui, sans-serif; }
+.mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+.shell { max-width: 1240px; margin: 0 auto; padding-inline: 20px; padding-block: 0 48px; }
+button, input, textarea { font: inherit; color: inherit; }
+button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 18px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 10px; font-family: 'Bricolage Grotesque', 'IBM Plex Sans', sans-serif; font-weight: 700; font-size: 1.25rem; letter-spacing: -0.01em; }
+.brand-mark { width: 26px; height: 26px; border-radius: 7px; background: var(--accent); position: relative; }
+.brand-mark::after { content: ""; position: absolute; left: 8px; top: 5px; border-left: 11px solid var(--accent-ink); border-top: 8px solid transparent; border-bottom: 8px solid transparent; }
+.count { font-size: 0.85rem; color: var(--muted); }
+
+.intro { padding-block: 36px 24px; display: grid; gap: 10px; }
+h1 { font-family: 'Bricolage Grotesque', 'IBM Plex Sans', sans-serif; font-weight: 700; font-size: clamp(1.9rem, 4vw, 2.8rem); line-height: 1.08; letter-spacing: -0.02em; margin: 0; text-wrap: balance; max-width: 18em; }
+.intro p { margin: 0; color: var(--muted); max-width: 60ch; }
+
+.work { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 16px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; display: flex; flex-direction: column; min-height: 500px; overflow: hidden; }
+.panel-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.step { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; color: var(--muted); }
+.seg { display: flex; background: var(--surface-2); border-radius: 8px; padding: 3px; gap: 2px; }
+.seg button { border: 0; background: none; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+
+.drop { margin: 14px 14px 0; border: 1.5px dashed var(--line); border-radius: 10px; padding: 18px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: border-color .15s, background .15s; }
+.drop:hover, .drop.over { border-color: var(--accent); background: var(--live-soft); }
+.drop-icon { flex: none; width: 38px; height: 46px; border: 1.5px solid var(--muted); border-radius: 4px 12px 4px 4px; display: grid; place-items: center; font: 600 0.62rem 'IBM Plex Mono', monospace; color: var(--muted); }
+.drop strong { display: block; }
+.drop small { color: var(--muted); }
+.loaded { margin: 8px 14px 0; font-size: 0.82rem; color: var(--live); min-height: 1.3em; }
+textarea { flex: 1; min-height: 340px; margin: 10px 14px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); padding: 12px; resize: vertical; font: 0.8rem/1.6 'IBM Plex Mono', ui-monospace, monospace; tab-size: 2; }
+
+.browser { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--surface-2); border-bottom: 1px solid var(--line); }
+.browser .dots { display: flex; gap: 5px; flex: none; }
+.browser .dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--line); }
+.addr { flex: 1; min-width: 0; background: var(--surface); border-radius: 6px; padding: 4px 10px; font-size: 0.75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stage { flex: 1; background: var(--frame); display: flex; justify-content: center; }
+.stage iframe { width: 100%; height: 100%; min-height: 440px; border: 0; background: #fff; transition: max-width .25s; }
+.stage.phone { padding-block: 14px; }
+.stage.phone iframe { max-width: 390px; border-radius: 16px; box-shadow: 0 0 0 8px var(--ink); }
+
+.publish { margin-top: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.name-field { flex: 1 1 320px; display: flex; align-items: center; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); overflow: hidden; min-width: 0; }
+.name-field label { padding-inline: 12px; font-size: 0.8rem; color: var(--muted); white-space: nowrap; border-right: 1px solid var(--line); align-self: stretch; display: flex; align-items: center; }
+.name-field input { flex: 1; min-width: 0; border: 0; background: none; padding: 11px 12px; font-family: 'IBM Plex Mono', monospace; font-size: 0.92rem; outline: none; }
+.btn { border: 1px solid var(--line); background: var(--surface); padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 500; white-space: nowrap; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.btn.primary:hover { filter: brightness(1.07); }
+.btn:disabled { opacity: .55; cursor: not-allowed; }
+.hint { flex-basis: 100%; margin: 0; font-size: 0.82rem; color: var(--muted); }
+.hint.warn { color: var(--warn); }
+
+.notice { margin-top: 12px; border-radius: 10px; padding: 12px 14px; font-size: 0.9rem; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.notice.ok { background: var(--live-soft); color: var(--ink); }
+.notice.err { background: var(--warn-soft); color: var(--ink); }
+.notice .url { font-family: 'IBM Plex Mono', monospace; font-size: 0.82rem; word-break: break-all; user-select: all; }
+
+.sites { margin-top: 28px; }
+.sites-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+h2 { font-family: 'Bricolage Grotesque', 'IBM Plex Sans', sans-serif; font-size: 1.3rem; margin: 0; letter-spacing: -0.01em; }
+.list { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+.row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 14px 16px; border-top: 1px solid var(--line); }
+.row:first-child { border-top: 0; }
+.pill { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--live); background: var(--live-soft); padding: 3px 9px; border-radius: 999px; display: inline-flex; align-items: center; gap: 6px; }
+.pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--live); }
+.row-main { min-width: 0; }
+.row-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row-meta { font-size: 0.8rem; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.row-actions a, .row-actions button { font-size: 0.85rem; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--line); background: none; cursor: pointer; text-decoration: none; color: var(--ink); }
+.row-actions .danger { color: var(--warn); }
+.row-actions .danger.armed { background: var(--warn); color: #fff; border-color: var(--warn); }
+.empty { padding: 26px 16px; color: var(--muted); text-align: center; }
+
+.readonly { margin-top: 12px; font-size: 0.88rem; color: var(--muted); }
+
+/* Visitor view of a published site */
+.site-view { position: fixed; inset: 0; background: #fff; }
+.site-view iframe { width: 100%; height: 100%; border: 0; display: block; }
+.site-badge { position: fixed; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 5; display: flex; align-items: center; gap: 6px; background: rgba(21,32,27,0.86); color: #e4ebe7; font: 500 0.75rem 'IBM Plex Sans', sans-serif; padding: 6px 8px 6px 12px; border-radius: 999px; backdrop-filter: blur(6px); }
+.site-badge a { color: inherit; text-decoration: none; }
+.site-badge button { border: 0; background: none; color: inherit; cursor: pointer; padding: 0 4px; font-size: 0.9rem; line-height: 1; }
+
+@media (max-width: 880px) {
+  .work { grid-template-columns: 1fr; }
+  .panel { min-height: 0; }
+  .row { grid-template-columns: minmax(0, 1fr); }
+  .row-actions { justify-content: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+<template id="app-tpl">
+<div class="shell">
+  <header class="top">
+    <div class="brand"><span class="brand-mark" aria-hidden="true"></span>Launchpad</div>
+    <span class="count" id="count"></span>
+  </header>
+
+  <section class="intro">
+    <h1>Put an HTML file online and get a link anyone can open.</h1>
+    <p>Upload or paste a single-file website, check it at desktop and phone width, choose a name, and publish. Each site gets its own link on this page.</p>
+  </section>
+
+  <div class="work">
+    <div class="panel">
+      <div class="panel-head">
+        <span class="step">Your HTML</span>
+        <div class="seg" role="group" aria-label="Input method">
+          <button type="button" id="mode-upload" aria-pressed="true">Upload file</button>
+          <button type="button" id="mode-paste" aria-pressed="false">Edit code</button>
+        </div>
+      </div>
+      <label class="drop" id="drop" for="file">
+        <span class="drop-icon" aria-hidden="true">HTML</span>
+        <span><strong>Drop an .html file here</strong><small>or click to choose one from your computer</small></span>
+      </label>
+      <input type="file" id="file" accept=".html,.htm,text/html" hidden>
+      <div class="loaded" id="loaded" aria-live="polite"></div>
+      <textarea id="code" spellcheck="false" aria-label="HTML code"></textarea>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <span class="step">Preview</span>
+        <div class="seg" role="group" aria-label="Preview width">
+          <button type="button" id="dev-desktop" aria-pressed="true">Desktop</button>
+          <button type="button" id="dev-phone" aria-pressed="false">Phone</button>
+        </div>
+      </div>
+      <div class="browser"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="addr mono" id="addr"></span></div>
+      <div class="stage" id="stage"><iframe id="preview" title="Preview of your site" sandbox="allow-scripts allow-forms allow-modals"></iframe></div>
+    </div>
+  </div>
+
+  <div class="publish">
+    <div class="name-field">
+      <label for="sitename">Site name</label>
+      <input id="sitename" maxlength="40" autocomplete="off" spellcheck="false" placeholder="my-site">
+    </div>
+    <button class="btn primary" type="button" id="publish-btn">Publish</button>
+    <p class="hint" id="hint">Lowercase letters, numbers and dashes. Publishing with a name that already exists updates that site.</p>
+  </div>
+  <div id="notice" aria-live="polite"></div>
+  <div class="readonly" id="readonly" hidden>You're viewing this page read-only, so you can open the sites below but can't publish. Ask the owner for edit access to publish.</div>
+
+  <section class="sites">
+    <div class="sites-head"><h2>Published sites</h2></div>
+    <div class="list" id="list"></div>
+  </section>
+</div>
+</template>
+<div id="app"></div>
+<script type="application/json" id="sites-data">{"sites": {"publishing-house": {"html": "\u003c!DOCTYPE html>\n\u003chtml lang=\"en\">\n\u003chead>\n\u003cmeta charset=\"UTF-8\">\n\u003cmeta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\u003c/head>\n\u003cbody>\n\u003ctitle>Lanternfield Press\u003c/title>\n\u003clink rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n\u003clink href=\"https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,700&family=Inter:wght@400;500;600&display=swap\" rel=\"stylesheet\">\n\u003cstyle>\n  :root {\n    --paper: #f6f1e7;\n    --ink: #1c1a17;\n    --muted: #6b645a;\n    --accent: #b5452b;\n    --accent-dark: #8e3420;\n    --line: #d9cfbd;\n    --card: #fffdf8;\n    --header-bg: rgba(246,241,231,0.92);\n    --box-bg: #1c1a17;\n    --box-text: #f6f1e7;\n    --box-muted: #c9c0b1;\n    --box-soft: #a89f90;\n    --box-line: #3a3630;\n    --box-num: #f0b3a3;\n  }\n  @media (prefers-color-scheme: dark) {\n    :root:not([data-theme=\"light\"]) {\n      color-scheme: dark;\n      --paper: #171512; --ink: #efe8da; --muted: #a59c8e; --accent: #e07a5f;\n      --line: #342f28; --card: #201d19; --header-bg: rgba(23,21,18,0.9);\n      --box-bg: #25211c; --box-line: #3d3830;\n    }\n  }\n  :root[data-theme=\"dark\"] {\n    color-scheme: dark;\n    --paper: #171512; --ink: #efe8da; --muted: #a59c8e; --accent: #e07a5f;\n    --line: #342f28; --card: #201d19; --header-bg: rgba(23,21,18,0.9);\n    --box-bg: #25211c; --box-line: #3d3830;\n  }\n  * { box-sizing: border-box; margin: 0; padding: 0; }\n  html { scroll-behavior: smooth; }\n  body {\n    font-family: 'Inter', system-ui, sans-serif;\n    background: var(--paper);\n    color: var(--ink);\n    line-height: 1.6;\n  }\n  a { color: inherit; text-decoration: none; }\n  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }\n\n  /* Header */\n  header {\n    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10;\n    background: var(--header-bg);\n    backdrop-filter: blur(8px);\n    border-bottom: 1px solid var(--line);\n  }\n  .nav { display: flex; align-items: center; justify-content: space-between; height: 68px; }\n  .logo { font-family: 'Fraunces', serif; font-weight: 700; font-size: 1.35rem; display: flex; align-items: center; gap: 10px; }\n  .logo-mark { width: 26px; height: 26px; border-radius: 50%; background: var(--accent); position: relative; }\n  .logo-mark::after { content: \"\"; position: absolute; inset: 7px; border-radius: 50%; background: var(--paper); }\n  nav ul { list-style: none; display: flex; gap: 32px; font-size: 0.95rem; font-weight: 500; }\n  nav a:hover { color: var(--accent); }\n  .menu-btn { display: none; background: none; border: 0; font-size: 1.5rem; cursor: pointer; color: var(--ink); }\n\n  /* Hero */\n  .hero { padding: 96px 0 80px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 56px; align-items: center; }\n  .eyebrow { text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.78rem; font-weight: 600; color: var(--accent); margin-bottom: 18px; }\n  h1 { font-family: 'Fraunces', serif; font-weight: 300; font-size: clamp(2.6rem, 5.5vw, 4.4rem); line-height: 1.05; letter-spacing: -0.02em; }\n  h1 em { font-style: italic; font-weight: 500; color: var(--accent); }\n  .hero p { margin: 24px 0 36px; font-size: 1.12rem; color: var(--muted); max-width: 34em; }\n  .btn { display: inline-block; padding: 14px 26px; border-radius: 999px; font-weight: 600; font-size: 0.95rem; transition: all .2s; }\n  .btn-primary { background: var(--ink); color: var(--paper); }\n  .btn-primary:hover { background: var(--accent); }\n  .btn-ghost { border: 1.5px solid var(--ink); margin-left: 10px; }\n  .btn-ghost:hover { background: var(--ink); color: var(--paper); }\n\n  .stack { position: relative; height: 420px; }\n  .book {\n    position: absolute; width: 210px; height: 310px; border-radius: 4px 10px 10px 4px;\n    box-shadow: 0 20px 40px rgba(28,26,23,0.18), inset 6px 0 0 rgba(0,0,0,0.12);\n    padding: 28px 22px; display: flex; flex-direction: column; justify-content: space-between;\n    font-family: 'Fraunces', serif; transition: transform .4s;\n  }\n  .book small { font-family: 'Inter', sans-serif; font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; opacity: .8; }\n  .book h3 { font-size: 1.6rem; line-height: 1.1; font-weight: 500; }\n  .b1 { background: #2f4a3f; color: #efe6d2; left: 0; top: 60px; transform: rotate(-8deg); }\n  .b2 { background: var(--accent); color: #fbeee6; left: 110px; top: 20px; transform: rotate(3deg); z-index: 2; }\n  .b3 { background: #e4c77a; color: #2b2410; left: 220px; top: 80px; transform: rotate(10deg); }\n  .stack:hover .b1 { transform: rotate(-12deg) translateX(-10px); }\n  .stack:hover .b3 { transform: rotate(14deg) translateX(10px); }\n\n  /* Sections */\n  section { padding: 88px 0; border-top: 1px solid var(--line); }\n  .section-head { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 44px; flex-wrap: wrap; }\n  h2 { font-family: 'Fraunces', serif; font-weight: 400; font-size: clamp(2rem, 3.6vw, 2.8rem); line-height: 1.1; letter-spacing: -0.01em; }\n  .section-head p { color: var(--muted); max-width: 30em; }\n\n  /* Catalogue */\n  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 32px; }\n  .filter { border: 1px solid var(--line); background: var(--card); padding: 8px 16px; border-radius: 999px; font: inherit; font-size: 0.88rem; cursor: pointer; color: var(--ink); }\n  .filter.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }\n  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 28px; }\n  .title-card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; transition: transform .2s, box-shadow .2s; }\n  .title-card:hover { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(28,26,23,0.1); }\n  .cover { aspect-ratio: 3/4; display: flex; align-items: flex-end; padding: 20px; font-family: 'Fraunces', serif; font-size: 1.4rem; line-height: 1.15; }\n  .meta { padding: 18px 20px 22px; }\n  .meta .genre { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); font-weight: 600; }\n  .meta h4 { font-family: 'Fraunces', serif; font-weight: 500; font-size: 1.15rem; margin: 4px 0 2px; }\n  .meta .author { color: var(--muted); font-size: 0.9rem; }\n  .meta .price { margin-top: 12px; font-weight: 600; font-size: 0.92rem; }\n\n  /* About */\n  .about { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; }\n  .about p { color: var(--muted); margin-bottom: 18px; font-size: 1.05rem; }\n  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 32px; }\n  .stat strong { display: block; font-family: 'Fraunces', serif; font-size: 2.4rem; font-weight: 500; color: var(--ink); }\n  .stat span { font-size: 0.85rem; color: var(--muted); }\n\n  /* Submissions */\n  .submit-box { background: var(--box-bg); color: var(--box-text); border-radius: 20px; padding: 56px; display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }\n  .submit-box h2 { color: var(--box-text); }\n  .submit-box p { color: var(--box-muted); margin-top: 16px; }\n  .steps { list-style: none; counter-reset: s; }\n  .steps li { counter-increment: s; padding: 16px 0 16px 52px; position: relative; border-bottom: 1px solid var(--box-line); }\n  .steps li::before { content: counter(s); position: absolute; left: 0; top: 14px; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--accent); color: var(--box-num); display: grid; place-items: center; font-weight: 600; font-size: 0.9rem; }\n  .steps strong { display: block; }\n  .steps span { color: var(--box-soft); font-size: 0.92rem; }\n\n  /* Newsletter */\n  .newsletter { text-align: center; }\n  .newsletter p { color: var(--muted); margin: 14px auto 28px; max-width: 30em; }\n  form { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }\n  input[type=email] { padding: 14px 20px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); font: inherit; min-width: 280px; }\n  input[type=email]:focus { outline: 2px solid var(--accent); outline-offset: 2px; }\n  button.btn { border: 0; cursor: pointer; font-family: inherit; }\n  .thanks { margin-top: 16px; color: var(--accent); font-weight: 500; min-height: 1.6em; }\n\n  .email-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 28px; }\n  .email-row code { background: rgba(255,255,255,0.08); padding: 12px 16px; border-radius: 999px; font-size: 0.92rem; user-select: all; }\n  .btn:focus-visible, .filter:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }\n  @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }\n  footer { border-top: 1px solid var(--line); padding: 40px 0; font-size: 0.88rem; color: var(--muted); }\n  .foot { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; }\n\n  @media (max-width: 860px) {\n    .hero, .about, .submit-box { grid-template-columns: 1fr; }\n    .stack { height: 360px; max-width: 440px; margin: 0 auto; width: 100%; }\n    .submit-box { padding: 36px 24px; }\n    nav ul { display: none; position: absolute; top: 68px; left: 0; right: 0; background: var(--paper); flex-direction: column; gap: 0; border-bottom: 1px solid var(--line); }\n    nav ul.open { display: flex; }\n    nav li a { display: block; padding: 16px 24px; }\n    .menu-btn { display: block; }\n  }\n  @media (max-width: 480px) {\n    .book { width: 160px; height: 240px; padding: 20px 16px; }\n    .book h3 { font-size: 1.25rem; }\n    .b2 { left: 80px; } .b3 { left: 160px; }\n    .btn-ghost { margin: 10px 0 0; }\n    .stats { grid-template-columns: 1fr 1fr; }\n    input[type=email] { min-width: 0; width: 100%; }\n  }\n\u003c/style>\n\n\n\u003cheader>\n  \u003cdiv class=\"wrap nav\">\n    \u003ca href=\"#\" class=\"logo\">\u003cspan class=\"logo-mark\">\u003c/span>Lanternfield Press\u003c/a>\n    \u003cnav>\n      \u003cbutton class=\"menu-btn\" aria-label=\"Menu\" onclick=\"document.getElementById('menu').classList.toggle('open')\">\u2630\u003c/button>\n      \u003cul id=\"menu\">\n        \u003cli>\u003ca href=\"#catalogue\">Catalogue\u003c/a>\u003c/li>\n        \u003cli>\u003ca href=\"#about\">About\u003c/a>\u003c/li>\n        \u003cli>\u003ca href=\"#submissions\">Submissions\u003c/a>\u003c/li>\n        \u003cli>\u003ca href=\"#newsletter\">Newsletter\u003c/a>\u003c/li>\n      \u003c/ul>\n    \u003c/nav>\n  \u003c/div>\n\u003c/header>\n\n\u003cmain class=\"wrap\">\n  \u003cdiv class=\"hero\">\n    \u003cdiv>\n      \u003cdiv class=\"eyebrow\">Independent publisher \u00b7 Est. 2011\u003c/div>\n      \u003ch1>Books that \u003cem>stay lit\u003c/em> long after the last page.\u003c/h1>\n      \u003cp>We publish literary fiction, essays and poetry from voices worth hearing \u2014 carefully edited, beautifully made, and championed for the long haul.\u003c/p>\n      \u003ca href=\"#catalogue\" class=\"btn btn-primary\">Browse the catalogue\u003c/a>\n      \u003ca href=\"#submissions\" class=\"btn btn-ghost\">Submit your work\u003c/a>\n    \u003c/div>\n    \u003cdiv class=\"stack\" aria-hidden=\"true\">\n      \u003cdiv class=\"book b1\">\u003csmall>Fiction\u003c/small>\u003ch3>The Salt Orchard\u003c/h3>\u003csmall>M. Adeyemi\u003c/small>\u003c/div>\n      \u003cdiv class=\"book b2\">\u003csmall>New release\u003c/small>\u003ch3>Weather for Small Towns\u003c/h3>\u003csmall>Iris Calloway\u003c/small>\u003c/div>\n      \u003cdiv class=\"book b3\">\u003csmall>Poetry\u003c/small>\u003ch3>Hinges\u003c/h3>\u003csmall>T. Okonkwo\u003c/small>\u003c/div>\n    \u003c/div>\n  \u003c/div>\n\u003c/main>\n\n\u003csection id=\"catalogue\">\n  \u003cdiv class=\"wrap\">\n    \u003cdiv class=\"section-head\">\n      \u003ch2>This season's list\u003c/h2>\n      \u003cp>New and forthcoming titles, from debut novels to collected essays.\u003c/p>\n    \u003c/div>\n    \u003cdiv class=\"filters\" id=\"filters\">\n      \u003cbutton class=\"filter active\" data-f=\"all\">All\u003c/button>\n      \u003cbutton class=\"filter\" data-f=\"fiction\">Fiction\u003c/button>\n      \u003cbutton class=\"filter\" data-f=\"non-fiction\">Non-fiction\u003c/button>\n      \u003cbutton class=\"filter\" data-f=\"poetry\">Poetry\u003c/button>\n    \u003c/div>\n    \u003cdiv class=\"grid\" id=\"grid\">\u003c/div>\n  \u003c/div>\n\u003c/section>\n\n\u003csection id=\"about\">\n  \u003cdiv class=\"wrap about\">\n    \u003cdiv>\n      \u003cdiv class=\"eyebrow\">About us\u003c/div>\n      \u003ch2>Small by design, ambitious by nature.\u003c/h2>\n    \u003c/div>\n    \u003cdiv>\n      \u003cp>Lanternfield began as two editors and a borrowed office. Today we publish around twenty titles a year, and we still read every submission ourselves.\u003c/p>\n      \u003cp>We believe in slow publishing: long editorial relationships, fair royalties, and backlist books kept in print for as long as readers want them.\u003c/p>\n      \u003cdiv class=\"stats\">\n        \u003cdiv class=\"stat\">\u003cstrong>180+\u003c/strong>\u003cspan>Titles published\u003c/span>\u003c/div>\n        \u003cdiv class=\"stat\">\u003cstrong>14\u003c/strong>\u003cspan>Prize shortlists\u003c/span>\u003c/div>\n        \u003cdiv class=\"stat\">\u003cstrong>92%\u003c/strong>\u003cspan>Backlist in print\u003c/span>\u003c/div>\n      \u003c/div>\n    \u003c/div>\n  \u003c/div>\n\u003c/section>\n\n\u003csection id=\"submissions\">\n  \u003cdiv class=\"wrap\">\n    \u003cdiv class=\"submit-box\">\n      \u003cdiv>\n        \u003cdiv class=\"eyebrow\">For writers\u003c/div>\n        \u003ch2>Our doors are open.\u003c/h2>\n        \u003cp>We accept unagented submissions twice a year, in March and September. We're especially keen on debut authors and underrepresented voices.\u003c/p>\n        \u003cdiv class=\"email-row\">\n          \u003ccode id=\"sub-email\">submissions@lanternfieldpress.example\u003c/code>\n          \u003cbutton class=\"btn\" id=\"copy-email\" type=\"button\" style=\"background:var(--accent);color:#fff;\">Copy address\u003c/button>\n        \u003c/div>\n      \u003c/div>\n      \u003col class=\"steps\">\n        \u003cli>\u003cstrong>Send a cover letter\u003c/strong>\u003cspan>A short introduction to you and the book.\u003c/span>\u003c/li>\n        \u003cli>\u003cstrong>Include a synopsis\u003c/strong>\u003cspan>One page covering the full arc.\u003c/span>\u003c/li>\n        \u003cli>\u003cstrong>Attach three chapters\u003c/strong>\u003cspan>Or 15 poems / two essays.\u003c/span>\u003c/li>\n        \u003cli>\u003cstrong>Hear back in 12 weeks\u003c/strong>\u003cspan>We reply to every submission.\u003c/span>\u003c/li>\n      \u003c/ol>\n    \u003c/div>\n  \u003c/div>\n\u003c/section>\n\n\u003csection id=\"newsletter\" class=\"newsletter\">\n  \u003cdiv class=\"wrap\">\n    \u003ch2>Letters from the press\u003c/h2>\n    \u003cp>A monthly note on new books, author events and the occasional reading list. No spam, ever.\u003c/p>\n    \u003cform id=\"signup\">\n      \u003cinput type=\"email\" id=\"signup-email\" required placeholder=\"you@example.com\" aria-label=\"Email address\">\n      \u003cbutton class=\"btn btn-primary\" type=\"submit\">Subscribe\u003c/button>\n    \u003c/form>\n    \u003cdiv class=\"thanks\" id=\"thanks\">\u003c/div>\n  \u003c/div>\n\u003c/section>\n\n\u003cfooter>\n  \u003cdiv class=\"wrap foot\">\n    \u003cspan>\u00a9 2026 Lanternfield Press. All rights reserved.\u003c/span>\n    \u003cspan>hello@lanternfieldpress.example \u00b7 Rights &amp; permissions \u00b7 Privacy\u003c/span>\n  \u003c/div>\n\u003c/footer>\n\n\u003cscript>\n  const books = [\n    { t: \"Weather for Small Towns\", a: \"Iris Calloway\", g: \"fiction\", p: \"\u00a316.99\", c: \"#b5452b\", f: \"#fbeee6\" },\n    { t: \"The Salt Orchard\", a: \"M. Adeyemi\", g: \"fiction\", p: \"\u00a314.99\", c: \"#2f4a3f\", f: \"#efe6d2\" },\n    { t: \"Hinges\", a: \"T. Okonkwo\", g: \"poetry\", p: \"\u00a310.99\", c: \"#e4c77a\", f: \"#2b2410\" },\n    { t: \"On Walking Backwards\", a: \"Clara Venn\", g: \"non-fiction\", p: \"\u00a318.99\", c: \"#3d4a6b\", f: \"#e8ecf5\" },\n    { t: \"A Grammar of Rivers\", a: \"Sol Marek\", g: \"non-fiction\", p: \"\u00a317.99\", c: \"#6b8f86\", f: \"#f1f6f4\" },\n    { t: \"Lamplight Hours\", a: \"June Ashdown\", g: \"poetry\", p: \"\u00a39.99\", c: \"#1c1a17\", f: \"#f0b3a3\" },\n    { t: \"The Glasshouse Year\", a: \"Dev Ramanathan\", g: \"fiction\", p: \"\u00a315.99\", c: \"#8a6a9e\", f: \"#f5eefa\" },\n    { t: \"Notes Toward a Kitchen\", a: \"Hana Ito\", g: \"non-fiction\", p: \"\u00a319.99\", c: \"#d98b4a\", f: \"#2a1a0c\" }\n  ];\n  const grid = document.getElementById('grid');\n  function render(filter) {\n    grid.innerHTML = books.filter(b => filter === 'all' || b.g === filter).map(b => `\n      \u003carticle class=\"title-card\">\n        \u003cdiv class=\"cover\" style=\"background:${b.c};color:${b.f}\">${b.t}\u003c/div>\n        \u003cdiv class=\"meta\">\n          \u003cdiv class=\"genre\">${b.g.replace('-', ' ')}\u003c/div>\n          \u003ch4>${b.t}\u003c/h4>\n          \u003cdiv class=\"author\">${b.a}\u003c/div>\n          \u003cdiv class=\"price\">${b.p}\u003c/div>\n        \u003c/div>\n      \u003c/article>`).join('');\n  }\n  render('all');\n  document.getElementById('filters').addEventListener('click', e => {\n    if (!e.target.matches('.filter')) return;\n    document.querySelectorAll('.filter').forEach(f => f.classList.remove('active'));\n    e.target.classList.add('active');\n    render(e.target.dataset.f);\n  });\n  document.querySelectorAll('#menu a').forEach(a => a.addEventListener('click', () => document.getElementById('menu').classList.remove('open')));\n  document.getElementById('copy-email').addEventListener('click', async e => {\n    const btn = e.currentTarget;\n    try { await navigator.clipboard.writeText(document.getElementById('sub-email').textContent); btn.textContent = 'Copied'; }\n    catch { const r = document.createRange(); r.selectNodeContents(document.getElementById('sub-email')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = 'Press Ctrl+C'; }\n    setTimeout(() => btn.textContent = 'Copy address', 1800);\n  });\n  document.getElementById('signup').addEventListener('submit', e => {\n    e.preventDefault();\n    document.getElementById('thanks').textContent = \"Thanks \u2014 you're on the list.\";\n    e.target.reset();\n  });\n\u003c/script>\n\n\u003c/body>\n\u003c/html>\n", "title": "Lanternfield Press", "updated": "2026-09-26T17:58:00.000Z", "size": 16834}}}</script>
+<script id="app-js">
+(function () {
+  var BASE = "https://claude.ai/artifact/7HKvapHaZoG3QfjbPpxxZk";
+  var SKELETON = '<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>';
+  var STARTER = '<!DOCTYPE html>\n<html>\n<head>\n  <meta charset="utf-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1">\n  <title>Hello</title>\n  <style>\n    body { margin: 0; min-height: 100vh; display: grid; place-items: center;\n           font-family: system-ui, sans-serif; background: #0d7152; color: #fff; text-align: center; }\n    h1 { font-size: 3rem; margin: 0 0 8px; }\n  </style>\n</head>\n<body>\n  <div>\n    <h1>Hello, world</h1>\n    <p>Replace this with your own HTML, or upload a file.</p>\n  </div>\n</body>\n</html>\n';
+
+  var sites = {};
+  try { sites = (JSON.parse(document.getElementById('sites-data').textContent) || {}).sites || {}; } catch (e) { sites = {}; }
+
+  var styleText = document.getElementById('app-style').textContent;
+  var tplHtml = document.getElementById('app-tpl').innerHTML;
+  var jsText = document.getElementById('app-js').textContent;
+  var headLinks = '<link rel="preconnect" href="https://fonts.googleapis.com">\n<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">';
+
+  var api = null, readOnly = false, busy = false;
+  if (window.claude && window.claude.use) {
+    window.claude.use('artifact').then(function (a) { api = a; if (!a) setReadOnly(); }).catch(function () { setReadOnly(); });
+  }
+
+  function linkFor(name) { return (BASE.indexOf('http') === 0 ? BASE : '') + '#' + name; }
+  function clean(v) { return String(v || '').toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/-+/g, '-').replace(/^-/, '').slice(0, 40); }
+  function titleOf(html, fallback) { var m = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(html); var t = m ? m[1].replace(/\s+/g, ' ').trim() : ''; return t || fallback; }
+  function fmtSize(n) { return n < 1024 ? n + ' B' : n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(2) + ' MB'; }
+  function fmtDate(iso) { try { return new Date(iso).toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function $(id) { return document.getElementById(id); }
+
+  function buildDocument(nextSites) {
+    var json = JSON.stringify({ sites: nextSites }).replace(/</g, '\\u003c');
+    return SKELETON + '<title>Launchpad Publisher</title>\n' + headLinks + '\n<style id="app-style">' + styleText + '</style>\n<template id="app-tpl">' + tplHtml + '</template>\n<div id="app"></div>\n<script type="application/json" id="sites-data">' + json + '<\/script>\n<script id="app-js">' + jsText + '<\/script>\n</body></html>';
+  }
+
+  /* ---------- Visitor view ---------- */
+  var siteView = null;
+  function showSite(name) {
+    var s = sites[name];
+    $('app').hidden = true;
+    if (!siteView) { siteView = document.createElement('div'); siteView.className = 'site-view'; document.body.appendChild(siteView); }
+    siteView.hidden = false;
+    siteView.innerHTML = '<iframe title="' + esc(s.title || name) + '" sandbox="allow-scripts allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox"></iframe>' +
+      '<div class="site-badge" id="badge"><a href="#">Published with Launchpad</a><button type="button" aria-label="Hide badge" id="badge-x">×</button></div>';
+    siteView.querySelector('iframe').srcdoc = s.html;
+    $('badge-x').onclick = function () { $('badge').hidden = true; };
+    document.title = s.title || name;
+    window.scrollTo(0, 0);
+  }
+
+  /* ---------- Publisher view ---------- */
+  var built = false;
+  function showApp() {
+    if (siteView) siteView.hidden = true;
+    document.title = 'Launchpad Publisher';
+    $('app').hidden = false;
+    if (!built) { $('app').innerHTML = tplHtml; built = true; wire(); }
+    renderList();
+  }
+
+  function refreshPreview() { $('preview').srcdoc = $('code').value; }
+  function updateAddr() { var n = clean($('sitename').value) || 'my-site'; $('addr').textContent = linkFor(n); }
+
+  function setReadOnly() {
+    readOnly = true;
+    if (!built) return;
+    $('publish-btn').disabled = true;
+    $('readonly').hidden = false;
+    renderList();
+  }
+
+  function notice(kind, html) { $('notice').innerHTML = html ? '<div class="notice ' + kind + '">' + html + '</div>' : ''; }
+
+  function copyText(text, btn) {
+    var done = function (label) { var old = btn.textContent; btn.textContent = label; setTimeout(function () { btn.textContent = old; }, 1600); };
+    try {
+      navigator.clipboard.writeText(text).then(function () { done('Copied'); }, function () { done('Select and copy'); });
+    } catch (e) { done('Select and copy'); }
+  }
+
+  function wire() {
+    var code = $('code');
+    var last = null;
+    try { last = sessionStorage.getItem('launchpad-last'); sessionStorage.removeItem('launchpad-last'); } catch (e) {}
+    if (last && sites[last]) {
+      code.value = sites[last].html; $('sitename').value = last;
+      showPublished(last);
+    } else {
+      code.value = STARTER; $('sitename').value = 'my-site';
+    }
+    refreshPreview(); updateAddr();
+    if (readOnly) setReadOnly();
+
+    var t = null;
+    code.addEventListener('input', function () { clearTimeout(t); t = setTimeout(refreshPreview, 250); });
+    $('sitename').addEventListener('input', function (e) { e.target.value = clean(e.target.value); updateAddr(); });
+
+    function setMode(paste) {
+      $('mode-upload').setAttribute('aria-pressed', String(!paste));
+      $('mode-paste').setAttribute('aria-pressed', String(paste));
+      $('drop').hidden = paste;
+      if (paste) code.focus();
+    }
+    $('mode-upload').onclick = function () { setMode(false); };
+    $('mode-paste').onclick = function () { setMode(true); };
+
+    function setDev(phone) {
+      $('dev-desktop').setAttribute('aria-pressed', String(!phone));
+      $('dev-phone').setAttribute('aria-pressed', String(phone));
+      $('stage').classList.toggle('phone', phone);
+    }
+    $('dev-desktop').onclick = function () { setDev(false); };
+    $('dev-phone').onclick = function () { setDev(true); };
+
+    function load(f) {
+      if (!f) return;
+      if (!/\.html?$/i.test(f.name) && f.type !== 'text/html') { $('loaded').textContent = f.name + ' is not an HTML file. Choose a file ending in .html.'; $('loaded').style.color = 'var(--warn)'; return; }
+      var r = new FileReader();
+      r.onload = function () {
+        code.value = r.result; refreshPreview();
+        $('loaded').style.color = '';
+        $('loaded').textContent = 'Loaded ' + f.name + ' (' + fmtSize(f.size) + ')';
+        var base = clean(f.name.replace(/\.html?$/i, '')).replace(/-$/, '');
+        if (base) { $('sitename').value = base; updateAddr(); }
+      };
+      r.readAsText(f);
+    }
+    $('file').addEventListener('change', function (e) { load(e.target.files[0]); e.target.value = ''; });
+    var drop = $('drop');
+    ['dragenter', 'dragover'].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add('over'); }); });
+    ['dragleave', 'drop'].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove('over'); }); });
+    drop.addEventListener('drop', function (e) { load(e.dataTransfer.files[0]); });
+
+    $('publish-btn').onclick = publish;
+
+    $('list').addEventListener('click', function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      var name = b.getAttribute('data-name');
+      if (b.dataset.act === 'copy') copyText(linkFor(name), b);
+      if (b.dataset.act === 'edit') { code.value = sites[name].html; $('sitename').value = name; refreshPreview(); updateAddr(); notice('', ''); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+      if (b.dataset.act === 'del') {
+        if (!b.classList.contains('armed')) { b.classList.add('armed'); b.textContent = 'Click to confirm'; setTimeout(function () { if (b.isConnected) { b.classList.remove('armed'); b.textContent = 'Unpublish'; } }, 3500); return; }
+        var next = Object.assign({}, sites); delete next[name];
+        save(next, null, 'Unpublishing…');
+      }
+    });
+    $('notice').addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-copy]'); if (b) copyText(b.getAttribute('data-copy'), b);
+    });
+  }
+
+  function showPublished(name) {
+    var url = linkFor(name);
+    notice('ok', '<strong>' + esc(name) + ' is live.</strong> <span class="url">' + esc(url) + '</span> <a class="btn" href="#' + esc(name) + '">Open site</a> <button class="btn" type="button" data-copy="' + esc(url) + '">Copy link</button>');
+  }
+
+  function publish() {
+    if (busy || readOnly) return;
+    var name = clean($('sitename').value).replace(/-$/, '');
+    var html = $('code').value;
+    if (!name) { notice('err', 'Choose a site name first, for example <span class="mono">my-portfolio</span>.'); return; }
+    if (!html.trim()) { notice('err', 'There is no HTML to publish. Upload a file or paste your code.'); return; }
+    var next = Object.assign({}, sites);
+    next[name] = { html: html, title: titleOf(html, name), updated: new Date().toISOString(), size: new Blob([html]).size };
+    save(next, name, 'Publishing…');
+  }
+
+  function save(next, name, label) {
+    if (!api) {
+      notice('err', readOnly ? 'This view is read-only, so nothing was published.' : 'Publishing isn\'t available in this view. Open the page from its claude.ai link and try again.');
+      return;
+    }
+    var doc = buildDocument(next);
+    if (doc.length > 15 * 1024 * 1024) { notice('err', 'That would make the page larger than the 16 MB limit. Unpublish an older site or shrink embedded images, then publish again.'); return; }
+    busy = true; $('publish-btn').disabled = true; $('publish-btn').textContent = label;
+    try { if (name) sessionStorage.setItem('launchpad-last', name); } catch (e) {}
+    api.publish(doc).then(function () {
+      /* The page reloads to the new version on its own. */
+    }, function (err) {
+      busy = false; $('publish-btn').disabled = readOnly; $('publish-btn').textContent = 'Publish';
+      var c = err && err.code;
+      if (c === 'conflict') return;
+      if (c === 'not_writer' || c === 'not_granted' || c === 'consent_required' || c === 'not_declared' || c === 'capability_disabled' || c === 'capability_removed') { setReadOnly(); notice('err', 'This view is read-only, so nothing was published.'); return; }
+      if (c === 'too_large') { notice('err', 'The page is over its size limit. Unpublish an older site or shrink the HTML, then publish again.'); return; }
+      if (c === 'rate_limited') { notice('err', 'Too many publishes in a short time. Wait a minute, then publish again.'); return; }
+      notice('err', 'Publishing failed because the service didn\'t respond. Try again in a moment.');
+    });
+  }
+
+  function renderList() {
+    if (!built) return;
+    var names = Object.keys(sites).sort(function (a, b) { return String(sites[b].updated).localeCompare(String(sites[a].updated)); });
+    $('count').textContent = names.length + (names.length === 1 ? ' site live' : ' sites live');
+    if (!names.length) { $('list').innerHTML = '<div class="empty">Nothing published yet. Publish a site and its link shows up here.</div>'; return; }
+    $('list').innerHTML = names.map(function (n) {
+      var s = sites[n];
+      return '<div class="row"><span class="pill">Live</span><div class="row-main"><div class="row-title">' + esc(s.title || n) + '</div><div class="row-meta mono">#' + esc(n) + ' · ' + fmtSize(s.size || 0) + ' · ' + esc(fmtDate(s.updated)) + '</div></div>' +
+        '<div class="row-actions"><a href="#' + esc(n) + '">Open</a><button type="button" data-act="copy" data-name="' + esc(n) + '">Copy link</button>' +
+        (readOnly ? '' : '<button type="button" data-act="edit" data-name="' + esc(n) + '">Edit</button><button type="button" class="danger" data-act="del" data-name="' + esc(n) + '">Unpublish</button>') + '</div></div>';
+    }).join('');
+  }
+
+  function route() {
+    var n = decodeURIComponent((location.hash || '').slice(1));
+    if (n && sites[n]) showSite(n); else showApp();
+  }
+  window.addEventListener('hashchange', route);
+  route();
+})();
+</script>
+
+<script src="../assets/nav.js" defer></script>
+</body></html>
